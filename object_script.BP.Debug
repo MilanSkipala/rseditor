@@ -1,0 +1,12 @@
+INPUT(
+./debug\main.o
+./debug\application.o
+./debug\partsRelated.o
+./debug\database.o
+./debug\sideBarWidget.o
+./debug\workspaceWidget.o
+./debug\moc_application.o
+./debug\moc_partsRelated.o
+./debug\moc_sideBarWidget.o
+./debug\moc_workspaceWidget.o
+);
