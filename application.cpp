@@ -63,7 +63,9 @@ bool Application::setAppData(AppData * d)
 bool Application::setRestrictedInventoryMode(bool mode)
 {
     this->restrictedInventoryMode=mode;
-    this->window->setWindowTitle("QString(mode)");
+    //this->window->getSideBarWidget()->update();
+    if (this->window->getSideBarWidget()->getCurrentScene()!=NULL)
+        this->window->getSideBarWidget()->getCurrentScene()->update(this->window->getSideBarWidget()->getCurrentScene()->sceneRect());
     return true;
 }
 bool Application::setAllowMixedProductLines(bool mode)

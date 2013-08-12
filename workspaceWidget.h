@@ -35,6 +35,7 @@ public:
     int addFragment(ModelFragmentWidget * frag);///INCOMPLETE
     int removeFragment(ModelFragmentWidget * frag);///INCOMPLETE - HANDLE ACTIVE POINTS
     int removeFragment(int index);///INCOMPLETE - HANDLE ACTIVE POINTS
+    int updateFragment(ModelFragmentWidget * frag); ///INCOMPLETE - MISSING ERROR HANDLING
 
     ModelFragmentWidget * getActiveFragment() const;
     int setActiveFragment(ModelFragmentWidget * frag);

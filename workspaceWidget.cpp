@@ -7,12 +7,12 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     this->contextMenu = context;
     this->modelFragments = (new QList<ModelFragmentWidget*>());
     //this->frameWidget = new QFrame(this,this->windowFlags());
-    this->graphicsScene = new QGraphicsScene(0,0,2000,3000);
+    this->graphicsScene = new QGraphicsScene(0,0,20,30);
     this->setScene(this->graphicsScene);
     this->mousePress=false;
     this->ctrlPress=false;
     this->lastUsedPart=NULL;
-    this->activeEndPoint = NULL;
+    this->activeEndPoint = new QPoint(10,15);
     this->activeFragment = NULL;
 
 
@@ -21,18 +21,6 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     //pal.setColor(QPalette::Window,Qt::white);
     this->setPalette(pal);
     this->setAutoFillBackground(true);
-
-    ///this->move(150,0);
-    //this->frameWidget->setFixedWidth(5000);
-    //this->frameWidget->setFixedHeight(5000);
-
-
-    ///this->resize(550,420);
-
-
-    //this->graphicsView = new QGraphicsView(this->graphicsScene,this);
-    //this->setWidget(this->graphicsView);
-
 
     QPolygon poly;
     poly << QPoint(10,10);
@@ -121,7 +109,7 @@ void WorkspaceWidget::wheelEvent(QWheelEvent *evt)
 {
     QGraphicsView::wheelEvent(evt);
     //this->scale+=(evt->delta())/127;
-    this->scaleView(evt->delta()/128);
+    this->scaleView(evt->delta()/63.2);
 }
 
 
@@ -145,7 +133,7 @@ void WorkspaceWidget::mouseMoveEvent(QMouseEvent *evt)
 void WorkspaceWidget::scaleView(qreal factor)
 {
     qreal num = matrix().scale(factor,factor).mapRect(QRectF(0,0,1,1)).width();
-    if (num>0.2)
+    if (num>0.05)
         scale(factor,factor);
 }
 
@@ -220,8 +208,8 @@ int WorkspaceWidget::addFragment(ModelFragmentWidget * frag)
 
     while (iter!=frag->getFragmentItems()->end())
     {
-        (*iter)->get2DModel()->moveBy(this->graphicsScene->width()/2,this->graphicsScene->height()/2);
-        this->graphicsScene->addItem((*iter)->get2DModel());
+        //(*iter)->get2DModelNoText()->moveBy(this->graphicsScene->width()/2,this->graphicsScene->height()/2);
+        this->graphicsScene->addItem((*iter)->get2DModelNoText());
 
         iter++;
     }
@@ -246,6 +234,18 @@ int WorkspaceWidget::removeFragment(int index)
     if (index < 0 || index >= this->modelFragments->size())
         return 1;
     this->modelFragments->removeAt(index);
+    return 0;
+}
+
+int WorkspaceWidget::updateFragment(ModelFragmentWidget *frag)
+{
+    for (int i = 0; i < frag->getFragmentItems()->count();i++)
+    {
+        //removes all items (just added items won't have effect on this action)
+        this->graphicsScene->removeItem(frag->getFragmentItems()->at(i)->get2DModelNoText());
+        //add all items including those just added
+        this->graphicsScene->addItem(frag->getFragmentItems()->at(i)->get2DModelNoText());
+    }
     return 0;
 }
 

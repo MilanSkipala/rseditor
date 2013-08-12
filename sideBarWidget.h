@@ -39,6 +39,8 @@ public:
     QDialog * initDelDialog();
 
 
+    QGraphicsScene * getCurrentScene() const;
+
 protected:
     void paintEvent(QPaintEvent * evt);
     void contextMenuEvent(QContextMenuEvent * evt);

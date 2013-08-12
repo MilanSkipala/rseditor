@@ -1,4 +1,5 @@
 #include <QtGlobal>
+#include <cmath>
 #include "globalVariables.h"
 #include "database.h"
 
@@ -15,6 +16,10 @@ int skip(QString &line, QTextStream &in)
 
 Database::Database()
 {
+
+    RailItemTypes thisHasntBeenImplementedYet;
+    thisHasntBeenImplementedYet = T1;
+
     this->currentItem=new QString("");
     this->currentProductLine= new QString("");
     this->productLines = new QMap<QString,ProductLine*>();
@@ -157,6 +162,11 @@ Database::Database()
             radius.remove(0,7);
             qreal rad = radius.toDouble();
 
+            //works just for C1 and C parts
+            qreal xLen = 2*rad*(cos(90-(deg/2)));
+            start = QPoint(-xLen/2,0);
+            end = QPoint(xLen/2,0);
+
             ModelItem * mi = new ModelItem(partNo,nameEn,nameCs,start,end,deg,rad, *this->productLines->find(*this->currentProductLine));//parentWidget??
             (*this->productLines->find(*this->currentProductLine))->addItem(mi);
 
@@ -172,8 +182,12 @@ Database::Database()
         QList<ModelItem*>::Iterator itemIter = (*iter1)->getItemsList()->begin();
         while(itemIter!=(*iter1)->getItemsList()->end())
         {
-            (*itemIter)->generate2DModel();
+            (*itemIter)->generate2DModel(true);
             (*itemIter)->get2DModel()->setFlag(QGraphicsItem::ItemIsMovable,false);
+
+
+            (*itemIter)->generate2DModel(false);
+
             itemIter++;
         }
         //(*iter1)->generate2DModels();
@@ -191,29 +205,6 @@ Database::Database()
         text.append(" ");
         text.append(*(*iter)->getName());
 
-/* load path items from modelItems instead of this
-        QBrush b = scene->backgroundBrush();
-        b.setColor(Qt::red);
-        b.setStyle(Qt::SolidPattern);
-        scene->setBackgroundBrush(b);
-
-        QPainterPath * pPath = new QPainterPath();
-
-        //pPath->moveTo(25,25);
-
-        pPath->arcMoveTo(QRectF(-30,-30,60,60),0);
-        pPath->arcTo(QRectF(-30,-30,60,60),0,245);
-        pPath->arcMoveTo(QRectF(-20,-20,40,40),0);
-        pPath->arcTo(QRectF(-20,-20,40,40),0,245);
-        GraphicsPathItem * gPItem = new GraphicsPathItem(*pPath);
-        b.setColor(Qt::yellow);
-        gPItem->setBrush(b);
-        scene->addItem(gPItem);
-
-/**/
-
-
-
         QList<ModelItem*>::Iterator itemIter = (*iter)->getItemsList()->begin();
         int i = 0;
         while(itemIter!=(*iter)->getItemsList()->end())
@@ -229,10 +220,6 @@ Database::Database()
         this->scenes->insert(text,scene);
         iter++;
     }
-
-    QString x("ahoj");
-    x.append(" svete!");
-
 
 }
 

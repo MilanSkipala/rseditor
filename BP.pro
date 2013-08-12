@@ -6,7 +6,8 @@ HEADERS += \
     globalVariables.h \
     database.h \
     sideBarWidget.h \
-    workspaceWidget.h
+    workspaceWidget.h \
+    itemTypeEnums.h
 
 SOURCES += \
     main.cpp \

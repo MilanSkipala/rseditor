@@ -18,6 +18,7 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
     this->graphicsView = new QGraphicsView(this);
     this->graphicsView->setRenderHint(QPainter::Antialiasing);
     this->graphicsView->setAlignment(Qt::AlignTop);
+
     this->currentScene=NULL;
     //this->graphicsScenesMap = new QMap<QString,QGraphicsScene*>();
 
@@ -152,7 +153,14 @@ void SideBarWidget::deleteSelection()
         for (int i = 0; i < this->prodLineCBox->count(); i++)
         {
             if (this->prodLineCBox->itemText(i)==text)
+            {
                 this->prodLineCBox->removeItem(i);
+                if (this->database->findSceneByString(text)==this->currentScene)
+                {
+                    QString str = this->prodLineCBox->itemText(i+1);
+                    this->currentScene=this->database->findSceneByString(str);
+                }
+            }
         }
         list.pop_front();
     }
@@ -230,4 +238,9 @@ QDialog * SideBarWidget::initDelDialog()
     d->setLayout(l);
     return d;
     return NULL;
+}
+
+QGraphicsScene *SideBarWidget::getCurrentScene() const
+{
+    return this->currentScene;
 }

@@ -16,3 +16,8 @@ int main(int argc, char ** argv)
     application.getWindow()->show();
     return application.exec();
 }
+
+/**
+  *TODO
+  *-restricted mode - red color for 1 and 0 available parts
+    */
