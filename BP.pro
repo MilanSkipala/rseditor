@@ -7,7 +7,9 @@ HEADERS += \
     database.h \
     sideBarWidget.h \
     workspaceWidget.h \
-    itemTypeEnums.h
+    itemTypeEnums.h \
+    scales.h \
+    graphicsScene.h
 
 SOURCES += \
     main.cpp \
@@ -15,6 +17,8 @@ SOURCES += \
     partsRelated.cpp \
     database.cpp \
     sideBarWidget.cpp \
-    workspaceWidget.cpp
+    workspaceWidget.cpp \
+    mathFunctions.cpp \
+    graphicsScene.cpp
 
 QT += gui widgets svg opengl

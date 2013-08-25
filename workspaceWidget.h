@@ -4,20 +4,24 @@
 #include "includeHeaders.h"
 #include "partsRelated.h"
 
+
+
 class WorkspaceWidget : public QGraphicsView ///public QScrollArea ///IMPLEMENTATION INCOMPLETE
 {
     Q_OBJECT
     //void * app_ptr;
     //QFrame * frameWidget;
     QGraphicsView * graphicsView;
-    QGraphicsScene * graphicsScene;
+    GraphicsScene * graphicsScene;
+    QGraphicsItem * activeEndPointGraphic;
 
-    QPoint * activeEndPoint; //end point which belongs to fragment on line below
-    ModelFragmentWidget * activeFragment;
+    QPointF * activeEndPoint; //end point which belongs to fragment on line below
+    QPointF * lastEventPos;
+    ModelFragment * activeFragment;
     ModelItem * lastUsedPart;
 
     QMenu * contextMenu;
-    QList<ModelFragmentWidget*> * modelFragments;
+    QList<ModelFragment*> * modelFragments;
     QList<ModelItem*> * selection;
     bool mousePress;
     bool ctrlPress;
@@ -28,23 +32,31 @@ public:
     int selectItem(ModelItem* item);
     int deselectItem(ModelItem* item);
 
-    int connectFragments(ModelFragmentWidget * a, ModelFragmentWidget * b, QPoint * aP, QPoint * bP);///MISSING
-    int connectFragments(int index1, int index2, QPoint * aP, QPoint * bP);///MISSING
-    int disconnectFragments(ModelFragmentWidget * a, ModelFragmentWidget * b);///MISSING
-    int disconnectFragments(int index1, int index2);///MISSING
-    int addFragment(ModelFragmentWidget * frag);///INCOMPLETE
-    int removeFragment(ModelFragmentWidget * frag);///INCOMPLETE - HANDLE ACTIVE POINTS
+    int connectFragments(ModelFragment * a, ModelFragment * b, QPointF * aP, QPointF * bP);///MISSING
+    int connectFragments(int index1, int index2, QPointF * aP, QPointF * bP);///MISSING
+    //int disconnectFragments(ModelFragment * a, ModelFragment * b);///MISSING
+    //int disconnectFragments(int index1, int index2);///MISSING
+    int addFragment(ModelFragment * frag);///INCOMPLETE
+    int removeFragment(ModelFragment * frag);///INCOMPLETE - HANDLE ACTIVE POINTS
     int removeFragment(int index);///INCOMPLETE - HANDLE ACTIVE POINTS
-    int updateFragment(ModelFragmentWidget * frag); ///INCOMPLETE - MISSING ERROR HANDLING
+    int updateFragment(ModelFragment * frag); ///INCOMPLETE - MISSING ERROR HANDLING
+    //value of point will be modified to value of endpoint which was found.
+    //if it is too far, function returns NULL and *point remains the same.
+    ModelFragment * findFragmentByApproxPos(QPointF * point);
 
-    ModelFragmentWidget * getActiveFragment() const;
-    int setActiveFragment(ModelFragmentWidget * frag);
+    ModelFragment * getActiveFragment() const;
+    void setActiveFragment(ModelFragment * frag);
 
-    QPoint * getActiveEndPoint() const;
-    int setActiveEndPoint(QPoint * pt);
+    QPointF * getActiveEndPoint() const;
+    int setActiveEndPoint(QPointF * pt);
 
     ModelItem * getLastUsedPart() const;
     int setLastUsedPart (ModelItem * part);
+
+    int setLastEventPos (QPointF point);
+
+    GraphicsScene * getGraphicsScene() const;
+
 protected:
     void contextMenuEvent(QContextMenuEvent * evt);///MISSING
     void mousePressEvent(QMouseEvent * evt) ;///MISSING

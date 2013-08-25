@@ -2,9 +2,12 @@
 #define MATHFUNCTIONS_H
 
 #include "includeHeaders.h"
+#include <cmath>
 
-QPoint * rotatePoint(QPoint * pt);//alloc new, rotate new, change old, delete new
-QPoint * movePoint(QPoint * pt);//alloc new, move new, change old, delete new
+#define PI 3.14159265
+
+void rotatePoint(QPointF * pt, qreal angle);//alloc new, rotate new, change old, delete new
+void movePoint(QPointF * pt);//alloc new, move new, change old, delete new
 //toPolar(qreal & r, qreal & phi, qreal & x, qreal & y)
 //toCartesian(qreal & r, qreal & phi, qreal & x, qreal & y)
 

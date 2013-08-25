@@ -1,7 +1,7 @@
 #include "partsRelated.h"
 #include "application.h"
 #include "database.h"
-
+#include "globalVariables.h"
 
 Application::Application(int argc, char ** argv) : QApplication(argc, argv)
 {
@@ -125,6 +125,10 @@ int Application::setupUI()
 
     QAction * aboutAction = new QAction(*this->getAppData()->getUndoPixmap(),"About", aboutMenu);
     QAction * helpAction = new QAction(*this->getAppData()->getUndoPixmap(),"Help", aboutMenu);
+
+    QAction * endPointToggleAction = new QAction(*this->getAppData()->getOpenFilePixmap(),"Create end point",NULL);
+    endPointToggleAction->setCheckable(true);
+
     this->window->setWindowTitle("R&T Editor");
 
 //other QActions
@@ -243,6 +247,7 @@ int Application::setupUI()
     this->window->addToolBar(this->window->getMainToolBar());
     this->window->getMainToolBar()->addAction(undoAction);
     this->window->getMainToolBar()->addAction(redoAction);
+    this->window->getMainToolBar()->addAction(endPointToggleAction);
 
 
     this->window->setMainStatusBar(new QStatusBar(this->window));
@@ -265,6 +270,8 @@ int Application::setupUI()
 
     this->window->setSideBarWidget(new SideBarWidget(this->getAppData()->getDatabase(),sideBarContextMenu,this->window->centralWidget()));
     this->window->setWorkspaceWidget(new WorkspaceWidget(this->window->getMainContextMenu(),this->window->centralWidget()));
+
+    connect(endPointToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget()->getGraphicsScene(),SLOT(toggleMode()));
 
     this->window->getSideBarWidget()->setMinimumWidth(120);
     layout->addWidget(this->window->getSideBarWidget(),0,0,1,1);
@@ -366,7 +373,16 @@ void Window::keyPressEvent(QKeyEvent * evt)
     /**
       TODO
       */
+
+    app->sendEvent(this->workspace,evt);
 }
+
+/*
+void Window::keyReleaseEvent(QKeyEvent *evt)
+{
+    app->postEvent(this->workspace,evt);
+}
+*/
 
 AppData::AppData()
 {

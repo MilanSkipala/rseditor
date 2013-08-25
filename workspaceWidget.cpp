@@ -5,16 +5,22 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     //this->scale=1;
     this->selection= (new QList<ModelItem*>());
     this->contextMenu = context;
-    this->modelFragments = (new QList<ModelFragmentWidget*>());
-    //this->frameWidget = new QFrame(this,this->windowFlags());
-    this->graphicsScene = new QGraphicsScene(0,0,20,30);
+    this->modelFragments = (new QList<ModelFragment*>());
+    this->graphicsScene = new GraphicsScene(-2000,-1500,4000,3000);
+    //this->setRenderHint(QPainter::Antialiasing);
+    this->setAlignment(Qt::AlignTop);
+    this->setAlignment(Qt::AlignLeft);
+
     this->setScene(this->graphicsScene);
+
     this->mousePress=false;
     this->ctrlPress=false;
     this->lastUsedPart=NULL;
-    this->activeEndPoint = new QPoint(10,15);
+    this->activeEndPoint = new QPointF(000,00);
     this->activeFragment = NULL;
 
+    this->activeEndPointGraphic=NULL;
+    this->setActiveEndPoint(this->activeEndPoint);
 
 
     QPalette pal = this->palette();
@@ -22,11 +28,11 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     this->setPalette(pal);
     this->setAutoFillBackground(true);
 
-    QPolygon poly;
-    poly << QPoint(10,10);
-    poly << QPoint(30,10);
-    poly << QPoint(30,45);
-    poly << QPoint(10,30);
+    QPolygonF poly;
+    poly << QPointF(10,10);
+    poly << QPointF(30,10);
+    poly << QPointF(30,45);
+    poly << QPointF(10,30);
 
 
     QPainterPath * pp1 = new QPainterPath();
@@ -49,25 +55,9 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     QString s1("123");
     QString s2("Part1");
     QString s3("Dilek1");
-    QPoint pt(0,0);
-    QPoint pt2(10,10);
-    QWidget * parentWidg = this;//parent;//(((Application*)(this->app_ptr))->getWindow()->getSideBarWidget());
-    //ModelItem * mi = new ModelItem(&s1,&s2,&s3,&pt,&pt2,90,35,NULL, parentWidg);
-    //ModelItem * mi = new ModelItem(&s1,&s2,&s3,&pt,&pt2,90,35,parentWidg);
-
-    ///wrong
-    //mi->get2DModel()->moveBy(50,50);
-
-    //GraphicsPathItem * gpi = new GraphicsPathItem(*pp1);
-
-    //gpi->setBrush(b);
-    //gpi->setPen(pen);
-
-
-    //this->graphicsScene->addItem(gpi);
-    //this->graphicsScene->addItem(mi->get2DModel());
-
-
+    QPointF pt(0,0);
+    QPointF pt2(10,10);
+    QWidget * parentWidg = this;
 
 }
 
@@ -109,7 +99,7 @@ void WorkspaceWidget::wheelEvent(QWheelEvent *evt)
 {
     QGraphicsView::wheelEvent(evt);
     //this->scale+=(evt->delta())/127;
-    this->scaleView(evt->delta()/63.2);
+    //this->scaleView(evt->delta()/63.2);
 }
 
 
@@ -139,9 +129,32 @@ void WorkspaceWidget::scaleView(qreal factor)
 
 void WorkspaceWidget::keyPressEvent(QKeyEvent *event)
 {
-    QGraphicsView::keyPressEvent(event);
+    //QGraphicsView::keyPressEvent(event);
     if (event->key()==Qt::Key_Control)
         ctrlPress=true;
+
+    if(event->key()==Qt::Key_Space && this->lastUsedPart!=NULL)
+    {
+        GraphicsPathItem * gpi = this->lastUsedPart->get2DModelNoText();
+        QPointF pt;
+        if (this->lastUsedPart->getRadius()<0)
+            pt = QPointF(gpi->scenePos().x()+1,gpi->scenePos().y()+1);
+        else
+            pt = QPointF(gpi->scenePos().x()+gpi->boundingRect().width()-2,gpi->scenePos().y()+gpi->boundingRect().height()-2);
+
+        makeNewItem(*this->lastEventPos,gpi,this->lastUsedPart,this->lastUsedPart, true);
+    }
+    if (event->key()==Qt::Key_Delete)
+    {
+        for (int i = 0; i < this->modelFragments->count(); i++)
+        {
+            for (int j = 0; j < this->modelFragments->at(i)->getFragmentItems()->count(); j++)
+            {
+                if (this->modelFragments->at(i)->getFragmentItems()->at(j)->get2DModelNoText()->isSelected())
+                    this->modelFragments->at(i)->deleteFragmentItem(this->modelFragments->at(i)->getFragmentItems()->at(j));
+            }
+        }
+    }
 }
 void WorkspaceWidget::keyReleaseEvent(QKeyEvent *event)
 {
@@ -168,7 +181,7 @@ int WorkspaceWidget::deselectItem(ModelItem* item)
         return 2;
 }
 
-int WorkspaceWidget::connectFragments(ModelFragmentWidget * a, ModelFragmentWidget * b, QPoint * aP, QPoint * bP)
+int WorkspaceWidget::connectFragments(ModelFragment * a, ModelFragment * b, QPointF * aP, QPointF * bP)
 {
     /**
       TODO
@@ -176,30 +189,30 @@ int WorkspaceWidget::connectFragments(ModelFragmentWidget * a, ModelFragmentWidg
     return 0;
 }
 
-int WorkspaceWidget::connectFragments(int index1, int index2, QPoint * aP, QPoint * bP)
+int WorkspaceWidget::connectFragments(int index1, int index2, QPointF * aP, QPointF * bP)
 {
     /**
       TODO
     */
     return 0;
 }
-
-int WorkspaceWidget::disconnectFragments(ModelFragmentWidget * a, ModelFragmentWidget * b)
+/*
+int WorkspaceWidget::disconnectFragments(ModelFragment * a, ModelFragment * b)
 {
     /**
       TODO
-    */
+    * /
     return 0;
 }
 int WorkspaceWidget::disconnectFragments(int index1, int index2)
 {
     /**
       TODO
-    */
+    * /
     return 0;
 }
-
-int WorkspaceWidget::addFragment(ModelFragmentWidget * frag)
+*/
+int WorkspaceWidget::addFragment(ModelFragment * frag)
 {
     if (frag==NULL)
         return 1;
@@ -218,7 +231,7 @@ int WorkspaceWidget::addFragment(ModelFragmentWidget * frag)
     QList<QGraphicsItem*> list = this->graphicsScene->items(Qt::DescendingOrder);
     return 0;
 }
-int WorkspaceWidget::removeFragment(ModelFragmentWidget * frag)
+int WorkspaceWidget::removeFragment(ModelFragment * frag)
 {
     if (frag==NULL)
         return 1;
@@ -237,7 +250,7 @@ int WorkspaceWidget::removeFragment(int index)
     return 0;
 }
 
-int WorkspaceWidget::updateFragment(ModelFragmentWidget *frag)
+int WorkspaceWidget::updateFragment(ModelFragment *frag)
 {
     for (int i = 0; i < frag->getFragmentItems()->count();i++)
     {
@@ -249,30 +262,71 @@ int WorkspaceWidget::updateFragment(ModelFragmentWidget *frag)
     return 0;
 }
 
-ModelFragmentWidget *WorkspaceWidget::getActiveFragment() const
+ModelFragment *WorkspaceWidget::findFragmentByApproxPos(QPointF *point)
+{
+    ModelFragment * pointer = NULL;
+    QRectF rect(point->x()-5,point->y()-5,10,10);
+    QList<ModelFragment*>::Iterator it = this->modelFragments->begin();
+    while(it!=this->modelFragments->end())
+    {
+        QList<QPointF*>* ptList = (*it)->getEndPoints();
+        QList<QPointF*>::Iterator itPt = ptList->begin();
+        while (itPt!=ptList->end())
+        {
+            if (rect.contains(**itPt))
+            {
+                *point=**itPt;
+                pointer = *it;
+                break;
+            }
+            itPt++;
+
+        }
+        it++;
+    }
+
+    return pointer;
+
+}
+
+ModelFragment *WorkspaceWidget::getActiveFragment() const
 {
     return this->activeFragment;
 }
 
-int WorkspaceWidget::setActiveFragment(ModelFragmentWidget *frag)
+void WorkspaceWidget::setActiveFragment(ModelFragment *frag)
 {
-    if (frag==NULL)
-        return 1;
-
     this->activeFragment=frag;
-    return 0;
 }
 
-QPoint *WorkspaceWidget::getActiveEndPoint() const
+QPointF *WorkspaceWidget::getActiveEndPoint() const
 {
     return this->activeEndPoint;
 }
 
-int WorkspaceWidget::setActiveEndPoint(QPoint *pt)
+int WorkspaceWidget::setActiveEndPoint(QPointF *pt)
 {
     if (pt==NULL)
         return 1;
     this->activeEndPoint=pt;
+
+    if (this->activeEndPointGraphic!=NULL)
+    {
+        this->graphicsScene->removeItem(this->activeEndPointGraphic);
+    }
+    QPainterPath * pp = new QPainterPath();
+    pp->addEllipse(0,0,1,1);
+
+    QGraphicsPathItem * qgpi = new QGraphicsPathItem(*pp);
+    QPen p = qgpi->pen();
+    p.setWidth(8);
+
+    qgpi->setPen(p);
+    qgpi->moveBy(pt->x(),pt->y());
+    this->graphicsScene->addItem(qgpi);
+    this->activeEndPointGraphic=qgpi;
+
+
     return 0;
 }
 
@@ -287,6 +341,17 @@ int WorkspaceWidget::setLastUsedPart(ModelItem *part)
         return 1;
     this->lastUsedPart=part;
     return 0;
+}
+
+int WorkspaceWidget::setLastEventPos(QPointF point)
+{
+    delete this->lastEventPos;
+    this->lastEventPos = new QPointF(point);
+}
+
+GraphicsScene *WorkspaceWidget::getGraphicsScene() const
+{
+    return this->graphicsScene;
 }
 
 

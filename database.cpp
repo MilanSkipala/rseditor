@@ -1,7 +1,10 @@
 #include <QtGlobal>
 #include <cmath>
+#include "mathFunctions.h"
 #include "globalVariables.h"
 #include "database.h"
+#include "itemTypeEnums.h"
+#include "scales.h"
 
 int skip(QString &line, QTextStream &in)
 {
@@ -16,9 +19,6 @@ int skip(QString &line, QTextStream &in)
 
 Database::Database()
 {
-
-    RailItemTypes thisHasntBeenImplementedYet;
-    thisHasntBeenImplementedYet = T1;
 
     this->currentItem=new QString("");
     this->currentProductLine= new QString("");
@@ -75,6 +75,49 @@ Database::Database()
             //get scale
             //line = in.readLine();
             QString scale = line.remove(0,6);
+            ScaleEnum s;
+            if (type)
+            {
+
+                if (scale=="G")
+                    s=SCALE_G;
+                else if (scale=="L")
+                    s=SCALE_L;
+                else if (scale=="O" || scale=="0")
+                    s=SCALE_O;
+                else if (scale=="S")
+                    s=SCALE_S;
+                else if (scale=="OO" || scale=="00")
+                    s=SCALE_OO;
+                else if (scale=="HO" || scale=="H0")
+                    s=SCALE_HO;
+                else if (scale=="TT")
+                    s=SCALE_TT;
+                else if (scale=="N")
+                    s=SCALE_N;
+                else if (scale=="Z")
+                    s=SCALE_Z;
+                else if (scale=="ZZ")
+                    s=SCALE_ZZ;
+                else if (scale=="T")
+                    s=SCALE_T;
+                else
+                    s=SCALE_undef;
+            }
+            else
+            {
+                if (scale=="1:24")
+                    s=SCALE_T;
+                else if (scale=="1:32")
+                    s=SCALE_T;
+                else if (scale=="1:43")
+                    s=SCALE_T;
+                else if (scale=="1:64" || scale=="1:87" || scale=="HO" || scale=="H0")
+                    s=SCALE_HOSLOT;
+                else
+                    s=SCALE_undef;
+
+            }
 
             skip(line,in);
 
@@ -91,7 +134,7 @@ Database::Database()
               -what causes rubbish in the db file?
             */
 
-            ProductLine * productLine = new ProductLine(name,scale, gauge, type);
+            ProductLine * productLine = new ProductLine(name,scale,s, gauge, type);
             this->addProductLine(productLine);
             this->setCurrentProductLine(name);
 
@@ -136,23 +179,51 @@ Database::Database()
             QString nameEn = in.readLine();
             QString nameCs = in.readLine();
 
-            qreal x1, y1, x2, y2;
 
-            for (int i = 0; i < 4; i++)
-            {
-                QString line = in.readLine();
-                line.remove(0,3);
-                if (i==0)
-                    x1 = line.toDouble();
-                else if (i==1)
-                    y1 = line.toDouble();
-                else if (i==2)
-                    x2 = line.toDouble();
-                else if (i==3)
-                    y2 = line.toDouble();
-            }
-            QPoint start = QPoint(x1,y1);
-            QPoint end = QPoint(x2,y2);
+            QString typeStr = in.readLine();
+            typeStr.remove(0,5);
+            ItemType t;
+
+            if (typeStr=="C1")
+                t = C1;
+            else if (typeStr=="E1")
+                t = E1;
+            else if (typeStr=="J1")
+                t = J1;
+            else if (typeStr=="J2")
+                t = J2;
+            else if (typeStr=="J3")
+                t = J3;
+            else if (typeStr=="S1")
+                t = S1;
+            else if (typeStr=="X1")
+                t = X1;
+            else if (typeStr=="T1")
+                t = T1;
+            else if (typeStr=="T2")
+                t = T2;
+            else if (typeStr=="T3")
+                t = T3;
+            else if (typeStr=="T4")
+                t = T4;
+            else if (typeStr=="T5")
+                t = T5;
+            else if (typeStr=="T6")
+                t = T6;
+            else if (typeStr=="T7")
+                t = T7;
+            else if (typeStr=="T8")
+                t = T8;
+            else if (typeStr=="T9")
+                t = T9;
+            else if (typeStr=="T10")
+                t = T10;
+            else if (typeStr=="C2")
+                t = C2;
+            else if (typeStr=="CH")
+                t = CH;
+            else if (typeStr=="X1")
+                t = X1;
 
             QString degree = in.readLine();
             degree.remove(0,7);
@@ -162,13 +233,112 @@ Database::Database()
             radius.remove(0,7);
             qreal rad = radius.toDouble();
 
-            //works just for C1 and C parts
-            qreal xLen = 2*rad*(cos(90-(deg/2)));
-            start = QPoint(-xLen/2,0);
-            end = QPoint(xLen/2,0);
+            QList<QPointF> endPoints;
+            QList<qreal> angles;
 
-            ModelItem * mi = new ModelItem(partNo,nameEn,nameCs,start,end,deg,rad, *this->productLines->find(*this->currentProductLine));//parentWidget??
-            (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+            QPointF pt1;
+            QPointF pt2;
+            QPointF pt3;
+            QPointF pt4;
+            ModelItem * mi = NULL;
+
+            qreal xLen = 0;
+            qreal yHeight = 0;
+
+            //more endpoints have to be generated with generateQPointFList(n);
+            switch(t)
+            {
+            case C1:
+
+                //rad+=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
+
+                xLen = 2*rad*(cos((90-(deg/2.0))*PI/180));
+                pt1 = QPointF(-xLen/2,-0*(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0);
+                pt2 = QPointF(xLen/2,-0*(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0);
+
+                endPoints.push_back(pt1);
+                endPoints.push_back(pt2);
+
+                //rad-=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
+
+                yHeight = (rad-rad*(sin((90-(deg/2.0))*PI/180)));
+
+                yHeight -= (*this->productLines->find(*this->currentProductLine))->getScaleEnum()/2.0;
+
+                angles.push_back(-deg/2.0);
+                angles.push_back(deg/2.0);
+
+                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                break;
+            case S1:
+            case E1:
+
+                pt1 = QPointF(-rad,0);
+                pt2 = QPointF(rad,0);
+
+                endPoints.push_back(pt1);
+                angles.push_back(0);
+
+                if (t==S1)
+                {
+                    endPoints.push_back(pt2);
+                    angles.push_back(0);
+                }
+
+                //ModelItem * mi = new ModelItem(partNo,nameEn,nameCs,start,end,deg,rad, rad, 0, *this->productLines->find(*this->currentProductLine));//parentWidget??
+                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+
+                break;
+            case J1:
+                xLen = 2*rad*(cos((90-(deg/2.0))*PI/180));
+                pt1 = QPointF(-xLen/2,0);
+                pt2 = QPointF(xLen/2+xLen/10,0);
+                pt3 = QPointF(xLen/2,0);
+
+                rotatePoint(&pt2,-deg);
+                pt2.setY(-8-2);
+
+                endPoints.push_back(pt1);
+                endPoints.push_back(pt2);
+                endPoints.push_back(pt3);
+
+                yHeight = (rad-rad*(sin((90-(deg/2.0))*PI/180)));
+
+
+                angles.push_back(-deg/2.0);
+                angles.push_back(-deg/2.0);
+                angles.push_back(deg/2.0);
+
+                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+
+                break;
+            case J2:
+                break;
+            case J3:
+                break;
+            case X1:
+                break;
+            case C2:
+                break;
+            case CH:
+                break;
+            case T1:
+                break;
+                ///TO DO: T2-T10
+
+            }
+
+            if (deg!=0)
+            {
+
+            }
+            else
+            {
+
+            }
 
         }
 
@@ -210,7 +380,7 @@ Database::Database()
         while(itemIter!=(*iter)->getItemsList()->end())
         {
 
-            (*itemIter)->get2DModel()->moveBy(0,i*(64)+(*itemIter)->getRadius()); //WARNING - 64 is the variable sizeOfItem
+            (*itemIter)->get2DModel()->moveBy(0,i*64+(*itemIter)->getItemHeight()); //WARNING - 64 is the variable sizeOfItem
             scene->addItem((*itemIter)->get2DModel());
             itemIter++;
             i++;

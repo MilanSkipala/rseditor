@@ -9,9 +9,7 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
       -custom context menu
       -remove "context" param from constructor
     */
-    //context->setParent(this);
     this->contextMenu=context;
-    //this->frameWidget = new QFrame(this,this->windowFlags());
     this->layout = new QGridLayout(this);
 
     this->prodLineCBox=new QComboBox(this);
@@ -20,7 +18,6 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
     this->graphicsView->setAlignment(Qt::AlignTop);
 
     this->currentScene=NULL;
-    //this->graphicsScenesMap = new QMap<QString,QGraphicsScene*>();
 
     this->addButton = new QPushButton("Add",this);
     this->delButton = new QPushButton("Del",this);
@@ -30,6 +27,10 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
     this->addButton->setMaximumWidth(50);
     this->delButton->setMaximumWidth(50);
 
+    /**
+      TODO
+      -following should result in better looking SBW
+    */
     this->prodLineCBox->setMinimumWidth(80);
     this->prodLineCBox->setMaximumWidth(210);
     this->setMaximumWidth(215);
@@ -48,11 +49,8 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
     this->layout->addWidget(this->delButton,1,1);//,0,2,1,1);
     this->layout->addWidget(this->graphicsView,2,0,3,2);
 
-    //this->frameWidget->setFixedWidth(120);
-
     this->setLayout(this->layout);
 
-    //this->setWidget(this->frameWidget);
     this->setGeometry(0,0,150,420);
 
     connect(this->addButton, SIGNAL(clicked()),this,SLOT(showAddDialog()));
@@ -177,7 +175,6 @@ QDialog * SideBarWidget::initAddDialog()
 
     this->listWidget = new QListWidget(d);
 
-    //IS THIS ENOUGH FOR MULTI-SELECTION?
     listWidget->setSelectionMode(QAbstractItemView::MultiSelection);
 
     QMap<QString,ProductLine*>::Iterator iter = this->database->getDatabaseIterator();
@@ -213,7 +210,6 @@ QDialog * SideBarWidget::initDelDialog()
 
     this->listWidgetD = new QListWidget(d);
 
-    //IS THIS ENOUGH FOR MULTI-SELECTION?
     listWidgetD->setSelectionMode(QAbstractItemView::MultiSelection);
 
     QMap<QString,ProductLine*>::Iterator iter = this->database->getDatabaseIterator();

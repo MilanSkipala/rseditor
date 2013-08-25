@@ -12,15 +12,13 @@ class Database;
 class SideBarWidget : public QFrame//QWidget
 {
     Q_OBJECT
-    //void * app_ptr;
-    //QFrame * frameWidget;
+
     QGridLayout * layout;
     QPushButton * addButton;
     QPushButton * delButton;
     QComboBox * prodLineCBox;
     Database * database;
     QMenu * contextMenu;
-    //QMap <QString,QGraphicsScene*> * graphicsScenesMap; //one scene per ProductLines loaded in ComboBox
     QGraphicsScene * currentScene;
     QGraphicsView * graphicsView;
 
