@@ -294,11 +294,11 @@ Database::Database()
             case J1:
                 xLen = 2*rad*(cos((90-(deg/2.0))*PI/180));
                 pt1 = QPointF(-xLen/2,0);
-                pt2 = QPointF(xLen/2+xLen/10,0);
+                pt2 = QPointF(xLen/2,0);
                 pt3 = QPointF(xLen/2,0);
 
                 rotatePoint(&pt2,-deg);
-                pt2.setY(-8-2);
+                //pt2.setY(-8-2);
 
                 endPoints.push_back(pt1);
                 endPoints.push_back(pt2);
@@ -311,7 +311,7 @@ Database::Database()
                 angles.push_back(-deg/2.0);
                 angles.push_back(deg/2.0);
 
-                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-8, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                 (*this->productLines->find(*this->currentProductLine))->addItem(mi);
 
                 break;
@@ -380,7 +380,7 @@ Database::Database()
         while(itemIter!=(*iter)->getItemsList()->end())
         {
 
-            (*itemIter)->get2DModel()->moveBy(0,i*64+(*itemIter)->getItemHeight()); //WARNING - 64 is the variable sizeOfItem
+            (*itemIter)->get2DModel()->moveBy(0,i*96+(*itemIter)->getItemHeight()); //WARNING - 64 is the variable sizeOfItem
             scene->addItem((*itemIter)->get2DModel());
             itemIter++;
             i++;

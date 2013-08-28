@@ -32,7 +32,7 @@ ModelItem::ModelItem(QString & partNumber, QString & partNameEn, QString & partN
 
     this->radius=turnRadius;
     this->itemWidth=width;
-    this->itemHeight=height+=prodLine->getScaleEnum()/2.0;
+    this->itemHeight=height;//+=prodLine->getScaleEnum();
 
 
     this->availableCount=10;
@@ -175,15 +175,15 @@ int ModelItem::generate2DModel(bool text)
     if (this->radius>0)
     {
 
-        rectOuter = QRectF(this->radius+gauge/2.0,-this->radius-gauge/2.0,-this->radius*2-gauge,this->radius*2+gauge);
+        rectOuter = QRectF(this->radius+gauge/1.0,-this->radius-gauge/1.0,-this->radius*2-2*gauge,this->radius*2+2*gauge);
         //rectOuter = QRectF(-this->radius-gauge/2.0,-this->radius-gauge/2.0,this->radius*2+gauge,this->radius*2+gauge);
-        rectInner = QRectF(-this->radius+gauge/2.0,-this->radius+gauge/2.0,this->radius*2-gauge,this->radius*2-gauge);
+        rectInner = QRectF(-this->radius+gauge/1.0,-this->radius+gauge/1.0,this->radius*2-2*gauge,this->radius*2-2*gauge);
     }
     else
     {
-        rectOuter = QRectF(this->radius-gauge/2.0,-this->radius+gauge/2.0,-this->radius*2+gauge,this->radius*2-gauge);
+        rectOuter = QRectF(this->radius-gauge/1.0,-this->radius+gauge/1.0,-this->radius*2+2*gauge,this->radius*2-2*gauge);
         //rectOuter = QRectF(-this->radius+gauge/2.0,-this->radius+gauge/2.0,this->radius*2-gauge,this->radius*2-gauge);
-        rectInner = QRectF(-this->radius-gauge/2.0,-this->radius-gauge/2.0,this->radius*2+gauge,this->radius*2+gauge);
+        rectInner = QRectF(-this->radius-gauge/1.0,-this->radius-gauge/1.0,this->radius*2+2*gauge,this->radius*2+2*gauge);
     }
 
 
@@ -192,7 +192,7 @@ int ModelItem::generate2DModel(bool text)
     qreal startAngle = 90-(this->getTurnDegree());
 
     QFont font;
-    font.setPixelSize(10);
+    font.setPixelSize(20);
     QString label(*this->partNo);
     label.append(" ");
     QString s("");
@@ -209,7 +209,7 @@ int ModelItem::generate2DModel(bool text)
 
 
     if (text)// && this->getTurnDegree()!=0)
-        itemPath.addText(-(6*this->partNo->length())/2,24-this->radius,font,*this->partNo);
+        itemPath.addText(-(12*this->partNo->length())/2,24-this->radius,font,*this->partNo);
     //else
         //itemPath.addText(-(6*this->partNo->length())/2,24,font,*this->partNo);
 
@@ -232,13 +232,13 @@ int ModelItem::generate2DModel(bool text)
         if (this->radius>0)
         {
             QPolygonF line;
-            line << QPointF(-this->radius,-this->radius-gauge/2.0);
-            line << QPointF(this->radius,-this->radius-gauge/2.0);
-            line << QPointF(this->radius,-this->radius+gauge/2.0);
+            line << QPointF(-this->radius,-this->radius-gauge/1.0);
+            line << QPointF(this->radius,-this->radius-gauge/1.0);
+            line << QPointF(this->radius,-this->radius+gauge/1.0);
             QPolygonF line2;
-            line2 << QPointF(-this->radius,-this->radius-gauge/2.0);
-            line2 << QPointF(-this->radius,-this->radius+gauge/2.0);
-            line2 << QPointF(this->radius,-this->radius+gauge/2.0);
+            line2 << QPointF(-this->radius,-this->radius-gauge/1.0);
+            line2 << QPointF(-this->radius,-this->radius+gauge/1.0);
+            line2 << QPointF(this->radius,-this->radius+gauge/1.0);
             itemPath.addPolygon(line);
             itemPath.addPolygon(line2);
             itemPath.translate(0,gauge);
@@ -246,11 +246,11 @@ int ModelItem::generate2DModel(bool text)
         else
         {
             QPolygonF line;
-            line << QPointF(-this->radius,-this->radius+gauge/2.0);
-            line << QPointF(this->radius,-this->radius+gauge/2.0);
+            line << QPointF(-this->radius,-this->radius+gauge/1.0);
+            line << QPointF(this->radius,-this->radius+gauge/1.0);
             QPolygonF line2;
-            line2 << QPointF(-this->radius,-this->radius-gauge/2.0);
-            line2 << QPointF(this->radius,-this->radius-gauge/2.0);
+            line2 << QPointF(-this->radius,-this->radius-gauge/1.0);
+            line2 << QPointF(this->radius,-this->radius-gauge/1.0);
             itemPath.addPolygon(line);
             itemPath.addPolygon(line2);
             itemPath.translate(0,-gauge);
@@ -259,26 +259,90 @@ int ModelItem::generate2DModel(bool text)
     }
     else if (this->t==J1)
     {
+        /* radius > 0
+                     __====1
+             _____---_____
+            0_____---_____ 2
+
+            radius < 0
+
+            1===___
+              _____---_____
+             0_____---_____ 2
+
+
+             angles > 0 => right turnout thus:
+                0--1 is straight
+                2--1 is straight
+             else left turnout
+        */
+
+
         itemPath.arcMoveTo(rectOuter,startAngle);
         itemPath.arcTo(rectOuter,startAngle,2*this->getTurnDegree());
-        itemPath.arcMoveTo(rectInner,startAngle);
         itemPath.arcTo(rectInner,startAngle,2*this->getTurnDegree());
-        itemPath.translate(0,this->radius);
-
-        QPolygonF line;
-        line << QPointF(this->endPoints->at(0)->x(),this->endPoints->at(0)->y()-1);
-        line << QPointF(this->endPoints->at(1)->x(),this->endPoints->at(1)->y()-1);
-
-        QPolygonF line2;
-        line2 << QPointF(this->endPoints->at(0)->x(),this->endPoints->at(0)->y()+8-1);
-        line2 << QPointF(this->endPoints->at(1)->x(),this->endPoints->at(1)->y()+8-1);
 
 
+        itemPath.closeSubpath();
+        if (this->parentWidget!=NULL)
+            itemPath.translate(0,-this->itemHeight+gauge);
+        else
+            itemPath.translate(0,-this->itemHeight);
+        //if angle[2] == 0
 
-        itemPath.addPolygon(line);
-        itemPath.addPolygon(line2);
-        itemPath.translate(0,-this->radius);
-        //visually close the path
+
+
+        if (this->radius>0 )
+        {
+            QPolygonF line;
+            line << QPointF(this->endPoints->at(0)->x(),-radius+this->endPoints->at(0)->y()-gauge);
+            line << QPointF(this->endPoints->at(1)->x(),-radius+this->endPoints->at(1)->y()-gauge);
+            line << QPointF(this->endPoints->at(1)->x(),-radius+this->endPoints->at(1)->y()+gauge);
+
+            QPolygonF line2;
+            line2 << QPointF(this->endPoints->at(0)->x(),-radius+this->endPoints->at(0)->y()+gauge);
+            line2 << QPointF(this->endPoints->at(1)->x(),-radius+this->endPoints->at(1)->y()+gauge);
+
+            itemPath.addPolygon(line);
+            itemPath.addPolygon(line2);
+
+            itemPath.translate(0,(this->itemHeight-gauge));
+
+        }
+        else
+        {
+
+
+            (this->endPoints->at(1))->setX((-1)*(this->endPoints->at(1)->x()));
+            (this->endPoints->at(1))->setY((-1)*(this->endPoints->at(1)->y()));
+
+            (*(++this->endPointsAngles->begin()))-=180;
+            (*(++this->endPointsAngles->begin()))*=-1;
+            //(*(++(++this->endPointsAngles->begin())))-=180;
+
+
+
+            QPolygonF line;
+            line << QPointF(this->endPoints->at(2)->x(),-this->radius+this->endPoints->at(2)->y()-this->itemHeight-(this->itemHeight-gauge));
+            line << QPointF(this->endPoints->at(1)->x(),-this->radius+this->endPoints->at(1)->y()-this->itemHeight-(this->itemHeight-gauge));
+            line << QPointF(this->endPoints->at(1)->x(),-this->radius+this->endPoints->at(1)->y()-this->itemHeight-(this->itemHeight-gauge)+2*gauge);
+
+            QPolygonF line2;
+            line2 << QPointF(this->endPoints->at(2)->x(),-this->radius+this->endPoints->at(2)->y()-this->itemHeight-(this->itemHeight-gauge)+2*gauge);
+            line2 << QPointF(this->endPoints->at(1)->x(),-this->radius+this->endPoints->at(1)->y()-this->itemHeight-(this->itemHeight-gauge)+2*gauge);
+
+            //itemPath.translate(0,-(this->itemHeight-gauge));
+            itemPath.addPolygon(line);
+            itemPath.addPolygon(line2);
+            //itemPath.translate(0,(this->itemHeight-gauge));
+            itemPath.translate(0,(this->itemHeight-gauge));
+
+        }
+
+
+    }
+    if (this->t==J2)
+    {
 
     }
 
@@ -304,6 +368,8 @@ int ModelItem::generate2DModel(bool text)
     {
         this->contourModelNoText=gpi;
     }
+
+
     return 0;
 }
 
@@ -369,22 +435,30 @@ void ModelItem::rotate(qreal angle)
         iter++;
     }
 
+    int index = 0;
+    while (this->getEndPoint(index)!=NULL)
+    {
+        rotatePoint(this->getEndPoint(index),angle);
+        index++;
+    }
+    /*
     QPointF p1(*this->getEndPoint(0));
     QPointF p2(*this->getEndPoint());
+    */
     QPointF s(this->itemWidth,this->itemHeight);
-
+/*
     rotatePoint(&p1,angle);
-    rotatePoint(&p2,angle);
+    rotatePoint(&p2,angle);*/
     rotatePoint(&s,angle);
 
     this->itemHeight=s.y();
     this->itemWidth=s.x();
-
+/*
     QList<QPointF*>::Iterator iter2 = this->endPoints->begin();
     **iter2=p1;
     iter2++;
     **iter2=p2;
-
+*/
 
     return;
 
@@ -457,6 +531,7 @@ void GraphicsPathItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             newPoint->setX(newPoint->x()-diff.x());
             newPoint->setY(newPoint->y()-diff.y());
             app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPoint);
+
             //app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint());
         }
     }
@@ -486,14 +561,14 @@ void GraphicsPathItem::changeCountPath(unsigned int count, qreal radius)
     GraphicsPathItem * newItem = new GraphicsPathItem(this->parentItem,this);
 
     QPainterPath pp;
-    QRectF r(-50+5,5+38-(radius),15,13);
+    QRectF r(-50+5,5+38-(0*radius),15,13);
     pp.addRect(r);
     QFont font;
     font.setPixelSize(10);
     QString text;
     text.setNum(count);
 
-    pp.addText(-49+5,5+49-(radius),font,text);
+    pp.addText(-49+5,5+49-(0*radius),font,text);
     QBrush b = newItem->brush();
     if (count==1)
         b.setColor(Qt::yellow);
@@ -509,6 +584,7 @@ void GraphicsPathItem::changeCountPath(unsigned int count, qreal radius)
         delete this->restrictedCountPath;
 
     this->restrictedCountPath=newItem;
+    //this->restrictedCountPath->setVisible(false);
 
 }
 
@@ -587,31 +663,50 @@ void makeNewItem(QPointF eventPos, GraphicsPathItem * gpi, ModelItem * parentIte
             ModelItem * it = NULL;
 
             QList<qreal> * endDegrees = new QList<qreal>();
+            QList<QPointF> * endPoints = new QList<QPointF>();
+            int index = 0;
+
+            while(toMake->getEndPoint(index)!=NULL)
+            {
+                if (eventPos.x()<gpi->pos().x()/2)
+                    endDegrees->push_back(-toMake->getTurnDegree(index));
+                else
+                    endDegrees->push_back(toMake->getTurnDegree(index));
+                endPoints->push_back(*toMake->getEndPoint(index));
+                index++;
+            }
+
+
             if (eventPos.x()<gpi->pos().x()/2)
             {
                 if (app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL)
-                    endDegrees->push_front(180-toMake->getTurnDegree(0));
+                    //endDegrees->push_front(toMake->getTurnDegree(0));
                     //endDegrees->push_front(180-toMake->getTurnDegree(0));
-                else
+                    *(endDegrees->begin())=180-toMake->getTurnDegree(0);
+
+                /*else
                     endDegrees->push_front(-toMake->getTurnDegree(0));
 
                 endDegrees->push_back(-toMake->getTurnDegree());
+                */
             }
             else
             {
                 if (app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL)
-                    endDegrees->push_front(180+toMake->getTurnDegree(0));
+                    //endDegrees->push_front(toMake->getTurnDegree(0));
                     //endDegrees->push_front(180+toMake->getTurnDegree(0));
+                    *(endDegrees->begin())=180+toMake->getTurnDegree(0);
+                /*
                 else
                     endDegrees->push_front(toMake->getTurnDegree(0));
-                endDegrees->push_back(toMake->getTurnDegree());
+                endDegrees->push_back(toMake->getTurnDegree());*/
             }
 
-            QList<QPointF> * endPoints = new QList<QPointF>();
 
+/*
             endPoints->push_back(*toMake->getEndPoint(0));
             endPoints->push_back(*toMake->getEndPoint());
-
+*/
             if (app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL)
             {
 
@@ -896,18 +991,17 @@ ModelFragment::ModelFragment(ModelItem *item)
       TODO
       -switch type
      */
-    //this->endPointsGraphics=new QList<QGraphicsPathItem*>();
+
     this->endPointsGraphics=new QList<QGraphicsEllipseItem*>();
-    this->addEndPoint(item->getEndPoint(0));
-    this->addEndPoint(item->getEndPoint());
-    //this->endPoints->push_back(item->getEndPoint(0));
-    //this->endPoints->push_back(item->getEndPoint());
-
     this->endPointsAngles = new QList<qreal>();
-    this->endPointsAngles->push_back(item->getTurnDegree(0));
-    this->endPointsAngles->push_back(item->getTurnDegree(1));
 
-
+    int index = 0;
+    while (item->getEndPoint(index)!=NULL)
+    {
+        this->addEndPoint(item->getEndPoint(index));
+        this->endPointsAngles->push_back(item->getTurnDegree(index));
+        index++;
+    }
 
     this->fragmentItems = new QList <ModelItem*>();
     this->lines = new QList <ProductLine*>();
@@ -991,6 +1085,13 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
     if (item == NULL)
         return 1;
 
+    /*
+     *How it works:
+     *-item is inserted at point's value
+     *-item's endPoint[0] is used to connect with the rest of the fragment
+     *-item's endPoint[1] is used as a new active point
+     *-all remaining endPoints are added as fragments' endpoints
+    */
 
 
     item->setParentFragment(this);
@@ -1013,8 +1114,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
     //get frag. rotation and then remove it from the list - won't be used
     qreal currentFragmentRotation = this->endPointsAngles->at(i);
     //this->endPointsAngles->removeAt(i);
-    this->removeEndPoint(*iter);
-
+    !!this->removeEndPoint(*iter);
 
 
     //get start-point-rotation of inserted item and subtract it from currentFragmentRotation
@@ -1027,17 +1127,12 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
 
 
 
+
     *point-=*item->getEndPoint(0);
     qreal dx = point->x();
     qreal dy = point->y();
 
-
-    item->get2DModelNoText()->moveBy(dx,dy);
-    item->getEndPoint(0)->setX(item->getEndPoint(0)->x()+dx);
-    item->getEndPoint(0)->setY(item->getEndPoint(0)->y()+dy);
-    item->getEndPoint(1)->setX(item->getEndPoint(1)->x()+dx);
-    item->getEndPoint(1)->setY(item->getEndPoint(1)->y()+dy);
-
+    item->moveBy(dx,dy);
 
     qreal newFragmentRotation = item->getTurnDegree();
 
@@ -1049,9 +1144,9 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
 
 
     QPointF * newPt = new QPointF(item->getEndPoint()->x(),item->getEndPoint()->y());
-    //*newPt += *point;
 
     bool connected = false;
+
     //check if fragment endPoints can be connected
     for (int i = 0; i < this->endPoints->count(); i++)
     {
@@ -1084,7 +1179,19 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
     else
     {
         app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPt);
-        this->addEndPoint(newPt);
+        //!mistake is here, because you cant insert pointer which isnt part of any modelItem - you have to find the point of same value;
+        //!this->addEndPoint(newPt);
+
+        this->addEndPoint(item->getEndPoint());
+
+        //add all remaining endPoint's
+        int index = 2;
+        while (item->getEndPoint(index)!=NULL)
+        {
+            this->addEndPoint(item->getEndPoint(index));
+            this->endPointsAngles->push_back(item->getTurnDegree(index));
+            index++;
+        }
     }
 
 
@@ -1230,28 +1337,17 @@ void ModelFragment::moveBy(qreal dx, qreal dy)
 {
     for (int i = 0; i < this->fragmentItems->count(); i++)
     {
+
         this->fragmentItems->at(i)->moveBy(dx,dy);
+
     }
 
-    //move all endpoints of this fragment
-    QList<QPointF*>::Iterator it = this->endPoints->begin();
+    //move all endpoints' graphics of this fragment
     QList<QGraphicsEllipseItem*>::Iterator it2 = this->endPointsGraphics->begin();
-    while(it!=this->endPoints->end())
+    while(it2!=this->endPointsGraphics->end())
     {
-        if (*it!=app->getWindow()->getWorkspaceWidget()->getActiveEndPoint())
-        {
-            ///(*it)->setX((*it)->x()+dx);
-            ///(*it)->setY((*it)->y()+dy);
-
-
-        }
-        else
-        {
-
-        }
         (*it2)->moveBy(dx,dy);
         it2++;
-        it++;
     }
 
 }
@@ -1260,9 +1356,6 @@ int ModelFragment::addEndPoint(QPointF *pt)
 {
     if (pt==NULL)
         return 1;
-
-    QPainterPath * pp = new QPainterPath();
-    //pp->addEllipse;
 
     QGraphicsEllipseItem * qgpi = new QGraphicsEllipseItem(pt->x(),pt->y(),1,1);
 

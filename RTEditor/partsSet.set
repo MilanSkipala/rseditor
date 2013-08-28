@@ -1,0 +1,106 @@
+[[[Märklin]]]
+Type=1
+Scale=H0
+Gauge=Standard
+
+[[Track]]
+[24130]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=380
+
+[24230]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=437
+
+[24xyz]
+NameEn=Turnout Manual C Track
+NameCs=vyhýbka manuální profil C
+Type=J1
+Degree=-30
+Radius=437
+
+[24712]
+NameEn=Turnout Manual C Track
+NameCs=vyhýbka manuální profil C
+Type=J1
+Degree=-12.1
+Radius=1146
+
+[24712]
+NameEn=Turnout Manual C Track
+NameCs=vyhýbka manuální profil C
+Type=C1
+Degree=12.1
+Radius=1146
+
+[24612]
+NameEn=Turnout Manual C Track
+NameCs=vyhýbka manuální profil C
+Type=J1
+Degree=-24.3
+Radius=437
+
+[24612AA]
+NameEn=Turnout Manual C Track
+NameCs=vyhýbka manuální profil C
+Type=C1
+Degree=24.3
+Radius=437
+
+[24064]
+NameEn=Straight 6.4 cm
+NameCs=rovinka 6.4 cm
+Type=C1
+Degree=22.5
+Radius=640
+
+
+[20360]
+NameEn=Straight 36cm track
+NameCs=rovinka 36cm
+Type=S1
+Degree=0
+Radius=36
+
+
+[[Accesories]]
+//pro železnici prázdné, pro autodráhu svodidla/èervenobílá krajnice
+[xyz]
+NameEn
+NameCs
+AssociatedPartNo=20224
+
+[[Other models]]
+[abc]
+NameEn
+NameCs
+AssociatedModelData=txt file?
+
+
+[[[SCX Digital]]]
+Type=0
+Scale=1:24
+Gauge=Standard
+
+
+[AB226]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=38
+
+
+
+
+
+
+
+
+

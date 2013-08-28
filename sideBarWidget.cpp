@@ -32,11 +32,11 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
       -following should result in better looking SBW
     */
     this->prodLineCBox->setMinimumWidth(80);
-    this->prodLineCBox->setMaximumWidth(210);
-    this->setMaximumWidth(215);
+    this->prodLineCBox->setMaximumWidth(190);
+    //this->setMaximumWidth(315);
     this->layout->setSizeConstraint(QLayout::SetMaximumSize);
 
-
+    this->graphicsView->setMinimumWidth(130);
 
 
     QPalette pal = this->palette();
@@ -51,7 +51,7 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
 
     this->setLayout(this->layout);
 
-    this->setGeometry(0,0,150,420);
+    this->setGeometry(0,0,215,420);
 
     connect(this->addButton, SIGNAL(clicked()),this,SLOT(showAddDialog()));
     connect( this->delButton, SIGNAL(clicked()),this,SLOT(showDelDialog()));
@@ -93,6 +93,12 @@ void SideBarWidget::paintEvent(QPaintEvent *evt)
         this->currentScene = this->database->findSceneByString(text);
     this->graphicsView->setScene(this->currentScene);
 
+
+    QTransform tr(this->graphicsView->transform());
+    if (tr.m11()!=0.5 && this->currentScene!=NULL)
+        tr.scale(0.5,0.5);
+    this->graphicsView->setTransform(tr);//scale(0.5,0.5);
+//*/
 
 
 }
