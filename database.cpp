@@ -194,6 +194,10 @@ Database::Database()
                 t = J2;
             else if (typeStr=="J3")
                 t = J3;
+            else if (typeStr=="J4")
+                t = J4;
+            else if (typeStr=="J5")
+                t = J5;
             else if (typeStr=="S1")
                 t = S1;
             else if (typeStr=="X1")
@@ -225,13 +229,38 @@ Database::Database()
             else if (typeStr=="X1")
                 t = X1;
 
-            QString degree = in.readLine();
-            degree.remove(0,7);
-            qreal deg = degree.toDouble();
+            QString angle1;
+            qreal ang1 = 0;
+
+            if (t!=J5)
+            {
+                angle1 = in.readLine();
+                angle1.remove(0,7);
+                ang1 = angle1.toDouble();
+            }
+
+
+            qreal ang2 = 0;
+
+            if (t==J1 || t==J2 || t==J3)
+            {
+                QString angle2 = in.readLine();
+                angle2.remove(0,7);
+                ang2 = angle2.toDouble();
+            }
+
 
             QString radius = in.readLine();
             radius.remove(0,7);
             qreal rad = radius.toDouble();
+            qreal rad2 = 0;
+
+            if (((t==J1 || t==J2) && ang2!=0) || t==J5)
+            {
+                QString radius2 = in.readLine();
+                radius2.remove(0,8);
+                rad2 = radius2.toDouble();
+            }
 
             QList<QPointF> endPoints;
             QList<qreal> angles;
@@ -245,6 +274,9 @@ Database::Database()
             qreal xLen = 0;
             qreal yHeight = 0;
 
+            qreal xCoord = 0;
+            qreal xLen2 = 0;
+
             //more endpoints have to be generated with generateQPointFList(n);
             switch(t)
             {
@@ -252,7 +284,7 @@ Database::Database()
 
                 //rad+=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
 
-                xLen = 2*rad*(cos((90-(deg/2.0))*PI/180));
+                xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
                 pt1 = QPointF(-xLen/2,-0*(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0);
                 pt2 = QPointF(xLen/2,-0*(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0);
 
@@ -261,12 +293,12 @@ Database::Database()
 
                 //rad-=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
 
-                yHeight = (rad-rad*(sin((90-(deg/2.0))*PI/180)));
+                yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
 
                 yHeight -= (*this->productLines->find(*this->currentProductLine))->getScaleEnum()/2.0;
 
-                angles.push_back(-deg/2.0);
-                angles.push_back(deg/2.0);
+                angles.push_back(-ang1/2.0);
+                angles.push_back(ang1/2.0);
 
                 mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                 (*this->productLines->find(*this->currentProductLine))->addItem(mi);
@@ -292,34 +324,153 @@ Database::Database()
 
                 break;
             case J1:
-                xLen = 2*rad*(cos((90-(deg/2.0))*PI/180));
+            case J2:
+                xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
                 pt1 = QPointF(-xLen/2,0);
                 pt2 = QPointF(xLen/2,0);
                 pt3 = QPointF(xLen/2,0);
 
-                rotatePoint(&pt2,-deg);
-                //pt2.setY(-8-2);
+                //if ang2==0 => classic turnout
+                //else - two-radius turnout
+                if (t==J1)
+                {
+                    if (ang2==0)
+                        rotatePoint(&pt2,-ang1);
+                    else
+                    {
+                        //compute xLen for larger radius
+                        //+=
+                        xCoord = 0;
+                        xLen2 = 2*rad2*(cos((90-(ang2/2.0))*PI/180));
+                        xCoord = xLen2/2.0 + (xLen2-xLen)/2.0;
+                        xCoord += xLen/2.0;
+                        pt2 = QPointF(xCoord,-cos((90-ang2/2.0)*PI/180)*xLen2);
+                        rotatePoint(&pt2,ang1/2.0);
+                        pt2.setX(xCoord - xLen/2.0);
+                        pt2.setY(-pt2.y());
+                        cout << "hello";
+                    }
+                }
+                else
+                {
+                    if (ang2==0)
+                        rotatePoint(&pt2,180+ang1);
+                    else
+                    {
+                    }
+                }
+
 
                 endPoints.push_back(pt1);
                 endPoints.push_back(pt2);
                 endPoints.push_back(pt3);
 
-                yHeight = (rad-rad*(sin((90-(deg/2.0))*PI/180)));
+                yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
 
 
-                angles.push_back(-deg/2.0);
-                angles.push_back(-deg/2.0);
-                angles.push_back(deg/2.0);
+                angles.push_back(-ang1/2.0);
+
+
+                if (ang2==0)
+                    angles.push_back(-ang1/2.0);
+                else
+                    angles.push_back(ang2-ang1/2.0);
+
+                angles.push_back(ang1/2.0);
+
+
+                //mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-8, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum()/2.0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                mi->setSecondRadius(rad2);
+
+                break;
+            case J3:
+                xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                pt1 = QPointF(-xLen/2,0);
+                pt2 = QPointF(xLen/2,0);
+                pt3 = QPointF(xLen/2,0);
+                pt4 = QPointF(xLen/2,0);
+
+                rotatePoint(&pt3,-ang1);
+                rotatePoint(&pt4,ang2);
+
+
+                endPoints.push_back(pt1);
+                endPoints.push_back(pt2);
+                endPoints.push_back(pt3);
+                endPoints.push_back(pt4);
+
+                yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
+
+
+                angles.push_back(0);
+                angles.push_back(0);
+                angles.push_back(-ang1);
+                angles.push_back(ang2);
+
+
 
                 mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-8, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                 (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                break;
 
-                break;
-            case J2:
-                break;
-            case J3:
-                break;
+            //case J5:
+            //    break;
+            case J4:
             case X1:
+
+                if (t==J4)
+                    xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                else
+                    xLen = 2*rad;
+
+                pt1 = QPointF(-xLen/2.0,0);
+                pt2 = QPointF(xLen/2.0,0);
+                pt3 = QPointF(-xLen/2.0,0);
+                pt4 = QPointF(xLen/2.0,0);
+                rotatePoint(&pt3,-ang1);
+                rotatePoint(&pt4,-ang1);
+
+                endPoints.push_back(pt1);
+                endPoints.push_back(pt2);
+                endPoints.push_back(pt3);
+                endPoints.push_back(pt4);
+
+                angles.push_back(0);
+                angles.push_back(0);
+                angles.push_back(ang1);
+                angles.push_back(-ang1);
+
+                /**
+    *fix yHeight
+*/
+                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                break;
+
+            case J5:
+                pt1 = QPointF(-rad,rad2);
+                pt2 = QPointF(rad,rad2);
+                pt3 = QPointF(-rad,-rad2);
+                pt4 = QPointF(rad,-rad2);
+
+                endPoints.push_back(pt1);
+                endPoints.push_back(pt2);
+                endPoints.push_back(pt3);
+                endPoints.push_back(pt4);
+
+                angles.push_back(0);
+                angles.push_back(0);
+                angles.push_back(0);
+                angles.push_back(0);
+
+
+                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, rad2, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+
+                mi->setSecondRadius(rad2);
+
                 break;
             case C2:
                 break;
@@ -331,7 +482,7 @@ Database::Database()
 
             }
 
-            if (deg!=0)
+            if (ang1!=0)
             {
 
             }
@@ -380,7 +531,7 @@ Database::Database()
         while(itemIter!=(*iter)->getItemsList()->end())
         {
 
-            (*itemIter)->get2DModel()->moveBy(0,i*96+(*itemIter)->getItemHeight()); //WARNING - 64 is the variable sizeOfItem
+            (*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
             scene->addItem((*itemIter)->get2DModel());
             itemIter++;
             i++;

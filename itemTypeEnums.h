@@ -5,9 +5,11 @@
 enum ItemType {
                     C1, //curve
                     E1, //track end
-                    J1, //Y junction
-                    J2, //junction with 3 ends
-                    J3, //X junction
+                    J1, //Y right turnout
+                    J2, //Y left turnout
+                    J3, //junction with 3 ends
+                    J4, //X junction
+                    J5, // |X| junction
                     S1, //straight
                     X1, //crossing
                     T1, //turntable

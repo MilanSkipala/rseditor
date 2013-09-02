@@ -79,6 +79,7 @@ class ModelItem
     QList <qreal> * endPointsAngles;
 
     qreal radius;
+    qreal radius2; //is used only for curved turnouts (t==J1 || J2)
     qreal itemWidth;
     qreal itemHeight;
 
@@ -132,9 +133,15 @@ public:
 
 
     void moveBy(qreal dx, qreal dy);
+    qreal getSecondRadius() const;
+    void setSecondRadius(qreal rad2);
+
     //check if it is necessary
     void moveLabel(QPointF * point);
 
+
+
+    void setEndPointAngle(int index, qreal angle);
 
 
 protected:

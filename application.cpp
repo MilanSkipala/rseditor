@@ -274,6 +274,7 @@ int Application::setupUI()
     connect(endPointToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget()->getGraphicsScene(),SLOT(toggleMode()));
 
     this->window->getSideBarWidget()->setMinimumWidth(150);
+
     layout->addWidget(this->window->getSideBarWidget(),0,0,1,1);
     layout->addWidget(this->window->getWorkspaceWidget(),0,1,1,2);
     this->window->setLayout(layout);
