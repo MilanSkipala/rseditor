@@ -77,7 +77,7 @@ public:
 
     void contextMenuEvent(QContextMenuEvent * evt);
     void keyPressEvent(QKeyEvent * evt); ///MISSING
-    //void keyReleaseEvent(QKeyEvent * evt);
+    void keyReleaseEvent(QKeyEvent * evt);
 
 };
 

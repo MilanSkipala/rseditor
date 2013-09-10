@@ -17,6 +17,21 @@ int skip(QString &line, QTextStream &in)
 
 }
 
+QList<QPointF>generatePointCopies(int n, QPointF & original)
+{
+    QList<QPointF> list;
+    if (n<0)
+        return list;
+
+    for (int i = 0; i < n; i++)
+    {
+        list.push_back(original);
+    }
+
+
+    return list;
+}
+
 Database::Database()
 {
 
@@ -194,6 +209,10 @@ Database::Database()
                 t = J2;
             else if (typeStr=="J3")
                 t = J3;
+            else if (typeStr=="J4")
+                t = J4;
+            else if (typeStr=="J5")
+                t = J5;
             else if (typeStr=="S1")
                 t = S1;
             else if (typeStr=="X1")
@@ -224,18 +243,50 @@ Database::Database()
                 t = CH;
             else if (typeStr=="X1")
                 t = X1;
+            else if (typeStr=="HS")
+                t = HS;
+            else if (typeStr=="HE")
+                t = HE;
 
-            QString degree = in.readLine();
-            degree.remove(0,7);
-            qreal deg = degree.toDouble();
+            QString angle1;
+            qreal ang1 = 0;
+
+            if (t!=J5 && !(t>=T1 && t<=T10))
+            {
+                angle1 = in.readLine();
+                angle1.remove(0,7);
+                ang1 = angle1.toDouble();
+            }
+
+
+            qreal ang2 = 0;
+
+            if (t==J1 || t==J2 || t==J3)
+            {
+                QString angle2 = in.readLine();
+                angle2.remove(0,7);
+                ang2 = angle2.toDouble();
+            }
+
 
             QString radius = in.readLine();
             radius.remove(0,7);
             qreal rad = radius.toDouble();
+            qreal rad2 = 0;
+
+            if (((t==J1 || t==J2) && ang2!=0) || t==J5)
+            {
+                QString radius2 = in.readLine();
+                radius2.remove(0,8);
+                rad2 = radius2.toDouble();
+            }
 
             QList<QPointF> endPoints;
+            QList<QPointF>::Iterator endPointsIterator;
             QList<qreal> angles;
 
+
+            //more endpoints have to be generated with generateQPointFList(n);
             QPointF pt1;
             QPointF pt2;
             QPointF pt3;
@@ -245,100 +296,523 @@ Database::Database()
             qreal xLen = 0;
             qreal yHeight = 0;
 
-            //more endpoints have to be generated with generateQPointFList(n);
-            switch(t)
+            qreal xCoord = 0;
+            qreal xLen2 = 0;
+            qreal trackGaugeHalf = (*this->productLines->find(*this->currentProductLine))->getScaleEnum()/2.0;
+
+
+            if ((*this->productLines->find(*this->currentProductLine))->getType())
             {
-            case C1:
 
-                //rad+=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
-
-                xLen = 2*rad*(cos((90-(deg/2.0))*PI/180));
-                pt1 = QPointF(-xLen/2,-0*(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0);
-                pt2 = QPointF(xLen/2,-0*(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0);
-
-                endPoints.push_back(pt1);
-                endPoints.push_back(pt2);
-
-                //rad-=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
-
-                yHeight = (rad-rad*(sin((90-(deg/2.0))*PI/180)));
-
-                yHeight -= (*this->productLines->find(*this->currentProductLine))->getScaleEnum()/2.0;
-
-                angles.push_back(-deg/2.0);
-                angles.push_back(deg/2.0);
-
-                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                (*this->productLines->find(*this->currentProductLine))->addItem(mi);
-                break;
-            case S1:
-            case E1:
-
-                pt1 = QPointF(-rad,0);
-                pt2 = QPointF(rad,0);
-
-                endPoints.push_back(pt1);
-                angles.push_back(0);
-
-                if (t==S1)
+                switch(t)
                 {
+                case C1:
+
+                    //rad+=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
+
+                    xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                    pt1 = QPointF(-xLen/2,0);
+                    pt2 = QPointF(xLen/2,0);
+
+                    endPoints.push_back(pt1);
                     endPoints.push_back(pt2);
+
+                    //rad-=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
+
+                    yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
+
+                    yHeight -= trackGaugeHalf;
+
+                    angles.push_back(-ang1/2.0);
+                    angles.push_back(ang1/2.0);
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    break;
+                case S1:
+                case E1:
+
+                    pt1 = QPointF(-rad,0);
+                    pt2 = QPointF(rad,0);
+
+                    endPoints.push_back(pt1);
                     angles.push_back(0);
+
+                    if (t==S1)
+                    {
+                        endPoints.push_back(pt2);
+                        angles.push_back(0);
+                    }
+
+                    //ModelItem * mi = new ModelItem(partNo,nameEn,nameCs,start,end,deg,rad, rad, 0, *this->productLines->find(*this->currentProductLine));//parentWidget??
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+
+                    break;
+                case J1:
+                case J2:
+                    xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                    pt1 = QPointF(-xLen/2,0);
+                    pt2 = QPointF(xLen/2,0);
+                    pt3 = QPointF(xLen/2,0);
+
+                    //if ang2==0 => classic turnout
+                    //else - two-radius turnout
+                    if (t==J1)
+                    {
+                        if (ang2==0)
+                            rotatePoint(&pt2,-ang1);
+                        else
+                        {
+                            //compute xLen for larger radius
+                            //+=
+                            xCoord = 0;
+                            xLen2 = 2*rad2*(cos((90-(ang2/2.0))*PI/180));
+                            xCoord = xLen2/2.0 + (xLen2-xLen)/2.0;
+                            xCoord += xLen/2.0;
+                            pt2 = QPointF(xCoord,-cos((90-ang2/2.0)*PI/180)*xLen2);
+                            rotatePoint(&pt2,ang1/2.0);
+                            pt2.setX(xCoord - xLen/2.0);
+                            pt2.setY(-pt2.y());
+                            cout << "hello";
+                        }
+                    }
+                    else
+                    {
+                        if (ang2==0)
+                            rotatePoint(&pt2,180+ang1);
+                        else
+                        {
+                        }
+                    }
+
+
+                    endPoints.push_back(pt1);
+                    endPoints.push_back(pt2);
+                    endPoints.push_back(pt3);
+
+                    yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
+
+
+                    angles.push_back(-ang1/2.0);
+
+
+                    if (ang2==0)
+                        angles.push_back(-ang1/2.0);
+                    else
+                        angles.push_back(ang2-ang1/2.0);
+
+                    angles.push_back(ang1/2.0);
+
+
+                    //mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-8, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-trackGaugeHalf, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    mi->setSecondRadius(rad2);
+
+                    break;
+                case J3:
+                    xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                    pt1 = QPointF(-xLen/2,0);
+                    pt2 = QPointF(xLen/2,0);
+                    pt3 = QPointF(xLen/2,0);
+                    pt4 = QPointF(xLen/2,0);
+
+                    rotatePoint(&pt3,-ang1);
+                    rotatePoint(&pt4,ang2);
+
+
+                    endPoints.push_back(pt1);
+                    endPoints.push_back(pt2);
+                    endPoints.push_back(pt3);
+                    endPoints.push_back(pt4);
+
+                    yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
+
+
+                    angles.push_back(0);
+                    angles.push_back(0);
+                    angles.push_back(-ang1);
+                    angles.push_back(ang2);
+
+
+
+                    //! -8 is correct? Check all scales
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-8, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    break;
+
+                //case J5:
+                //    break;
+                case J4:
+                case X1:
+
+                    if (t==J4)
+                        xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                    else
+                        xLen = 2*rad;
+
+                    pt1 = QPointF(-xLen/2.0,0);
+                    pt2 = QPointF(xLen/2.0,0);
+                    pt3 = QPointF(-xLen/2.0,0);
+                    pt4 = QPointF(xLen/2.0,0);
+                    rotatePoint(&pt3,-ang1);
+                    rotatePoint(&pt4,-ang1);
+
+                    endPoints.push_back(pt1);
+                    endPoints.push_back(pt2);
+                    endPoints.push_back(pt3);
+                    endPoints.push_back(pt4);
+
+                    angles.push_back(0);
+                    angles.push_back(0);
+                    angles.push_back(ang1);
+                    angles.push_back(-ang1);
+
+                    /**
+        *fix yHeight
+    */
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    break;
+
+                case J5:
+                    pt1 = QPointF(-rad,rad2);
+                    pt2 = QPointF(rad,rad2);
+                    pt3 = QPointF(-rad,-rad2);
+                    pt4 = QPointF(rad,-rad2);
+
+                    endPoints.push_back(pt1);
+                    endPoints.push_back(pt2);
+                    endPoints.push_back(pt3);
+                    endPoints.push_back(pt4);
+
+                    angles.push_back(0);
+                    angles.push_back(0);
+                    angles.push_back(0);
+                    angles.push_back(0);
+
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, rad2, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+
+                    mi->setSecondRadius(rad2);
+
+                    break;
+                case C2:
+                    break;
+                case CH:
+                    break;
+                case T1:
+                    //!caution: xLen variable is used for storing the perimeter of circle
+                    //!caution: xLen2 variable is used for storing angle of current rotation
+                    //get perimeter
+                    xLen = 2*PI*rad;
+                    xLen2 = 0;
+                    //get the first point in circle
+                    pt1 = (QPointF(rad,0));
+                    //get the maximal number of rail exits which can be placed around the circle
+                    endPoints.append(generatePointCopies((xLen/(2*trackGaugeHalf+4)),pt1));
+
+                    //!caution: xLen is now used for storing the step of rotation
+                    xLen = 360/(xLen/(2*trackGaugeHalf+4));
+
+                    endPointsIterator = endPoints.begin();
+                    while (endPointsIterator!=endPoints.end())
+                    {
+
+                        rotatePoint(&(*endPointsIterator),xLen2);
+                        angles.push_back(xLen2);
+                        xLen2+=xLen;
+                        endPointsIterator++;
+                    }
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, 2*rad, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+
+
+                    break;
+                case T2:
+                case T3:
+                case T4:
+                case T5:
+                case T6:
+                case T7:
+                case T8:
+                case T9:
+                case T10:
+
+                    pt1 = QPointF(-rad,0);
+                    pt2 = QPointF(rad,0);
+                    xLen = 2*rad;
+                    yHeight = (t-8)*(2*trackGaugeHalf+4);
+                    endPoints.append(generatePointCopies((t-8),pt1));
+                    endPoints.append(generatePointCopies((t-8),pt2));
+                    //!caution: xLen2 is used as "index"
+                    xLen2 = 0;
+
+                    endPointsIterator=endPoints.begin();
+                    while(xLen2!=(t-8))
+                    {
+                        movePoint(&*endPointsIterator,0,xLen2*(2*trackGaugeHalf+4));
+                        angles.push_back(0);
+                        endPointsIterator++;
+                        xLen2+=1;
+                    }
+                    xLen2=0;
+                    while (endPointsIterator!=endPoints.end())
+                    {
+                        movePoint(&*endPointsIterator,0,xLen2*(2*trackGaugeHalf+4));
+                        angles.push_back(0);
+                        endPointsIterator++;
+                        xLen2+=1;
+                    }
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+
+
+                    break;
+                default:
+                    //show error dialog
+                    break;
+
+
+
                 }
 
-                //ModelItem * mi = new ModelItem(partNo,nameEn,nameCs,start,end,deg,rad, rad, 0, *this->productLines->find(*this->currentProductLine));//parentWidget??
-                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+            }
+            else
+            {
+                /*
 
-                break;
-            case J1:
-                xLen = 2*rad*(cos((90-(deg/2.0))*PI/180));
-                pt1 = QPointF(-xLen/2,0);
-                pt2 = QPointF(xLen/2,0);
-                pt3 = QPointF(xLen/2,0);
+                !pokud autodráha, uprav i proměnnou rad kvůli počítání bodů
+    */
+                trackGaugeHalf = abs(rad-rad2)/2.0;
 
-                rotatePoint(&pt2,-deg);
-                //pt2.setY(-8-2);
+                SlotTrackInfo * sti = new SlotTrackInfo();//memory leak in assignment? (later - not at this line)
+                QString radius2Str = in.readLine();
+                radius2Str.remove(0,8);
+                QString fstLaneStr = in.readLine();
+                fstLaneStr.remove(0,10);
+                QString laneDistStr = in.readLine();
+                laneDistStr.remove(0,9);
+                QString laneDistEndStr=laneDistStr;
+                if (t==HS || t==HE)
+                {
+                    laneDistEndStr = in.readLine();
+                    laneDistEndStr.remove(0,12);
+                }
 
-                endPoints.push_back(pt1);
-                endPoints.push_back(pt2);
-                endPoints.push_back(pt3);
+                QString numOfLanesStr = in.readLine();
+                numOfLanesStr.remove(0,9);
 
-                yHeight = (rad-rad*(sin((90-(deg/2.0))*PI/180)));
+                qreal rad2sl = radius2Str.toDouble();
+                qreal fstLane = fstLaneStr.toDouble();
+                qreal laneDist = laneDistStr.toDouble();
+                qreal laneDistEnd = laneDistEndStr.toDouble();
+                qreal numOfLanes = numOfLanesStr.toDouble();
 
 
-                angles.push_back(-deg/2.0);
-                angles.push_back(-deg/2.0);
-                angles.push_back(deg/2.0);
+                sti->fstLaneDist=fstLane;
+                sti->lanesGauge=laneDist;
+                sti->lanesGaugeEnd=laneDistEnd;
+                sti->numberOfLanes=numOfLanes;
 
-                mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-8, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                (*this->productLines->find(*this->currentProductLine))->addItem(mi);
 
-                break;
-            case J2:
-                break;
-            case J3:
-                break;
-            case X1:
-                break;
-            case C2:
-                break;
-            case CH:
-                break;
-            case T1:
-                break;
-                ///TO DO: T2-T10
+                if (t==C1 || t==C2)
+                {
+                    //compute dimensions of item
+                    qreal itemRadius = rad;
+                    xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                    yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
+                    yHeight -= trackGaugeHalf;
 
+                    rad -=sti->fstLaneDist;
+                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    {
+                        qreal ptX;// = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                        qreal ptY;
+                        qreal phi = ang1/2.0;
+
+                        toCartesian(rad,phi,ptX,ptY);
+
+                        //ptY = i*sti->lanesGauge+sti->fstLaneDist;
+
+                        endPoints.push_back(QPointF(-ptX,-ptY+itemRadius));
+                        //endPoints.push_back(QPointF(-ptX,ptY));
+                        endPoints.push_back(QPointF(ptX,-ptY+itemRadius));
+                        //endPoints.push_back(QPointF(ptX,ptY));
+
+                        angles.push_back(-ang1/2.0);
+                        angles.push_back(ang1/2.0);
+                        rad-=sti->lanesGauge;
+                    }
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                }
+                else if (t==S1)
+                {
+                    ///
+                    qreal itemRadius = rad;
+                    xLen = 2*rad2sl;
+                    yHeight = rad;
+                    yHeight -= trackGaugeHalf;
+
+                    rad -=sti->fstLaneDist;
+                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    {
+                        qreal ptX = rad2sl;
+                        qreal ptY = rad;
+
+
+                        endPoints.push_back(QPointF(-ptX,-ptY+itemRadius));
+                        //endPoints.push_back(QPointF(-ptX,ptY));
+                        endPoints.push_back(QPointF(ptX,-ptY+itemRadius));
+                        //endPoints.push_back(QPointF(ptX,ptY));
+
+                        angles.push_back(-ang1/2.0);
+                        angles.push_back(ang1/2.0);
+                        rad-=sti->lanesGauge;
+                    }
+                    ///
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                }
+                else if (t==CH)
+                {}
+                else if (t==J1)
+                {}
+                else if (t==J2)
+                {}
+                //else if (t==C2)
+                //{}
+                else if (t==X1)
+                {
+                    ///
+                    qreal itemRadius = rad;
+                    xLen = 2*rad2sl;
+                    yHeight = rad;
+                    yHeight -= trackGaugeHalf;
+
+                    rad -=sti->fstLaneDist;
+                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    {
+                        qreal ptX = rad2sl;
+                        qreal ptY = rad;
+
+
+                        endPoints.push_back(QPointF(-ptX,-ptY+itemRadius));
+                        endPoints.push_back(QPointF(ptX,-ptY+itemRadius));
+                        angles.push_back(0);
+                        angles.push_back(0);
+                        rad-=sti->lanesGauge;
+                    }
+                    rad = sti->fstLaneDist;
+                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    {
+                        qreal ptX = rad;
+                        qreal ptY = rad2sl;
+                        endPoints.push_back(QPointF(ptX,-sti->fstLaneDist));
+                        endPoints.push_back(QPointF(ptX,2*itemRadius-sti->fstLaneDist));
+                        angles.push_back(-90);
+                        angles.push_back(90);
+                        rad+=sti->lanesGauge;
+                    }
+
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                }
+                else if (t==X2)
+                {}
+                else if (t==X3)
+                {}
+                else if (t==HS)
+                {
+                    qreal itemRadius = rad;
+
+                    xLen = 2*rad2sl;
+                    yHeight = rad;
+                    yHeight -= trackGaugeHalf;
+
+                    rad -=sti->fstLaneDist;
+                    qreal ptY2 = rad-(sti->lanesGauge-sti->lanesGaugeEnd);
+                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    {
+                        qreal ptX = rad2sl;
+                        qreal ptY = rad;
+
+
+                        endPoints.push_back(QPointF(-ptX,-ptY+itemRadius));
+                        //endPoints.push_back(QPointF(-ptX,ptY));
+                        endPoints.push_back(QPointF(ptX,-ptY2+itemRadius));
+                        //endPoints.push_back(QPointF(ptX,ptY));
+
+                        angles.push_back(-ang1/2.0);
+                        angles.push_back(ang1/2.0);
+                        rad-=sti->lanesGauge;
+                        ptY2-=sti->lanesGaugeEnd;
+                    }
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                }
+                else if (t==HE)
+                {
+                    qreal itemRadius = rad;
+
+                    xLen = 2*rad2sl;
+                    yHeight = rad;
+                    yHeight -= trackGaugeHalf;
+
+                    rad -=sti->fstLaneDist;
+                    qreal ptY2 = rad-(sti->lanesGauge-sti->lanesGaugeEnd);
+                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    {
+                        qreal ptX = rad2sl;
+                        qreal ptY = rad;
+
+
+                        endPoints.push_back(QPointF(-ptX,-ptY2+itemRadius));
+                        //endPoints.push_back(QPointF(-ptX,ptY));
+                        endPoints.push_back(QPointF(ptX,-ptY+itemRadius));
+                        //endPoints.push_back(QPointF(ptX,ptY));
+
+                        angles.push_back(-ang1/2.0);
+                        angles.push_back(ang1/2.0);
+                        rad-=sti->lanesGauge;
+                        ptY2-=sti->lanesGaugeEnd;
+                    }
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                }
+                else if (t==H1)
+                {}
+                else if (t==SC)
+                {}
+                else if (t==JM)
+                {}
+                else
+                {/*show error dialog*/}
+
+
+                mi->setSecondRadius(rad2sl);
+                mi->setSlotTrackInfo(sti);
             }
 
-            if (deg!=0)
+            /*
+            if (ang1!=0)
             {
 
             }
             else
             {
 
-            }
+            }*/
 
         }
 
@@ -380,7 +854,7 @@ Database::Database()
         while(itemIter!=(*iter)->getItemsList()->end())
         {
 
-            (*itemIter)->get2DModel()->moveBy(0,i*96+(*itemIter)->getItemHeight()); //WARNING - 64 is the variable sizeOfItem
+            (*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
             scene->addItem((*itemIter)->get2DModel());
             itemIter++;
             i++;

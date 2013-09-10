@@ -55,6 +55,24 @@ private slots:
 
 class ModelFragment;
 
+class SlotTrackInfo
+{
+    /*
+     *slot track ModelItem logic:
+     *-ModelItem.radius stores outer radius of model piece (including "road")
+     *-ModelItem.radius2 stores inner radius of model piece (including "road")
+     *-ModelItem.t stores type of part - curve/straight/curved crossing/straight crossing/straight chicane/some other special types (see ITEMTYPEENUMS_H)
+     *-SlotTrackInfo stores numberOfLanes (1/2/4/6/8/whatever number should work with large enough radius)
+     *-SlotTrackInfo.lanesGauge stores the distance between every two lanes, doesn't affect anything if numberOfLanes==1
+     *-SlotTrackInfo.fstLaneDist stores the distance of the first "outer-most" lane
+*/
+public:
+    unsigned int numberOfLanes;
+    qreal lanesGauge;
+    qreal lanesGaugeEnd; //is used only for SB part - straight bottleneck
+    qreal fstLaneDist;
+};
+
 class ModelItem
 {
     QString * partNo;
@@ -79,8 +97,11 @@ class ModelItem
     QList <qreal> * endPointsAngles;
 
     qreal radius;
+    qreal radius2; //is used only for curved turnouts (t==J1 || J2)
     qreal itemWidth;
     qreal itemHeight;
+
+    SlotTrackInfo * slotTrackInfo;
 
 public:
     //use this constructor only if QWidget isn't inherited
@@ -129,12 +150,22 @@ public:
     int setParentFragment(ModelFragment * frag);
 
     void rotate (qreal angle);
+    void rotate (qreal angle,QPointF * center);
 
 
     void moveBy(qreal dx, qreal dy);
-    //check if it is necessary
-    void moveLabel(QPointF * point);
+    qreal getSecondRadius() const;
+    void setSecondRadius(qreal rad2);
 
+
+    //check if it is necessary
+    //void moveLabel(QPointF * point);
+
+
+
+    void setEndPointAngle(int index, qreal angle);
+    SlotTrackInfo * getSlotTrackInfo();
+    int setSlotTrackInfo(SlotTrackInfo * s);
 
 
 protected:
@@ -149,7 +180,7 @@ class ProductLine
     QString * scale;
     ScaleEnum scaleE;
     QString * gauge;
-    bool type; //true=rail false=slotcar track
+    bool type; //true=rail false=slot track
     qreal maxTrackRadius;
     qreal minTrackRadius;
 
@@ -224,6 +255,7 @@ public:
     int initInfoDialog();
 
     void moveBy(qreal dx, qreal dy);
+    void rotate(qreal angle, QPointF * center);
 
 };
 

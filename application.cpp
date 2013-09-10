@@ -5,8 +5,6 @@
 
 Application::Application(int argc, char ** argv) : QApplication(argc, argv)
 {
-    //check whether the app is running on Linux or Win system
-
     //check if the .conf files in directory /etc/RTEditor/ or .\\data\\ exist - if not, exit app
 
     QString userPref = ""; // load data from userpref.conf
@@ -129,6 +127,9 @@ int Application::setupUI()
     QAction * endPointToggleAction = new QAction(*this->getAppData()->getOpenFilePixmap(),"Create end point",NULL);
     endPointToggleAction->setCheckable(true);
 
+    QAction * rotationToggleAction = new QAction(*this->getAppData()->getOpenFilePixmap(),"Rotate tool",NULL);
+    rotationToggleAction->setCheckable(true);
+
     this->window->setWindowTitle("R&T Editor");
 
 //other QActions
@@ -248,6 +249,7 @@ int Application::setupUI()
     this->window->getMainToolBar()->addAction(undoAction);
     this->window->getMainToolBar()->addAction(redoAction);
     this->window->getMainToolBar()->addAction(endPointToggleAction);
+    this->window->getMainToolBar()->addAction(rotationToggleAction);
 
 
     this->window->setMainStatusBar(new QStatusBar(this->window));
@@ -272,8 +274,10 @@ int Application::setupUI()
     this->window->setWorkspaceWidget(new WorkspaceWidget(this->window->getMainContextMenu(),this->window->centralWidget()));
 
     connect(endPointToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget()->getGraphicsScene(),SLOT(toggleMode()));
+    connect(rotationToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(toggleRotationMode()));
 
     this->window->getSideBarWidget()->setMinimumWidth(150);
+
     layout->addWidget(this->window->getSideBarWidget(),0,0,1,1);
     layout->addWidget(this->window->getWorkspaceWidget(),0,1,1,2);
     this->window->setLayout(layout);
@@ -374,6 +378,11 @@ void Window::keyPressEvent(QKeyEvent * evt)
       TODO
       */
 
+    app->sendEvent(this->workspace,evt);
+}
+
+void Window::keyReleaseEvent(QKeyEvent *evt)
+{
     app->sendEvent(this->workspace,evt);
 }
 

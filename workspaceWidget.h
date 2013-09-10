@@ -26,6 +26,8 @@ class WorkspaceWidget : public QGraphicsView ///public QScrollArea ///IMPLEMENTA
     bool mousePress;
     bool ctrlPress;
 
+    bool rotationMode;
+
 public:
     WorkspaceWidget(QMenu* context, QWidget * parent = 0);
 
@@ -53,9 +55,14 @@ public:
     ModelItem * getLastUsedPart() const;
     int setLastUsedPart (ModelItem * part);
 
-    int setLastEventPos (QPointF point);
+    void setLastEventPos (QPointF point);
 
     GraphicsScene * getGraphicsScene() const;
+
+    bool getRotationMode();
+
+public slots:
+    void toggleRotationMode();
 
 protected:
     void contextMenuEvent(QContextMenuEvent * evt);///MISSING

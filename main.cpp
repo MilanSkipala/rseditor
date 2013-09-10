@@ -16,6 +16,12 @@ int main(int argc, char ** argv)
     application.getWindow()->show();
     return application.exec();
 }
+/*
+ *DB - instead of "-8" and "(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum()" use another variable
+ *?generateModel? - text positioning should be dependent on ScaleEnum
+ *itemHeight of X1 parts, left x1 doesn't work ok
+*/
+
 
 /**
   turnout:

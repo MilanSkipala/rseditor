@@ -33,10 +33,10 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
     */
     this->prodLineCBox->setMinimumWidth(80);
     this->prodLineCBox->setMaximumWidth(190);
-    //this->setMaximumWidth(315);
     this->layout->setSizeConstraint(QLayout::SetMaximumSize);
 
     this->graphicsView->setMinimumWidth(130);
+
 
 
     QPalette pal = this->palette();

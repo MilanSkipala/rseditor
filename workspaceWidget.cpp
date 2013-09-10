@@ -1,7 +1,9 @@
 #include "workspaceWidget.h"
+#include "globalVariables.h"
 
 WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsView(parent)//QScrollArea(parent)
 {
+    this->rotationMode=false;
     //this->scale=1;
     this->selection= (new QList<ModelItem*>());
     this->contextMenu = context;
@@ -16,7 +18,7 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     this->mousePress=false;
     this->ctrlPress=false;
     this->lastUsedPart=NULL;
-    this->activeEndPoint = new QPointF(000,00);
+    this->activeEndPoint = new QPointF(0,0);
     this->activeFragment = NULL;
 
     this->activeEndPointGraphic=NULL;
@@ -51,13 +53,6 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     QPen pen(Qt::green);
     pen.setWidth(5);
 
-
-    QString s1("123");
-    QString s2("Part1");
-    QString s3("Dilek1");
-    QPointF pt(0,0);
-    QPointF pt2(10,10);
-    QWidget * parentWidg = this;
 
 }
 
@@ -97,7 +92,13 @@ void WorkspaceWidget::mouseReleaseEvent(QMouseEvent *evt)
 }
 void WorkspaceWidget::wheelEvent(QWheelEvent *evt)
 {
-    QGraphicsView::wheelEvent(evt);
+
+    if (evt->delta()>0 && this->ctrlPress)
+        this->scaleView(1.05);
+    else if (evt->delta()<0 && this->ctrlPress)
+        this->scaleView(0.95);
+    else
+        QGraphicsView::wheelEvent(evt);
     //this->scale+=(evt->delta())/127;
     //this->scaleView(evt->delta()/63.2);
 }
@@ -144,6 +145,7 @@ void WorkspaceWidget::keyPressEvent(QKeyEvent *event)
 
         makeNewItem(*this->lastEventPos,gpi,this->lastUsedPart,this->lastUsedPart, true);
     }
+
     if (event->key()==Qt::Key_Delete)
     {
         for (int i = 0; i < this->modelFragments->count(); i++)
@@ -155,12 +157,41 @@ void WorkspaceWidget::keyPressEvent(QKeyEvent *event)
             }
         }
     }
+    if (event->key()==Qt::Key_R)
+    {
+        QList<QAction*>list = app->getWindow()->getMainToolBar()->actions();
+        QList<QAction*>::Iterator iter = list.begin();
+        while (iter!=list.end())
+        {
+            if ((*iter)->toolTip()=="Rotate tool")
+            {
+                if((*iter)->isChecked())
+                    (*iter)->setChecked(false);
+                else
+                    (*iter)->setChecked(true);
+            }
+
+            iter++;
+        }
+        this->toggleRotationMode();
+    }
+
+
+
+
+
+
+    if (event->key()==Qt::Key_Plus)
+        scaleView(1.05);
+    if (event->key()==Qt::Key_Minus)
+        scaleView(0.95);
 }
 void WorkspaceWidget::keyReleaseEvent(QKeyEvent *event)
 {
-    QGraphicsView::keyReleaseEvent(event);
+
     if (event->key()==Qt::Key_Control)
         ctrlPress=false;
+    //QGraphicsView::keyReleaseEvent(event);
 }
 
 int WorkspaceWidget::selectItem(ModelItem* item)
@@ -199,14 +230,14 @@ int WorkspaceWidget::connectFragments(int index1, int index2, QPointF * aP, QPoi
 /*
 int WorkspaceWidget::disconnectFragments(ModelFragment * a, ModelFragment * b)
 {
-    /**
+    / **
       TODO
     * /
     return 0;
 }
 int WorkspaceWidget::disconnectFragments(int index1, int index2)
 {
-    /**
+    / **
       TODO
     * /
     return 0;
@@ -343,7 +374,7 @@ int WorkspaceWidget::setLastUsedPart(ModelItem *part)
     return 0;
 }
 
-int WorkspaceWidget::setLastEventPos(QPointF point)
+void WorkspaceWidget::setLastEventPos(QPointF point)
 {
     delete this->lastEventPos;
     this->lastEventPos = new QPointF(point);
@@ -352,6 +383,19 @@ int WorkspaceWidget::setLastEventPos(QPointF point)
 GraphicsScene *WorkspaceWidget::getGraphicsScene() const
 {
     return this->graphicsScene;
+}
+
+bool WorkspaceWidget::getRotationMode()
+{
+    return this->rotationMode;
+}
+
+void WorkspaceWidget::toggleRotationMode()
+{
+    if (this->rotationMode==true)
+        this->rotationMode=false;
+    else
+        this->rotationMode=true;
 }
 
 
