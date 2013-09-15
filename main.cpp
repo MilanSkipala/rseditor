@@ -19,8 +19,14 @@ int main(int argc, char ** argv)
 /*
  *DB - instead of "-8" and "(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum()" use another variable
  *?generateModel? - text positioning should be dependent on ScaleEnum
+<<<<<<< HEAD
  *
 */
+=======
+ *itemHeight of X1 parts, left x1 doesn't work ok
+*/
+
+>>>>>>> b474af74a316b130c2b8f8ff9b3a29c8e817ea4f
 
 /*
  * "how to make height profile":
