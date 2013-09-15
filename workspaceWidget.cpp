@@ -4,6 +4,8 @@
 WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsView(parent)//QScrollArea(parent)
 {
     this->rotationMode=false;
+    this->heightProfileMode=false;
+
     //this->scale=1;
     this->selection= (new QList<ModelItem*>());
     this->contextMenu = context;
@@ -20,6 +22,7 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     this->lastUsedPart=NULL;
     this->activeEndPoint = new QPointF(0,0);
     this->activeFragment = NULL;
+    this->activeItem = NULL;
 
     this->activeEndPointGraphic=NULL;
     this->setActiveEndPoint(this->activeEndPoint);
@@ -320,6 +323,37 @@ ModelFragment *WorkspaceWidget::findFragmentByApproxPos(QPointF *point)
 
 }
 
+ModelItem *WorkspaceWidget::findItemByApproxPos(QPointF *point)
+{
+    ModelItem * pointer = NULL;
+    QRectF rect(point->x()-5,point->y()-5,10,10);
+    QList<ModelFragment*>::Iterator fragIter = this->modelFragments->begin();
+    while (fragIter!=this->modelFragments->end() && pointer==NULL)
+    {
+        QList<ModelItem*>::Iterator itemIter = (*fragIter)->getFragmentItems()->begin();
+        while (itemIter!=(*fragIter)->getFragmentItems()->end()  && pointer==NULL)
+        {
+            int index = 0;
+            while ((*itemIter)->getEndPoint(index)!=NULL && pointer==NULL)
+            {
+                if (rect.contains(*(*itemIter)->getEndPoint(index)))
+                {
+                    *point=*(*itemIter)->getEndPoint(index);
+                    pointer = (*itemIter);
+                }
+                index++;
+            }
+
+            itemIter++;
+        }
+        fragIter++;
+    }
+    return pointer;
+
+}
+
+
+
 ModelFragment *WorkspaceWidget::getActiveFragment() const
 {
     return this->activeFragment;
@@ -328,6 +362,18 @@ ModelFragment *WorkspaceWidget::getActiveFragment() const
 void WorkspaceWidget::setActiveFragment(ModelFragment *frag)
 {
     this->activeFragment=frag;
+}
+
+ModelItem *WorkspaceWidget::getActiveItem() const
+{
+    return this->activeItem;
+}
+
+void WorkspaceWidget::setActiveItem(ModelItem *item)
+{
+    this->activeItem=item;
+    if (item!=NULL)
+        item->updateEndPointsHeightGraphics();
 }
 
 QPointF *WorkspaceWidget::getActiveEndPoint() const
@@ -356,6 +402,8 @@ int WorkspaceWidget::setActiveEndPoint(QPointF *pt)
     qgpi->moveBy(pt->x(),pt->y());
     this->graphicsScene->addItem(qgpi);
     this->activeEndPointGraphic=qgpi;
+
+
 
 
     return 0;
@@ -390,6 +438,11 @@ bool WorkspaceWidget::getRotationMode()
     return this->rotationMode;
 }
 
+bool WorkspaceWidget::getHeightProfileMode()
+{
+    return this->heightProfileMode;
+}
+
 void WorkspaceWidget::toggleRotationMode()
 {
     if (this->rotationMode==true)
@@ -398,6 +451,19 @@ void WorkspaceWidget::toggleRotationMode()
         this->rotationMode=true;
 }
 
+void WorkspaceWidget::toggleHeightProfileMode()
+{
+    if (this->heightProfileMode==true)
+        this->heightProfileMode=false;
+    else
+        this->heightProfileMode=true;
+}
+
+void WorkspaceWidget::adjustHeightOfActive()
+{
+    if(this->activeItem!=NULL && this->activeEndPoint!=NULL)
+        this->activeItem->adjustHeightProfile(1,this->activeEndPoint);
+}
 
 
 /*

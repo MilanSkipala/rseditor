@@ -124,11 +124,17 @@ int Application::setupUI()
     QAction * aboutAction = new QAction(*this->getAppData()->getUndoPixmap(),"About", aboutMenu);
     QAction * helpAction = new QAction(*this->getAppData()->getUndoPixmap(),"Help", aboutMenu);
 
-    QAction * endPointToggleAction = new QAction(*this->getAppData()->getOpenFilePixmap(),"Create end point",NULL);
+    QAction * endPointToggleAction = new QAction(*this->getAppData()->getNewPointPixmap(),"Create end point",NULL);
     endPointToggleAction->setCheckable(true);
 
-    QAction * rotationToggleAction = new QAction(*this->getAppData()->getOpenFilePixmap(),"Rotate tool",NULL);
+    QAction * rotationToggleAction = new QAction(*this->getAppData()->getRotateToolPixmap(),"Rotate tool",NULL);
     rotationToggleAction->setCheckable(true);
+
+    QAction * heightProfileToggleAction = new QAction(*this->getAppData()->getHeightProfilePixmap(),"Height profile tool",NULL);
+    heightProfileToggleAction->setCheckable(true);
+
+    QAction * heightProfileUpAction = new QAction(*this->getAppData()->getHeightProfileUpPixmap(),"Height profile tool",NULL);
+
 
     this->window->setWindowTitle("R&T Editor");
 
@@ -250,6 +256,8 @@ int Application::setupUI()
     this->window->getMainToolBar()->addAction(redoAction);
     this->window->getMainToolBar()->addAction(endPointToggleAction);
     this->window->getMainToolBar()->addAction(rotationToggleAction);
+    this->window->getMainToolBar()->addAction(heightProfileToggleAction);
+    this->window->getMainToolBar()->addAction(heightProfileUpAction);
 
 
     this->window->setMainStatusBar(new QStatusBar(this->window));
@@ -275,6 +283,8 @@ int Application::setupUI()
 
     connect(endPointToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget()->getGraphicsScene(),SLOT(toggleMode()));
     connect(rotationToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(toggleRotationMode()));
+    connect(heightProfileToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(toggleHeightProfileMode()));
+    connect(heightProfileUpAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(adjustHeightOfActive()));
 
     this->window->getSideBarWidget()->setMinimumWidth(150);
 
@@ -403,6 +413,12 @@ AppData::AppData()
 
     this->undoPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/Undo.png");
     this->redoPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/Redo.png");
+
+    this->newPointPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/NewPoint.png");
+    this->rotateToolPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/RotateTool.png");
+
+    this->heightProfilePixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/HeightProfile.png");
+    this->heightProfileUpPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/HeightProfileUp.png");
 }
 
 QPixmap * AppData::getNewFilePixmap() const
@@ -425,6 +441,27 @@ QPixmap * AppData::getRedoPixmap() const
 {
     return this->redoPixmap;
 }
+
+QPixmap *AppData::getNewPointPixmap() const
+{
+    return this->newPointPixmap;
+}
+
+QPixmap *AppData::getRotateToolPixmap() const
+{
+    return this->rotateToolPixmap;
+}
+
+QPixmap *AppData::getHeightProfilePixmap() const
+{
+    return this->heightProfilePixmap;
+}
+
+QPixmap *AppData::getHeightProfileUpPixmap() const
+{
+    return this->heightProfileUpPixmap;
+}
+
 Database * AppData::getDatabase() const
 {
     return this->database;

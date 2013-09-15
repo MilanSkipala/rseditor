@@ -64,6 +64,10 @@ class SlotTrackInfo
      *-ModelItem.t stores type of part - curve/straight/curved crossing/straight crossing/straight chicane/some other special types (see ITEMTYPEENUMS_H)
      *-SlotTrackInfo stores numberOfLanes (1/2/4/6/8/whatever number should work with large enough radius)
      *-SlotTrackInfo.lanesGauge stores the distance between every two lanes, doesn't affect anything if numberOfLanes==1
+     *-SlotTrackInfo.lanesGaugeEnd stores:
+     *      -if ModelItem.t==HE || HS then gauge of lanes at the end of the track piece
+     *      -if ModelItem.t==JM then gap distance
+     *      -otherwise - stores the same number as lanesGauge attribute
      *-SlotTrackInfo.fstLaneDist stores the distance of the first "outer-most" lane
 */
 public:
@@ -75,11 +79,12 @@ public:
 
 class ModelItem
 {
+
     QString * partNo;
     QString * nameEn;
     QString * nameCs;
     ////QPointF * startPoint;
-    QList <QPointF*> * endPoints;
+
     unsigned int availableCount;
 
     GraphicsPathItem * contourModel; //2D model displayed in sideBarWidget - text can't be child of model with no text, because then the label is selectable on its own
@@ -94,14 +99,20 @@ class ModelItem
     ItemType t;
 
     ////qreal turnDegree;
+    QList <QPointF*> * endPoints;
     QList <qreal> * endPointsAngles;
+    QList <ModelItem*> * neighbours;
+    QList <int> * endPointsHeight;
+    QList <QGraphicsPathItem*> * endPointsHeightGraphics;
 
     qreal radius;
-    qreal radius2; //is used only for curved turnouts (t==J1 || J2)
+    qreal radius2; //is used only for curved turnouts (t==J1 || J2) and for slot track
     qreal itemWidth;
     qreal itemHeight;
 
     SlotTrackInfo * slotTrackInfo;
+
+    bool recursionStopper;
 
 public:
     //use this constructor only if QWidget isn't inherited
@@ -157,6 +168,9 @@ public:
     qreal getSecondRadius() const;
     void setSecondRadius(qreal rad2);
 
+    int adjustHeightProfile(int dz, QPointF * point);
+    void updateEndPointsHeightGraphics();
+
 
     //check if it is necessary
     //void moveLabel(QPointF * point);
@@ -164,9 +178,15 @@ public:
 
 
     void setEndPointAngle(int index, qreal angle);
+
     SlotTrackInfo * getSlotTrackInfo();
     int setSlotTrackInfo(SlotTrackInfo * s);
 
+    ModelItem * getNeighbour(int index);
+    ModelItem * getNeighbour(QPointF * pos);
+
+    int setNeighbour(ModelItem * neighbour, int index);
+    int setNeighbour(ModelItem * neighbour, QPointF * pos);
 
 protected:
 
@@ -208,12 +228,12 @@ class ModelFragment// : public QWidget //inherits from QWidget, because QWidget 
 {
     QList <ModelItem*> * fragmentItems;
     QList<ProductLine*> * lines;
-    QTransform * transformMatrix;
+    //QTransform * transformMatrix;
     ////QPointF * startPoint;
     QList<QPointF *> *endPoints;
     QList<qreal> *endPointsAngles;
-    //QList<QGraphicsPathItem*> *endPointsGraphics;
     QList<QGraphicsEllipseItem*> *endPointsGraphics;
+    QList<ModelItem*> *endPointsItems;
 
     QDialog * infoDialog;
 

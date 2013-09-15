@@ -23,15 +23,32 @@ void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         QGraphicsScene::mousePressEvent(event);
     else
     {
-        QPointF * pos = new QPointF(event->scenePos());
-        ModelFragment* frag = app->getWindow()->getWorkspaceWidget()->findFragmentByApproxPos(pos);
-        if (frag!=NULL)
+        if (app->getWindow()->getWorkspaceWidget()->getHeightProfileMode())
         {
-            app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(pos);
-            app->getWindow()->getWorkspaceWidget()->setActiveFragment(frag);
+            QPointF * pos = new QPointF(event->scenePos());
+            ModelItem* item = app->getWindow()->getWorkspaceWidget()->findItemByApproxPos(pos);
+            if (item!=NULL)
+            {
+                app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(pos);
+                app->getWindow()->getWorkspaceWidget()->setActiveItem(item);
+                app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
+            }
+            else
+                delete pos;
         }
         else
-            delete pos;
+        {
+            QPointF * pos = new QPointF(event->scenePos());
+            ModelFragment* frag = app->getWindow()->getWorkspaceWidget()->findFragmentByApproxPos(pos);
+            if (frag!=NULL)
+            {
+                app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(pos);
+                app->getWindow()->getWorkspaceWidget()->setActiveFragment(frag);
+                app->getWindow()->getWorkspaceWidget()->setActiveItem(NULL);
+            }
+            else
+                delete pos;
+        }
     }
 
     QGraphicsScene::mousePressEvent(event);

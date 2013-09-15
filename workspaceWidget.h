@@ -18,6 +18,7 @@ class WorkspaceWidget : public QGraphicsView ///public QScrollArea ///IMPLEMENTA
     QPointF * activeEndPoint; //end point which belongs to fragment on line below
     QPointF * lastEventPos;
     ModelFragment * activeFragment;
+    ModelItem * activeItem;
     ModelItem * lastUsedPart;
 
     QMenu * contextMenu;
@@ -27,6 +28,7 @@ class WorkspaceWidget : public QGraphicsView ///public QScrollArea ///IMPLEMENTA
     bool ctrlPress;
 
     bool rotationMode;
+    bool heightProfileMode;
 
 public:
     WorkspaceWidget(QMenu* context, QWidget * parent = 0);
@@ -45,9 +47,15 @@ public:
     //value of point will be modified to value of endpoint which was found.
     //if it is too far, function returns NULL and *point remains the same.
     ModelFragment * findFragmentByApproxPos(QPointF * point);
+    ModelItem * findItemByApproxPos(QPointF * point);
+
+
 
     ModelFragment * getActiveFragment() const;
     void setActiveFragment(ModelFragment * frag);
+
+    ModelItem * getActiveItem() const;
+    void setActiveItem(ModelItem * item);
 
     QPointF * getActiveEndPoint() const;
     int setActiveEndPoint(QPointF * pt);
@@ -60,9 +68,12 @@ public:
     GraphicsScene * getGraphicsScene() const;
 
     bool getRotationMode();
+    bool getHeightProfileMode();
 
 public slots:
     void toggleRotationMode();
+    void toggleHeightProfileMode();
+    void adjustHeightOfActive();
 
 protected:
     void contextMenuEvent(QContextMenuEvent * evt);///MISSING

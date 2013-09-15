@@ -31,6 +31,10 @@ class AppData //IMPLEMENTATION COMPLETE ï¿½ï¿½ï¿½ï¿½-NOT ENOUGH PIXMAPS-ï¿½ï¿½ï¿
     QPixmap * saveFilePixmap;
     QPixmap * undoPixmap;
     QPixmap * redoPixmap;
+    QPixmap * newPointPixmap;
+    QPixmap * rotateToolPixmap;
+    QPixmap * heightProfilePixmap;
+    QPixmap * heightProfileUpPixmap;
     // ...
 
 
@@ -43,6 +47,10 @@ public:
     QPixmap * getSaveFilePixmap() const;
     QPixmap * getUndoPixmap() const;
     QPixmap * getRedoPixmap() const;
+    QPixmap * getNewPointPixmap() const;
+    QPixmap * getRotateToolPixmap() const;
+    QPixmap * getHeightProfilePixmap() const;
+    QPixmap * getHeightProfileUpPixmap() const;
     // ...
 
 

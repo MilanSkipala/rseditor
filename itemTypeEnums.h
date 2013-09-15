@@ -32,8 +32,8 @@ enum ItemType {
                     HE, //straight with end of hairpin
                     SC, //straight with lap counter
                     JM, //jump
-                    X2, //crossing on one straight piece
-                    X3 //"bridged" crossing - exists in db and sbw, but when it is being inserted into workspacewidget, program creates two S1 items with different height profiles
+                    X2 //crossing on one straight piece
+                    //X3 //"bridged" crossing - exists in db and sbw, but when it is being inserted into workspacewidget, program creates two S1 items with different height profiles
 
 
 

@@ -215,6 +215,8 @@ Database::Database()
                 t = J5;
             else if (typeStr=="S1")
                 t = S1;
+            else if (typeStr=="SC")
+                t = SC;
             else if (typeStr=="X1")
                 t = X1;
             else if (typeStr=="T1")
@@ -241,17 +243,19 @@ Database::Database()
                 t = C2;
             else if (typeStr=="CH")
                 t = CH;
-            else if (typeStr=="X1")
-                t = X1;
+            else if (typeStr=="X2")
+                t = X2;
             else if (typeStr=="HS")
                 t = HS;
             else if (typeStr=="HE")
                 t = HE;
+            else if (typeStr=="JM")
+                t = JM;
 
             QString angle1;
             qreal ang1 = 0;
 
-            if (t!=J5 && !(t>=T1 && t<=T10))
+            if (!(t>=T1 && t<=T10))
             {
                 angle1 = in.readLine();
                 angle1.remove(0,7);
@@ -261,7 +265,7 @@ Database::Database()
 
             qreal ang2 = 0;
 
-            if (t==J1 || t==J2 || t==J3)
+            if ((t==J1 || t==J2 || t==J3) && (*this->productLines->find(*this->currentProductLine))->getType())
             {
                 QString angle2 = in.readLine();
                 angle2.remove(0,7);
@@ -274,7 +278,7 @@ Database::Database()
             qreal rad = radius.toDouble();
             qreal rad2 = 0;
 
-            if (((t==J1 || t==J2) && ang2!=0) || t==J5)
+            if (((t==J1 || t==J2) && (*this->productLines->find(*this->currentProductLine))->getType() && ang2!=0) || (t==J5 && (*this->productLines->find(*this->currentProductLine))->getType()))
             {
                 QString radius2 = in.readLine();
                 radius2.remove(0,8);
@@ -330,6 +334,7 @@ Database::Database()
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                     break;
                 case S1:
+                case SC:
                 case E1:
 
                     pt1 = QPointF(-rad,0);
@@ -584,10 +589,7 @@ Database::Database()
             }
             else
             {
-                /*
 
-                !pokud autodráha, uprav i proměnnou rad kvůli počítání bodů
-    */
                 trackGaugeHalf = abs(rad-rad2)/2.0;
 
                 SlotTrackInfo * sti = new SlotTrackInfo();//memory leak in assignment? (later - not at this line)
@@ -602,6 +604,11 @@ Database::Database()
                 {
                     laneDistEndStr = in.readLine();
                     laneDistEndStr.remove(0,12);
+                }
+                else if (t==JM)
+                {
+                    laneDistEndStr = in.readLine();
+                    laneDistEndStr.remove(0,9);
                 }
 
                 QString numOfLanesStr = in.readLine();
@@ -652,43 +659,53 @@ Database::Database()
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                 }
-                else if (t==S1)
+                else if (t==S1 || t==SC || t==X2 || t==JM || t==J5 || t==J1 || t==J2)
                 {
-                    ///
                     qreal itemRadius = rad;
                     xLen = 2*rad2sl;
                     yHeight = rad;
                     yHeight -= trackGaugeHalf;
 
+                    qreal ptX = rad2sl;
+
                     rad -=sti->fstLaneDist;
                     for (int i = 0; i < sti->numberOfLanes; i++)
                     {
-                        qreal ptX = rad2sl;
+
                         qreal ptY = rad;
+
+
 
 
                         endPoints.push_back(QPointF(-ptX,-ptY+itemRadius));
                         //endPoints.push_back(QPointF(-ptX,ptY));
-                        endPoints.push_back(QPointF(ptX,-ptY+itemRadius));
+                        if (t==JM)
+                            endPoints.push_back(QPointF(ptX+laneDistEnd,-ptY+itemRadius));
+                        else
+                            endPoints.push_back(QPointF(ptX,-ptY+itemRadius));
                         //endPoints.push_back(QPointF(ptX,ptY));
 
                         angles.push_back(-ang1/2.0);
                         angles.push_back(ang1/2.0);
                         rad-=sti->lanesGauge;
                     }
-                    ///
+                    if (t==J1)
+                    {
+                       endPoints.push_back(QPointF(ptX,endPoints.at(2*sti->numberOfLanes-1).y()+sti->lanesGauge));
+                       angles.push_back(ang1/2.0);
+                    }
+                    else if (t==J2)
+                    {
+                        endPoints.push_back(QPointF(ptX,endPoints.at(0).y()-sti->lanesGauge));
+                        angles.push_back(ang1/2.0);
+                    }
+
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                 }
                 else if (t==CH)
                 {}
-                else if (t==J1)
-                {}
-                else if (t==J2)
-                {}
-                //else if (t==C2)
-                //{}
                 else if (t==X1)
                 {
                     ///
@@ -726,10 +743,11 @@ Database::Database()
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                 }
+                /*
                 else if (t==X2)
                 {}
                 else if (t==X3)
-                {}
+                {}*/
                 else if (t==HS)
                 {
                     qreal itemRadius = rad;
@@ -792,8 +810,9 @@ Database::Database()
                 }
                 else if (t==H1)
                 {}
+                /*
                 else if (t==SC)
-                {}
+                {}*/
                 else if (t==JM)
                 {}
                 else
