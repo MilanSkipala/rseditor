@@ -161,7 +161,7 @@ Radius=78
 Radius2=175
 FirstLane=39
 LaneDist=78
-LanesNum=4
+LanesNum=2
 
 [C2345]
 NameEn=straight 350

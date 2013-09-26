@@ -27,23 +27,23 @@ Application::~Application()
     delete this->userPreferences;
 }
 
-Window * Application::getWindow() const
+Window * Application::getWindow()
 {
     return this->window;
 }
-Preferences * Application::getUserPreferences() const
+Preferences * Application::getUserPreferences()
 {
     return this->userPreferences;
 }
-AppData * Application::getAppData() const
+AppData * Application::getAppData()
 {
     return this->appData;
 }
-bool Application::getRestrictedInventoryMode() const
+bool Application::getRestrictedInventoryMode()
 {
     return this->restrictedInventoryMode;
 }
-bool Application::getAllowMixedProductLines() const
+bool Application::getAllowMixedProductLines()
 {
     return this->allowMixedProductLines;
 }
@@ -133,7 +133,8 @@ int Application::setupUI()
     QAction * heightProfileToggleAction = new QAction(*this->getAppData()->getHeightProfilePixmap(),"Height profile tool",NULL);
     heightProfileToggleAction->setCheckable(true);
 
-    QAction * heightProfileUpAction = new QAction(*this->getAppData()->getHeightProfileUpPixmap(),"Height profile tool",NULL);
+    QAction * heightProfileUpAction = new QAction(*this->getAppData()->getHeightProfileUpPixmap(),"Increase height",NULL);
+    QAction * heightProfileDownAction = new QAction(*this->getAppData()->getHeightProfileDownPixmap(),"Decrease height",NULL);
 
 
     this->window->setWindowTitle("R&T Editor");
@@ -254,10 +255,13 @@ int Application::setupUI()
     this->window->addToolBar(this->window->getMainToolBar());
     this->window->getMainToolBar()->addAction(undoAction);
     this->window->getMainToolBar()->addAction(redoAction);
+    this->window->getMainToolBar()->addSeparator();
     this->window->getMainToolBar()->addAction(endPointToggleAction);
     this->window->getMainToolBar()->addAction(rotationToggleAction);
+    this->window->getMainToolBar()->addSeparator();
     this->window->getMainToolBar()->addAction(heightProfileToggleAction);
     this->window->getMainToolBar()->addAction(heightProfileUpAction);
+    this->window->getMainToolBar()->addAction(heightProfileDownAction);
 
 
     this->window->setMainStatusBar(new QStatusBar(this->window));
@@ -285,12 +289,13 @@ int Application::setupUI()
     connect(rotationToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(toggleRotationMode()));
     connect(heightProfileToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(toggleHeightProfileMode()));
     connect(heightProfileUpAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(adjustHeightOfActive()));
+    connect(heightProfileDownAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(adjustHeightOfActive()));
 
     this->window->getSideBarWidget()->setMinimumWidth(150);
 
     layout->addWidget(this->window->getSideBarWidget(),0,0,1,1);
     layout->addWidget(this->window->getWorkspaceWidget(),0,1,1,2);
-    this->window->setLayout(layout);
+    central->setLayout(layout);
 
     return 0;
 }
@@ -307,27 +312,28 @@ Window::Window() : QMainWindow()
 
 }
 
-QMenu * Window::getMainContextMenu() const
+
+QMenu * Window::getMainContextMenu()
 {
     return this->mainContextMenu;
 }
-QMenuBar * Window::getMainMenuBar() const
+QMenuBar * Window::getMainMenuBar()
 {
     return this->mainMenuBar;
 }
-QStatusBar * Window::getMainStatusBar() const
+QStatusBar * Window::getMainStatusBar()
 {
     return this->mainStatusBar;
 }
-QToolBar * Window::getMainToolBar() const
+QToolBar * Window::getMainToolBar()
 {
     return this->mainToolBar;
 }
-WorkspaceWidget * Window::getWorkspaceWidget() const
+WorkspaceWidget * Window::getWorkspaceWidget()
 {
     return this->workspace;
 }
-SideBarWidget * Window::getSideBarWidget() const
+SideBarWidget * Window::getSideBarWidget()
 {
     return this->sideBar;
 }
@@ -407,6 +413,7 @@ AppData::AppData()
 {
     this->database =new Database();
     //this->newFilePixmap = new QPixmap("/etc/RTEditor/icons/..");
+    /*
     this->newFilePixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/NewFile.png");
     this->openFilePixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/OpenFile.png");
     this->saveFilePixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/SaveFile.png");
@@ -419,50 +426,69 @@ AppData::AppData()
 
     this->heightProfilePixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/HeightProfile.png");
     this->heightProfileUpPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/HeightProfileUp.png");
+    */
+    this->newFilePixmap = new QPixmap("./Ikony/NewFile.png");
+    this->openFilePixmap = new QPixmap("./Ikony/OpenFile.png");
+    this->saveFilePixmap = new QPixmap("./Ikony/SaveFile.png");
+
+    this->undoPixmap = new QPixmap("./Ikony/Undo.png");
+    this->redoPixmap = new QPixmap("./Ikony/Redo.png");
+
+    this->newPointPixmap = new QPixmap("./Ikony/NewPoint.png");
+    this->rotateToolPixmap = new QPixmap("./Ikony/RotateTool.png");
+
+    this->heightProfilePixmap = new QPixmap("./Ikony/HeightProfile.png");
+    this->heightProfileUpPixmap = new QPixmap("./Ikony/HeightProfileUp.png");
+    this->heightProfileDownPixmap = new QPixmap("./Ikony/HeightProfileDown.png");
 }
 
-QPixmap * AppData::getNewFilePixmap() const
+QPixmap * AppData::getNewFilePixmap()
 {
     return this->newFilePixmap;
 }
-QPixmap * AppData::getOpenFilePixmap() const
+QPixmap * AppData::getOpenFilePixmap()
 {
     return this->openFilePixmap;
 }
-QPixmap * AppData::getSaveFilePixmap() const
+QPixmap * AppData::getSaveFilePixmap()
 {
     return this->saveFilePixmap;
 }
-QPixmap * AppData::getUndoPixmap() const
+QPixmap * AppData::getUndoPixmap()
 {
     return this->undoPixmap;
 }
-QPixmap * AppData::getRedoPixmap() const
+QPixmap * AppData::getRedoPixmap()
 {
     return this->redoPixmap;
 }
 
-QPixmap *AppData::getNewPointPixmap() const
+QPixmap *AppData::getNewPointPixmap()
 {
     return this->newPointPixmap;
 }
 
-QPixmap *AppData::getRotateToolPixmap() const
+QPixmap *AppData::getRotateToolPixmap()
 {
     return this->rotateToolPixmap;
 }
 
-QPixmap *AppData::getHeightProfilePixmap() const
+QPixmap *AppData::getHeightProfilePixmap()
 {
     return this->heightProfilePixmap;
 }
 
-QPixmap *AppData::getHeightProfileUpPixmap() const
+QPixmap *AppData::getHeightProfileUpPixmap()
 {
     return this->heightProfileUpPixmap;
 }
 
-Database * AppData::getDatabase() const
+QPixmap *AppData::getHeightProfileDownPixmap()
+{
+    return this->heightProfileDownPixmap;
+}
+
+Database * AppData::getDatabase()
 {
     return this->database;
 }

@@ -5,8 +5,11 @@ INPUT(
 ./debug\database.o
 ./debug\sideBarWidget.o
 ./debug\workspaceWidget.o
+./debug\mathFunctions.o
+./debug\graphicsScene.o
 ./debug\moc_application.o
 ./debug\moc_partsRelated.o
 ./debug\moc_sideBarWidget.o
 ./debug\moc_workspaceWidget.o
+./debug\moc_graphicsScene.o
 );

@@ -9,7 +9,8 @@ HEADERS += \
     workspaceWidget.h \
     itemTypeEnums.h \
     scales.h \
-    graphicsScene.h
+    graphicsScene.h \
+    heightPathItem.h
 
 SOURCES += \
     main.cpp \
@@ -19,6 +20,7 @@ SOURCES += \
     sideBarWidget.cpp \
     workspaceWidget.cpp \
     mathFunctions.cpp \
-    graphicsScene.cpp
+    graphicsScene.cpp \
+    heightPathItem.cpp
 
 QT += gui widgets svg opengl

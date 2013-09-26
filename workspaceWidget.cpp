@@ -20,12 +20,13 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     this->mousePress=false;
     this->ctrlPress=false;
     this->lastUsedPart=NULL;
-    this->activeEndPoint = new QPointF(0,0);
+    this->lastEventPos=NULL;
+    this->activeEndPoint = NULL;//new QPointF(0,0);
     this->activeFragment = NULL;
     this->activeItem = NULL;
 
     this->activeEndPointGraphic=NULL;
-    this->setActiveEndPoint(this->activeEndPoint);
+    this->setActiveEndPoint(new QPointF(0,0));
 
 
     QPalette pal = this->palette();
@@ -137,7 +138,7 @@ void WorkspaceWidget::keyPressEvent(QKeyEvent *event)
     if (event->key()==Qt::Key_Control)
         ctrlPress=true;
 
-    if(event->key()==Qt::Key_Space && this->lastUsedPart!=NULL)
+    if(event->key()==Qt::Key_Space && this->lastUsedPart!=NULL && !this->heightProfileMode)
     {
         GraphicsPathItem * gpi = this->lastUsedPart->get2DModelNoText();
         QPointF pt;
@@ -289,7 +290,8 @@ int WorkspaceWidget::updateFragment(ModelFragment *frag)
     for (int i = 0; i < frag->getFragmentItems()->count();i++)
     {
         //removes all items (just added items won't have effect on this action)
-        this->graphicsScene->removeItem(frag->getFragmentItems()->at(i)->get2DModelNoText());
+        if (frag->getFragmentItems()->at(i)->get2DModelNoText()->scene()!=NULL)
+            this->graphicsScene->removeItem(frag->getFragmentItems()->at(i)->get2DModelNoText());
         //add all items including those just added
         this->graphicsScene->addItem(frag->getFragmentItems()->at(i)->get2DModelNoText());
     }
@@ -385,6 +387,8 @@ int WorkspaceWidget::setActiveEndPoint(QPointF *pt)
 {
     if (pt==NULL)
         return 1;
+    if (this->activeEndPoint!=NULL)
+        delete this->activeEndPoint;
     this->activeEndPoint=pt;
 
     if (this->activeEndPointGraphic!=NULL)
@@ -400,6 +404,7 @@ int WorkspaceWidget::setActiveEndPoint(QPointF *pt)
 
     qgpi->setPen(p);
     qgpi->moveBy(pt->x(),pt->y());
+    qgpi->setZValue(-10);
     this->graphicsScene->addItem(qgpi);
     this->activeEndPointGraphic=qgpi;
 
@@ -454,15 +459,61 @@ void WorkspaceWidget::toggleRotationMode()
 void WorkspaceWidget::toggleHeightProfileMode()
 {
     if (this->heightProfileMode==true)
+    {
         this->heightProfileMode=false;
+        this->setActiveEndPoint(new QPointF(0,0));
+        this->setActiveItem(NULL);
+    }
     else
+    {
         this->heightProfileMode=true;
+        this->setActiveEndPoint(new QPointF(0,0));
+        this->setActiveFragment(NULL);
+        /*if (this->activeEndPoint!=NULL)
+        {
+            this->graphicsScene->removeItem(this->activeEndPointGraphic);
+            delete this->activeEndPoint;
+        }
+        this->activeEndPointGraphic=NULL;
+        this->activeEndPoint=NULL;*/
+    }
+    QList<ModelFragment*>::Iterator fragIter = this->modelFragments->begin();
+    while(fragIter!=this->modelFragments->end())
+    {
+        QList<ModelItem*>::Iterator itemIter = (*fragIter)->getFragmentItems()->begin();
+        while(itemIter!=(*fragIter)->getFragmentItems()->end())
+        {
+            (*itemIter)->updateEndPointsHeightGraphics();
+            itemIter++;
+        }
+        fragIter++;
+    }
+
+
 }
 
 void WorkspaceWidget::adjustHeightOfActive()
 {
-    if(this->activeItem!=NULL && this->activeEndPoint!=NULL)
-        this->activeItem->adjustHeightProfile(1,this->activeEndPoint);
+
+
+    if(this->activeItem!=NULL && this->activeEndPoint!=NULL && this->heightProfileMode)
+    {
+        QList<QAction *> list =(app->getWindow()->getMainToolBar()->actions());
+        for (int i = 0; i < list.count();i++)
+        {
+            if (list.at(i)==this->sender())
+            {
+                if (list.at(i)->toolTip()=="Decrease height")
+                    this->activeItem->adjustHeightProfile(-1,this->activeEndPoint);
+                else
+                    this->activeItem->adjustHeightProfile(1,this->activeEndPoint);
+            }
+        }
+        //if (list.at(list.indexOf(this->sender()))->toolTip()=="Decrease height")
+
+        //else
+
+    }
 }
 
 

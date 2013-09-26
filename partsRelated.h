@@ -106,11 +106,7 @@ class ModelItem
     QList <QGraphicsPathItem*> * endPointsHeightGraphics;
 
     qreal radius;
-<<<<<<< HEAD
     qreal radius2; //is used only for curved turnouts (t==J1 || J2) and for slot track
-=======
-    qreal radius2; //is used only for curved turnouts (t==J1 || J2)
->>>>>>> b474af74a316b130c2b8f8ff9b3a29c8e817ea4f
     qreal itemWidth;
     qreal itemHeight;
 
@@ -170,15 +166,16 @@ public:
 
     void moveBy(qreal dx, qreal dy);
     qreal getSecondRadius() const;
-    void setSecondRadius(qreal rad2);
+    /**
+      change name to rad2
+*/
+    void setSecondRadius (qreal radi2);
 
-<<<<<<< HEAD
     int adjustHeightProfile(int dz, QPointF * point);
     void updateEndPointsHeightGraphics();
+    int getHeightProfileAt(QPointF * point);
 
 
-=======
->>>>>>> b474af74a316b130c2b8f8ff9b3a29c8e817ea4f
     //check if it is necessary
     //void moveLabel(QPointF * point);
 
@@ -194,9 +191,6 @@ public:
 
     int setNeighbour(ModelItem * neighbour, int index);
     int setNeighbour(ModelItem * neighbour, QPointF * pos);
-
-    void setEndPointAngle(int index, qreal angle);
-
 
 protected:
 

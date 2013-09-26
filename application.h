@@ -35,6 +35,7 @@ class AppData //IMPLEMENTATION COMPLETE ï¿½ï¿½ï¿½ï¿½-NOT ENOUGH PIXMAPS-ï¿½ï¿½ï¿
     QPixmap * rotateToolPixmap;
     QPixmap * heightProfilePixmap;
     QPixmap * heightProfileUpPixmap;
+    QPixmap * heightProfileDownPixmap;
     // ...
 
 
@@ -42,19 +43,20 @@ class AppData //IMPLEMENTATION COMPLETE ï¿½ï¿½ï¿½ï¿½-NOT ENOUGH PIXMAPS-ï¿½ï¿½ï¿
 
 public:
     AppData();
-    QPixmap * getNewFilePixmap() const;
-    QPixmap * getOpenFilePixmap() const;
-    QPixmap * getSaveFilePixmap() const;
-    QPixmap * getUndoPixmap() const;
-    QPixmap * getRedoPixmap() const;
-    QPixmap * getNewPointPixmap() const;
-    QPixmap * getRotateToolPixmap() const;
-    QPixmap * getHeightProfilePixmap() const;
-    QPixmap * getHeightProfileUpPixmap() const;
+    QPixmap * getNewFilePixmap()  ;
+    QPixmap * getOpenFilePixmap()  ;
+    QPixmap * getSaveFilePixmap()  ;
+    QPixmap * getUndoPixmap()  ;
+    QPixmap * getRedoPixmap()  ;
+    QPixmap * getNewPointPixmap()  ;
+    QPixmap * getRotateToolPixmap()  ;
+    QPixmap * getHeightProfilePixmap()  ;
+    QPixmap * getHeightProfileUpPixmap();
+    QPixmap * getHeightProfileDownPixmap();
     // ...
 
 
-    Database * getDatabase() const;
+    Database * getDatabase()  ;
 };
 
 class Window : public QMainWindow ///IMPLEMENTATION INCOMPLETE
@@ -69,12 +71,13 @@ class Window : public QMainWindow ///IMPLEMENTATION INCOMPLETE
 
 public:
     Window();
-    QMenu * getMainContextMenu() const;
-    QMenuBar * getMainMenuBar() const;
-    QStatusBar * getMainStatusBar() const;
-    QToolBar * getMainToolBar() const;
-    WorkspaceWidget * getWorkspaceWidget() const;
-    SideBarWidget * getSideBarWidget() const;
+    //~Window();
+    QMenu * getMainContextMenu()  ;
+    QMenuBar * getMainMenuBar()  ;
+    QStatusBar * getMainStatusBar()  ;
+    QToolBar * getMainToolBar()  ;
+    WorkspaceWidget * getWorkspaceWidget()  ;
+    SideBarWidget * getSideBarWidget()  ;
 
     bool setMainContextMenu(QMenu * menu);
     bool setMainMenuBar(QMenuBar * menu);
@@ -97,9 +100,9 @@ class Preferences
     ///...
 public:
     Preferences(QString * path);
-    QString * getLocale() const;
-    QSize * getLastSize() const;
-    QString ** getLastProjects() const;
+    QString * getLocale()  ;
+    QSize * getLastSize()  ;
+    QString ** getLastProjects()  ;
 };
 
 //probably should exist as a global variable (then you can remove some db and other pointers)
@@ -126,11 +129,11 @@ public:
     Application(int argc, char ** argv);
     ~Application();
 
-    Window * getWindow() const;
-    Preferences * getUserPreferences() const;
-    AppData * getAppData() const;
-    bool getRestrictedInventoryMode() const;
-    bool getAllowMixedProductLines() const;
+    Window * getWindow()  ;
+    Preferences * getUserPreferences()  ;
+    AppData * getAppData()  ;
+    bool getRestrictedInventoryMode()  ;
+    bool getAllowMixedProductLines()  ;
 
     bool setAppData(AppData * d);
 

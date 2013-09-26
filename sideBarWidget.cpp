@@ -70,7 +70,7 @@ void SideBarWidget::contextMenuEvent(QContextMenuEvent *evt)
 void SideBarWidget::mousePressEvent(QMouseEvent *evt)
 {
     QFrame::mousePressEvent(evt);
-
+    //this->graphicsView->event(evt);
 
     /**
     TODO
@@ -92,12 +92,28 @@ void SideBarWidget::paintEvent(QPaintEvent *evt)
     if (this->prodLineCBox->currentText()!="")
         this->currentScene = this->database->findSceneByString(text);
     this->graphicsView->setScene(this->currentScene);
+    //this->currentScene->set
 
 
-    QTransform tr(this->graphicsView->transform());
-    if (tr.m11()!=0.5 && this->currentScene!=NULL)
+    /*
+    if (tr.m11()>=0.8 && this->currentScene!=NULL)
         tr.scale(0.5,0.5);
-    this->graphicsView->setTransform(tr);//scale(0.5,0.5);
+    this->graphicsView->setTransform(tr);//scale(0.5,0.5);*/
+    ///if (this->currentScene!=NULL)
+        ///this->graphicsView->fitInView(0,0,this->currentScene->width(),(this->currentScene->height()/this->currentScene->width())*this->currentScene->height(),Qt::KeepAspectRatioByExpanding);
+
+    if (this->currentScene!=NULL)
+    {
+        QTransform tr(this->graphicsView->transform());
+        qreal sceneScale = 1;
+        sceneScale = 110/this->currentScene->width();
+        tr.scale(sceneScale,sceneScale);
+        if (tr.m11()>=sceneScale)
+            this->graphicsView->setTransform(tr);
+    }
+
+
+
 //*/
 
 

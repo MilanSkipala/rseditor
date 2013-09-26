@@ -5,8 +5,11 @@ INPUT(
 ./release\database.o
 ./release\sideBarWidget.o
 ./release\workspaceWidget.o
+./release\mathFunctions.o
+./release\graphicsScene.o
 ./release\moc_application.o
 ./release\moc_partsRelated.o
 ./release\moc_sideBarWidget.o
 ./release\moc_workspaceWidget.o
+./release\moc_graphicsScene.o
 );
