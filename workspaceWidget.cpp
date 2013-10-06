@@ -147,7 +147,7 @@ void WorkspaceWidget::keyPressEvent(QKeyEvent *event)
         else
             pt = QPointF(gpi->scenePos().x()+gpi->boundingRect().width()-2,gpi->scenePos().y()+gpi->boundingRect().height()-2);
 
-        makeNewItem(*this->lastEventPos,gpi,this->lastUsedPart,this->lastUsedPart, true);
+         makeNewItem(*this->lastEventPos,gpi,this->lastUsedPart,this->lastUsedPart, true);
     }
 
     if (event->key()==Qt::Key_Delete)
@@ -483,7 +483,7 @@ void WorkspaceWidget::toggleHeightProfileMode()
         QList<ModelItem*>::Iterator itemIter = (*fragIter)->getFragmentItems()->begin();
         while(itemIter!=(*fragIter)->getFragmentItems()->end())
         {
-            (*itemIter)->updateEndPointsHeightGraphics();
+            (*itemIter)->updateEndPointsHeightGraphics(true);
             itemIter++;
         }
         fragIter++;
@@ -494,7 +494,7 @@ void WorkspaceWidget::toggleHeightProfileMode()
 
 void WorkspaceWidget::adjustHeightOfActive()
 {
-
+    //is called by menubar actions press - for all slot track items and !(C1 || S1) rail items increases the height of all endpoints
 
     if(this->activeItem!=NULL && this->activeEndPoint!=NULL && this->heightProfileMode)
     {
@@ -504,9 +504,26 @@ void WorkspaceWidget::adjustHeightOfActive()
             if (list.at(i)==this->sender())
             {
                 if (list.at(i)->toolTip()=="Decrease height")
-                    this->activeItem->adjustHeightProfile(-1,this->activeEndPoint);
+                {
+                    if (this->activeItem->getSlotTrackInfo()==NULL)
+                        this->activeItem->adjustHeightProfile(-1,this->activeEndPoint);
+                    else
+                    {
+                        for (int j = 0; this->activeItem->getEndPoint(j)!=NULL; j++)
+                            this->activeItem->adjustHeightProfile(-1,this->activeItem->getEndPoint(j));
+                    }
+                }
                 else
-                    this->activeItem->adjustHeightProfile(1,this->activeEndPoint);
+                {
+                    if (this->activeItem->getSlotTrackInfo()==NULL)
+                        this->activeItem->adjustHeightProfile(1,this->activeEndPoint);
+                    else
+                    {
+                        for (int j = 0; this->activeItem->getEndPoint(j)!=NULL; j++)
+                            this->activeItem->adjustHeightProfile(1,this->activeItem->getEndPoint(j));
+                    }
+
+                }
             }
         }
         //if (list.at(list.indexOf(this->sender()))->toolTip()=="Decrease height")

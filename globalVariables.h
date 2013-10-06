@@ -11,6 +11,10 @@ extern QString folderPathWin;/// = "C:\\";
 
 extern Application * app;
 
+/*DELETE IN RELEASE MODE*/
+extern int adjustCallCount;
+extern int updateCallCount;
+
 
 
 #endif // GLOBALVARIABLES_H

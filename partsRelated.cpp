@@ -57,6 +57,7 @@ ModelItem::ModelItem(QString & partNumber, QString & partNameEn, QString & partN
     this->contourModelNoText=NULL;
     this->glModel=NULL;
     this->recursionStopper=false;
+    this->recursionStopperAdj=false;
     this->slotTrackInfo = NULL;
 
     if (!prodLine->getType())
@@ -119,6 +120,7 @@ ModelItem::ModelItem(QString &partNumber, QString &partNameEn, QString &partName
     this->contourModelNoText=NULL;
     this->glModel=NULL;
     this->recursionStopper=false;
+    this->recursionStopperAdj=false;
     this->slotTrackInfo = NULL;
 
     this->t=type;
@@ -1644,14 +1646,19 @@ void ModelItem::setSecondRadius(qreal radi2)
     this->radius2=radi2;
 }
 
-int ModelItem::adjustHeightProfile(int dz, QPointF *point)
-{
+int ModelItem::adjustHeightProfile(int dz, QPointF *point)//, bool ignoreRecursionStopper)
+{/*
+    if (!ignoreRecursionStopper && this->recursionStopper)
+        return 0;
+    if (ignoreRecursionStopper && this->recursionStopper)
+        this->recursionStopper=false;*/
+
+    if (this->recursionStopperAdj)
+        return 0;
+
+    adjustCallCount++;
     if (point==NULL)
         return 1;
-/**
-  TODO
-  -slot car track - if this function is called by the menubar press, adjust height of all endpoints
-*/
 
 
     //find the index of the point
@@ -1683,24 +1690,24 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point)
 
     //adjustHeight of all endPoints and all neighbours
 
-    if ((this->t>=T1 && this->t<=T10) || (this->t>=J1 && this->t<=J5) || this->t==X1)
+    if (((this->t>=T1 && this->t<=T10) || (this->t>=J1 && this->t<=J5) || this->t==X1) && this->slotTrackInfo==NULL)
     {
         heightIter=this->endPointsHeight->begin();
         ePIter=this->endPoints->begin();
         neighIter=this->neighbours->begin();
         for (int i = 0; i < this->neighbours->count();i++)
         {
-            if (!this->recursionStopper)
+            if (!this->recursionStopperAdj)
             {
                 if ((*neighIter)!=NULL)
                 {
-                    this->recursionStopper=true;
+                    this->recursionStopperAdj=true;
                     (*neighIter)->adjustHeightProfile(dz,*ePIter);
 
 
                 }
                 *heightIter+=dz;
-                this->recursionStopper=false;
+                this->recursionStopperAdj=false;
 
             }
 
@@ -1712,28 +1719,156 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point)
         }
     }
     //or adjust height at "point" and neighbour connected at point
-    else
+    else if (this->slotTrackInfo==NULL)
     {
-        if (!this->recursionStopper)
+
+        if (!this->recursionStopperAdj)
         {
-            this->recursionStopper=true;
+            this->recursionStopperAdj=true;
             if ((*neighIter)!=NULL)
                 (*neighIter)->adjustHeightProfile(dz,point);
             *heightIter+=dz;
-            this->recursionStopper=false;
+            this->recursionStopperAdj=false;
         }
     }
+    else
+    {
+        if (!this->recursionStopperAdj)
+            *heightIter+=dz;
 
+
+        //find neighbours´ lane which is connected at point = find neig. index of point => odd(i)=i&i-1
+        //for both endpoints of that lane call adjust (DONT FORGET TO TURN ON STOPPER)
+        int nEPIndex = 0;
+        if ((*neighIter)!=NULL)
+        {
+            while ((*neighIter)->getEndPoint(nEPIndex)!=NULL)
+            {
+                rect = QRectF((*neighIter)->getEndPoint(nEPIndex)->x()-2.5,(*neighIter)->getEndPoint(nEPIndex)->y()-2.5,5,5);
+                if (rect.contains(*point) && !this->recursionStopperAdj )
+                {
+                    this->recursionStopperAdj=true;
+                    qreal newDz = dz;//-(*neighIter)->getHeightProfileAt((*neighIter)->getEndPoint(nEPIndex));
+
+
+                    HeightPathItem * hpi = (HeightPathItem*)(*neighIter)->endPointsHeightGraphics->at(0);/*
+                    HeightPathItem * hpi2 = (HeightPathItem*)this->endPointsHeightGraphics->at(0);
+
+
+                    if (hpi->getAngle()!=0)
+                    {
+                        hpi2->setAngle(hpi->getAngle());
+                    }
+                    else if (hpi2->getAngle()!=0)
+                    {
+                        hpi->setAngle(hpi2->getAngle());
+                    }*/
+
+
+
+                    int i = 0;
+
+                    HeightPathItem * hpi2 = (HeightPathItem*)this->endPointsHeightGraphics->at(0);
+
+                    QList<HeightPathItem*> myList;
+                    for (int ijk = 0; ijk < this->endPoints->count(); ijk++)
+                        myList.push_back((HeightPathItem*)this->endPointsHeightGraphics->at(ijk));
+
+
+                    qreal angle = hpi2->getAngle();
+                    while (this->getEndPoint(i)!=NULL)
+                    {
+                        hpi2 = (HeightPathItem*)this->endPointsHeightGraphics->at(i);
+                        hpi2->setAngle(hpi2->getAngle());
+                        i++;
+                    }
+                    ((HeightPathItem*)(*neighIter)->endPointsHeightGraphics->at(0))->setAngle(angle);
+
+                    (*neighIter)->adjustHeightProfile(newDz,(*neighIter)->getEndPoint(nEPIndex));
+
+
+                    if ((int)((HeightPathItem*)this->endPointsHeightGraphics->at(0))->getAngle()!=0)
+                    {
+/**
+
+                        HeightPathItem * hpi = (HeightPathItem*)(*neighIter)->endPointsHeightGraphics->at(0);
+
+
+                        i = 0;
+                        while ((*neighIter)->getEndPoint(i)!=NULL)
+                        {
+                            hpi = (HeightPathItem*)(*neighIter)->endPointsHeightGraphics->at(i);
+                            hpi->setAngle(hpi2->getAngle());
+                            i++;
+                        }*/
+
+
+                        /*
+                        hpi->setAngle(hpi2->getAngle());*/
+
+
+
+                        if (nEPIndex%2==0)
+                        {
+                            (*neighIter)->adjustHeightProfile(newDz,(*neighIter)->getEndPoint(nEPIndex+1));
+                        }
+                        else
+                        {
+                            (*neighIter)->adjustHeightProfile(newDz,(*neighIter)->getEndPoint(nEPIndex-1));
+                        }
+                    }
+
+                    this->recursionStopperAdj=false;
+                }
+                nEPIndex++;
+            }
+        }
+
+
+
+
+       /* for (int i = 0; i < this->neighbours->count(); i++)
+        {
+            if ((*neighIter)!=NULL && !this->recursionStopper)
+            {
+                int k = 0;
+                while ((*neighIter)->getEndPoint(k)!=NULL)
+                {
+                    rect = QRectF((*neighIter)->getEndPoint(k)->x()-2.5,(*neighIter)->getEndPoint(k)->y()-2.5,5,5);
+                    if (rect.contains(*point))
+                    {
+                        this->recursionStopper=true;
+                        qreal ang = ((HeightPathItem*)this->endPointsHeightGraphics->at(index))->getAngle();
+                        cout << ang << endl;
+                        this->recursionStopper=false;
+                        break;
+                    }
+
+                    k++;
+                }
+
+            }
+
+            neighIter++;
+
+        }*/
+    }
+
+    this->recursionStopper=false;
     this->updateEndPointsHeightGraphics();
-
 
     return 0;
 }
 
-void ModelItem::updateEndPointsHeightGraphics()
+void ModelItem::updateEndPointsHeightGraphics(bool forceUpdate)
 {
+    if (!forceUpdate && this->recursionStopper)
+        return;
 
 
+
+    if (app!=NULL)
+        updateCallCount++;
     qreal gaugeHalf = 8;
     /*this->prodLine->getScaleEnum()/2.0;
     if (!this->prodLine->getType())
@@ -1771,7 +1906,7 @@ void ModelItem::updateEndPointsHeightGraphics()
                 b.setColor(Qt::blue);
 
             ModelItem * n = this->getNeighbour(i);
-            if (n!=NULL && !this->recursionStopper)
+            if (n!=NULL)// && !this->recursionStopper)
             {
                 this->recursionStopper=true;
                 n->updateEndPointsHeightGraphics();
@@ -1826,6 +1961,12 @@ void ModelItem::updateEndPointsHeightGraphics()
                     else
                         hpi = new HeightPathItem(*(HeightPathItem*)(*this->endPointsHeightGraphics->begin()));
 
+                    if (this->slotTrackInfo->numberOfLanes>1)
+                    {
+                        //if there is any neighbour on "the left side"
+                        //here
+                    }
+
                     //gpiProfile->setParentItem(hpi);
                     hpi->setPath(gpiProfile->path());
                     hpi->setBrush(gpiProfile->brush());
@@ -1834,8 +1975,8 @@ void ModelItem::updateEndPointsHeightGraphics()
                     hpi->setVisible(gpiProfile->isVisible());
                     hpi->setFlag(QGraphicsItem::ItemIsSelectable,true);
                     (*grIter)=hpi;
-                    if (app!=NULL)
-                        app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(hpi);
+                    //if (app!=NULL)
+                    app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(hpi);
 
                 }
 
@@ -1866,6 +2007,7 @@ void ModelItem::updateEndPointsHeightGraphics()
 
     }
 
+    this->recursionStopper=true;
 
 }
 
@@ -1986,15 +2128,28 @@ int ModelItem::setNeighbour(ModelItem *neighbour, QPointF *pos)
         iter++;
     }
 
-    if (index < 0)
+    if (index < 0 || index>=this->endPoints->count())
         return 2;
 
-
-    //QList<ModelItem*>::Iterator i = this->neighbours->begin();
-    //while (*i != this->neighbours->at(index))
-    //    i++;
-
     *iter=neighbour;
+    if (this->slotTrackInfo!=NULL)
+    {
+        int nIndex = 0;
+        for (int i = 0; i < (neighbour)->endPoints->count();i++)
+        {
+            if (*(neighbour)->endPoints->at(i)==*pos)
+            {
+                nIndex = i;
+                break;
+            }
+        }
+
+        HeightPathItem * hpi = (HeightPathItem*)neighbour->endPointsHeightGraphics->at(nIndex);
+        HeightPathItem * hpi2 = (HeightPathItem*)this->endPointsHeightGraphics->at(index);
+        hpi->setAngle(hpi2->getAngle());
+    }
+
+
     return 0;
 }
 
@@ -2803,6 +2958,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
 
     item->setParentFragment(this);
     this->fragmentItems->push_back(item);
+
     //find fragment's endPoint which equals to "point" parameter and remove it - it can't be used as endPoint anymore
     qreal currentFragmentRotation = 0;
     ModelItem * endPointItem = NULL;
@@ -2817,12 +2973,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
             //get frag. rotation and then remove it from the list - won't be used
             currentFragmentRotation = this->endPointsAngles->at(i);
             endPointItem = this->endPointsItems->at(i);
-
-
-
             this->removeEndPoint(*iter);
-
-            //this->endPoints->removeAt(i);
             break;
         }
         iter++;
@@ -2845,18 +2996,19 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
         item->updateEndPointsHeightGraphics();
     }
 
+    cout << "Debug: " << item->getType() << ", rotated by:" <<currentFragmentRotation-(item->getTurnDegree(0)) << endl;
+
 
     QPointF pointOfInsertion(*point);
 
 
 
+    //by default item's endPoints are in local item's coordinates (center of item=[0,0] => without -(i.EP(0)) "point" parameter would be in the [0,0] of "item" parameter
     *point-=*item->getEndPoint(0);
     qreal dx = point->x();
     qreal dy = point->y();
 
-
-
-
+    //this fixes the strange behaviour of T1 2D Model
     if (item->getType()==T1)
     {
         item->rotate(180);
@@ -2867,7 +3019,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
     item->moveBy(dx,dy);
 
 
-    //inserted item has been moved so it can finally be checked whether more frag.endPoints can be removed
+    //inserted item has been moved so it can finally be checked (because its points are now in global coords) whether more frag.endPoints can be removed
     QList<int> doNotAddThese;
     if (item->getSlotTrackInfo()!=NULL)
     {
@@ -2880,8 +3032,28 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
                 {
                     this->removeEndPoint(*iter);
                     /**
-                      this should be improved
+                      this should be changed
 */
+                    iter=this->endPoints->begin();
+                    doNotAddThese.push_back(j);
+                    iter--;
+                    break;
+                }
+            }
+            iter++;
+        }
+    }
+    else
+    {
+        iter=this->endPoints->begin();
+        while (iter!=this->endPoints->end())
+        {
+            for (int j = 0; item->getEndPoint(j)!=NULL; j++)
+            {
+                if (**iter==*item->getEndPoint(j))
+                {
+                    this->removeEndPoint(*iter);
+
                     iter=this->endPoints->begin();
                     doNotAddThese.push_back(j);
                     iter--;
@@ -2894,26 +3066,49 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
 
     qreal newFragmentRotation = item->getTurnDegree();
 
-    this->endPointsAngles->push_back(newFragmentRotation);
 
+    if (!doNotAddThese.contains(1))
+        this->endPointsAngles->push_back(newFragmentRotation);
+    /*
+    else
+    {
+        int index = 2;
+        while (item->getEndPoint(index)!=NULL)
+        {
+            if (!doNotAddThese.contains(index))
+            {
+                this->endPointsAngles->push_back(item->getTurnDegree(index));
+                break;
+            }
+            index++;
+        }
+    }
+*/
 
     //set height profile of inserted item to h.p. of endPoint at which the item is being inserted
     int dz = endPointItem->getHeightProfileAt(&pointOfInsertion);
     item->adjustHeightProfile(dz,&pointOfInsertion);
     if (item->getType()==C1 || item->getType()==S1)
         item->adjustHeightProfile(dz,item->getEndPoint());
+
+
+
     if (item->getSlotTrackInfo()!=NULL)
     {
-        //for each lane modify height - adjust it by the height of fragments height at the same endpoint
-        for (int k = 1; k < item->getSlotTrackInfo()->numberOfLanes; k++)
-        {}
+
+        //for each remaining lane: modify height - adjust it by the height of fragments height at the same endpoint
+        for (int k = 2; k < 2*item->getSlotTrackInfo()->numberOfLanes; k+=2)
+        {
+
+            qreal dzLane = endPointItem->getHeightProfileAt(item->getEndPoint(k));
+            item->adjustHeightProfile(dzLane,item->getEndPoint(k));
+            item->adjustHeightProfile(dzLane,item->getEndPoint(k+1));
+
+
+        }
+        //*/
+
     }
-
-
-/**
-  TODO
-  -SLOTTRACK PARTS' NEIGHBOURS
-*/
 
     //set neighbours of both endItem and inserted item
     endPointItem->setNeighbour(item,&pointOfInsertion);
@@ -2924,15 +3119,25 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
 
 
 
+
+    ///TODO: MOVE IT
+    //update graphic representation of fragment
     app->getWindow()->getWorkspaceWidget()->updateFragment(this);
 
 
     QPointF * newPt = NULL;
+
+    /**
+      TODO
+      -change it so that if [1] is not usable, next usable ep will be used as newPt
+*/
     if (item->getEndPoint()!=NULL)
          newPt = new QPointF(item->getEndPoint()->x(),item->getEndPoint()->y());
 
     bool connected = false;
 
+
+/*
     if (newPt!=NULL)
     {
         //check if fragment endPoints can be connected
@@ -2946,8 +3151,8 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
                 if (aS < 5)
                 {
                     //close the fragment
-                    connected = true;
-                    this->removeEndPoint(this->endPoints->at(i));
+                    ///connected = true;
+                    ///this->removeEndPoint(this->endPoints->at(i));
                     //fix the appearance of fragment
                     //if (aS > pS) -> rotate else move
                 }
@@ -2955,14 +3160,15 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
 
         }
     }
+*/
 
-
-    if (connected || newPt==NULL)
-    {
+    if (newPt==NULL)
+    {/*
         if (newPt!=NULL)
             *newPt=QPointF(0,0);
-        else
-            newPt = new QPointF(0,0);
+        else*/
+        newPt = new QPointF(0,0);
+
         app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPt);
         app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
         this->endPointsAngles->removeOne(newFragmentRotation);
@@ -2973,7 +3179,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
 
 
 
-        if (item->getEndPoint()!=NULL)
+        if (item->getEndPoint()!=NULL && !doNotAddThese.contains(1))
         {
             this->addEndPoint(item->getEndPoint());
             this->endPointsItems->push_back(item);
@@ -2985,7 +3191,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
         {
             if (!doNotAddThese.empty())
             {
-                if (index!=doNotAddThese.first())
+                if (!doNotAddThese.contains(index))
                 {
                     this->addEndPoint(item->getEndPoint(index));
                     this->endPointsAngles->push_back(item->getTurnDegree(index));
@@ -2993,9 +3199,17 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
                 }
                 else
                 {
+                    /**
+                      TODO
+                      -THIS IS WRONG FOR RAIL PARTS - NEIGHBOURS ARE INCORRECT
+                      -angles are not set correctly
+                      */
+                    doNotAddThese.removeOne(index);
+                    //for slot track
                     item->setNeighbour(endPointItem,item->getEndPoint(index));
                     endPointItem->setNeighbour(item,item->getEndPoint(index));
-                    doNotAddThese.pop_front();
+                    //for rail find neighbour at point
+                    //
                 }
             }
             else
@@ -3009,9 +3223,19 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point)
         }
     }
 
+    if (this->endPoints->empty())
+    {
+        newPt = new QPointF(0,0);
+
+        app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPt);
+        app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
+
+    }
 
 
-     return 0;
+
+
+       return 0;
 }
 
 int ModelFragment::deleteFragmentItem(ModelItem *item)

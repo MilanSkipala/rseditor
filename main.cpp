@@ -9,6 +9,8 @@ QString folderPathLinux  = "./RTEditor/";
 QString folderPathWin  = ".\\RTEditor\\";
 Application * app;
 
+int adjustCallCount = 0;
+int updateCallCount = 0;
 
 int main(int argc, char ** argv)
 {
@@ -16,12 +18,15 @@ int main(int argc, char ** argv)
     Application application(argc,argv);
     app = &application;
     application.getWindow()->show();
-    return application.exec();
+    int result = application.exec();
+    int a = adjustCallCount;
+    int u = updateCallCount;
+    return result;
 }
 /*
  *DB - instead of "-8" and "(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum()" use another variable
  *?generateModel? - text positioning should be dependent on ScaleEnum
- *
+ *horrible performance when there are some items in scene and height profile is turned on
 */
 
 /*

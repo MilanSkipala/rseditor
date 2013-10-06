@@ -11,9 +11,14 @@ HeightPathItem::HeightPathItem(ModelItem *item, QGraphicsItem *parent) : QGraphi
     this->slotTrackDialog=NULL;
     this->latSpinBox=NULL;
     this->longSpinBox=NULL;
-    this->lastLatSBValue=0;
+    this->lastLatSBValue=new int;
+    *this->lastLatSBValue=0;
     this->lastLongSBValue=0;
     this->slotTrackDialog = this->initSlotTrackDialog();
+    this->latAngle = new qreal;
+    *this->latAngle = 0;
+    this->setFlag(QGraphicsItem::ItemIsMovable,true);
+
 
 }
 
@@ -23,10 +28,13 @@ HeightPathItem::HeightPathItem(ModelItem *item, const QPainterPath &path, QGraph
     this->slotTrackDialog=NULL;
     this->latSpinBox=NULL;
     this->longSpinBox=NULL;
-    this->lastLatSBValue=0;
+    this->lastLatSBValue=new int;
+    *this->lastLatSBValue=0;
     this->lastLongSBValue=0;
     this->slotTrackDialog = this->initSlotTrackDialog();
-
+    this->latAngle = new qreal;
+    *this->latAngle = 0;
+    this->setFlag(QGraphicsItem::ItemIsMovable,true);
 }
 
 HeightPathItem::HeightPathItem(const HeightPathItem &hpi)
@@ -37,7 +45,8 @@ HeightPathItem::HeightPathItem(const HeightPathItem &hpi)
     this->longSpinBox=hpi.longSpinBox;
     this->lastLongSBValue=hpi.lastLongSBValue;
     this->lastLatSBValue=hpi.lastLatSBValue;
-
+    this->latAngle = hpi.latAngle;
+    this->setFlag(QGraphicsItem::ItemIsMovable,true);
 }
 
 QDialog * HeightPathItem::initSlotTrackDialog()
@@ -77,7 +86,7 @@ QDialog * HeightPathItem::initSlotTrackDialog()
         {
             this->latSpinBox = new QSpinBox(this->slotTrackDialog);
             //this->latSpinBox->setValue(this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(0))-this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(2)));
-            this->latSpinBox->setValue(this->lastLatSBValue);
+            this->latSpinBox->setValue(*this->lastLatSBValue);
 
             this->latSpinBox->setMaximum(512);
             this->latSpinBox->setMinimum(-512);
@@ -104,85 +113,159 @@ QDialog * HeightPathItem::initSlotTrackDialog()
     return pointer;
 }
 
+void HeightPathItem::setAngle(qreal angle)
+{
+
+    qreal latClimb = 0;
+    if ((this->parentItem->getType()==S1 ||
+        this->parentItem->getType()==J5 ||
+        this->parentItem->getType()==X1 ||
+        this->parentItem->getType()==X2 ||
+        this->parentItem->getType()==JM ||
+        this->parentItem->getType()==HE ||
+        this->parentItem->getType()==HS
+         ))
+        latClimb = sin(angle*PI/180)*(2*abs(this->parentItem->getRadius()));
+    else
+        latClimb = sin(angle*PI/180)*(abs(this->parentItem->getRadius()-this->parentItem->getSecondRadius()));
+
+    *this->latAngle=angle;
+    *this->lastLatSBValue=latClimb;
+    this->latSpinBox->setValue(latClimb);
+
+    /*cout << (int)this->parentItem << ", PtAddr:" << (int)this << ", lastVal:"<<(int)this->lastLatSBValue<< "||||" << endl;
+    cout << this->parentItem->getType() << endl;*/
+}
+
+qreal HeightPathItem::getAngle() const
+{
+    return *this->latAngle;
+}
+
+
 void HeightPathItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
 
     QGraphicsPathItem::mousePressEvent(event);
-    if (this->boundingRect().contains(event->scenePos()))
+    /*
+    if (this->boundingRect().contains(event->pos()))
         this->slotTrackDialog->exec();
+    */
+}
 
+void HeightPathItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsPathItem::mouseDoubleClickEvent(event);
+    if (this->boundingRect().contains(event->pos()))
+        this->slotTrackDialog->exec();
 }
 
 /**
   TODO
-  -modify it for HE,HS parts
+  -modify it for HE,HS, JUMP parts
 */
 void HeightPathItem::adjustHeightOfParentItem()
 {
     //get longitudinal climb
 
 
+    cout << (int)this->parentItem << ", PtAddr:" << (int)this << ", lastVal:"<<(int)this->lastLatSBValue<<endl;
+
     int longClimb = this->longSpinBox->value()-this->lastLongSBValue;
     ModelItem * mi = this->parentItem;
-    int index = 1;
+
+    int index = 0;
+    //get lateral climb if there are 2 lanes or more
+    if (this->parentItem->getSlotTrackInfo()->numberOfLanes>=2)
+    {
+
+
+        int latClimb = this->latSpinBox->value();///-this->lastLatSBValue;
+        //add if for curved parts
+        QPointF point;//(abs(this->parentItem->getRadius()),0);
+        QPointF point2(abs(this->parentItem->getRadius())-this->parentItem->getSlotTrackInfo()->fstLaneDist,0);
+        qreal angle;
+        qreal previousAngle = 0;
+
+
+
+        if ((this->parentItem->getType()==S1 ||
+            this->parentItem->getType()==J5 ||
+            this->parentItem->getType()==X1 ||
+            this->parentItem->getType()==X2 ||
+            this->parentItem->getType()==JM ||
+            this->parentItem->getType()==HE ||
+            this->parentItem->getType()==HS
+             )
+              ) //modify X1 and add remaining "straight" parts
+        {
+            //point.setX(2*point.x());
+            point2=QPointF(abs(this->parentItem->getRadius()*2)-this->parentItem->getSlotTrackInfo()->fstLaneDist,0);
+            angle = 180/PI*asin(latClimb/(2*abs(this->parentItem->getRadius())))-*this->latAngle;
+        }
+        else
+        {
+            //point.setX(point.x()-abs(this->parentItem->getSecondRadius()));
+            point2.setX(point2.x()-abs(this->parentItem->getSecondRadius()));
+            angle = 180/PI*asin(latClimb/(abs(this->parentItem->getRadius()-this->parentItem->getSecondRadius())))-*this->latAngle;
+
+
+        }
+
+        point = point2;
+
+        if (((int)angle-(int)*this->latAngle)!=0)//this->latSpinBox->value()-this->lastLatSBValue!=0)
+            *this->latAngle=angle+*this->latAngle;
+
+/**
+  TODO
+  -FOLLOWING FOR HAS TO BE MODIFIED TO HANDLE HE AND HS TRACK PARTS
+*/
+
+        if (this->latSpinBox->value()-*this->lastLatSBValue!=0)//(((int)angle-(int)*this->latAngle)!=0)//
+        {
+            for (int i = 0; i < this->parentItem->getSlotTrackInfo()->numberOfLanes*2; i+=2)
+            {
+                rotatePoint(&point,*this->latAngle-angle);
+                qreal yOld = point.y();
+                rotatePoint(&point,angle);
+
+                    if (this->parentItem->getSlotTrackInfo()->numberOfLanes>1)
+                    {
+                        *this->lastLatSBValue=this->latSpinBox->value();
+                    }
+
+
+
+                    int currZ = this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(i));
+                    this->parentItem->adjustHeightProfile((int)point.y()-yOld,this->parentItem->getEndPoint(i));
+                    //this->parentItem->adjustHeightProfile((int)point.y()-currZ,this->parentItem->getEndPoint(i));
+                    currZ = this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(i+1));
+                    this->parentItem->adjustHeightProfile((int)point.y()-yOld,this->parentItem->getEndPoint(i+1));
+                    //this->parentItem->adjustHeightProfile((int)point.y()-currZ,this->parentItem->getEndPoint(i+1));
+
+                point2.setX(point2.x()-this->parentItem->getSlotTrackInfo()->lanesGauge);
+                point=point2;
+            }
+        }
+
+
+
+        QPointF ptDebug(156,0);
+        rotatePoint(&ptDebug,angle);
+
+    }
+
+    index = 1;
     //adjust height by long. climb
     while (mi->getEndPoint(index)!=NULL)
     {
         mi->adjustHeightProfile(longClimb,mi->getEndPoint(index));
         index+=2;
     }
-    index = 0;
-    //get lateral climb if there are 2 lanes or more
-    if (this->parentItem->getSlotTrackInfo()->numberOfLanes>=2)
-    {
-        int latClimb = this->latSpinBox->value()-this->lastLatSBValue;
-        //qreal angle = atan(latClimb/(this->parentItem->getSlotTrackInfo()->lanesGauge*this->parentItem->getSlotTrackInfo()->numberOfLanes));
-        qreal angle = sin(latClimb/(this->parentItem->getSlotTrackInfo()->lanesGauge*(this->parentItem->getSlotTrackInfo()->numberOfLanes-1)+2*this->parentItem->getSlotTrackInfo()->fstLaneDist));
-        angle = angle * 180/PI;
-        //create a list which represents end points of one side of the item
 
-        ///incorrect results for curved parts
-        QPointF point(abs(this->parentItem->getRadius()),0);
-        if (!(this->parentItem->getType()==S1 ||
-            this->parentItem->getType()==J5 ||
-            this->parentItem->getType()==X1 ||
-            this->parentItem->getType()==X2)
-              ) //modify X1 and add remaining "straight" parts
-            point.setX(point.x()-abs(this->parentItem->getSecondRadius()));
-        else
-            point.setX(2*point.x());
-        QPointF point2(abs(this->parentItem->getRadius())-this->parentItem->getSlotTrackInfo()->fstLaneDist,0);
-        if (!(this->parentItem->getType()==S1 ||
-            this->parentItem->getType()==J5 ||
-            this->parentItem->getType()==X1 ||
-            this->parentItem->getType()==X2)
-              ) //modify X1 and add remaining "straight" parts
-            point2.setX(point2.x()-abs(this->parentItem->getSecondRadius()));
-        else
-            point2=QPointF(abs(this->parentItem->getRadius()*2)-this->parentItem->getSlotTrackInfo()->fstLaneDist,0);
 
-        point = point2;
 
-        for (int i = 0; i < this->parentItem->getSlotTrackInfo()->numberOfLanes*2; i+=2)
-        {
-            rotatePoint(&point,angle);
-
-/*
-            QPointF temp(-this->parentItem->getSecondRadius(),point2.x());
-            QPointF temp2(this->parentItem->getSecondRadius(),point2.x());
-            this->parentItem->adjustHeightProfile((int)point.y(),&temp);
-            this->parentItem->adjustHeightProfile((int)point.y(),&temp2);
-*/
-                this->parentItem->adjustHeightProfile((int)point.y(),this->parentItem->getEndPoint(i));
-            this->parentItem->adjustHeightProfile((int)point.y(),this->parentItem->getEndPoint(i+1));
-            //debug this
-
-            point2.setX(point2.x()-this->parentItem->getSlotTrackInfo()->lanesGauge);
-            point=point2;
-
-        }
-    }
-    this->lastLatSBValue=this->latSpinBox->value();
     this->lastLongSBValue=this->longSpinBox->value();
     this->slotTrackDialog->close();
 }

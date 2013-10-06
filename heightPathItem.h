@@ -16,7 +16,9 @@ class HeightPathItem : public QObject, public QGraphicsPathItem
     QSpinBox * longSpinBox;
     QSpinBox * latSpinBox;
     int lastLongSBValue;
-    int lastLatSBValue;
+    //int lastLatSBValue;
+    int * lastLatSBValue;
+    qreal * latAngle;
 
 public:
     HeightPathItem(ModelItem * item, QGraphicsItem * parent = 0);
@@ -24,8 +26,11 @@ public:
     //copies only HPI attributes - paths, brushes, etc. has to be copied manually thus it should be moved in copy c.
     HeightPathItem(const HeightPathItem &hpi);
     QDialog *initSlotTrackDialog();
+    void setAngle(qreal angle);
+    qreal getAngle() const;
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
 public slots:
     void adjustHeightOfParentItem();

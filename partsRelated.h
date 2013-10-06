@@ -113,6 +113,7 @@ class ModelItem
     SlotTrackInfo * slotTrackInfo;
 
     bool recursionStopper;
+    bool recursionStopperAdj;
 
 public:
     //use this constructor only if QWidget isn't inherited
@@ -171,8 +172,8 @@ public:
 */
     void setSecondRadius (qreal radi2);
 
-    int adjustHeightProfile(int dz, QPointF * point);
-    void updateEndPointsHeightGraphics();
+    int adjustHeightProfile(int dz, QPointF * point);//, bool ignoreRecursionStopper = false);
+    void updateEndPointsHeightGraphics(bool forceUpdate = false);
     int getHeightProfileAt(QPointF * point);
 
 
