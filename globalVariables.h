@@ -1,8 +1,13 @@
 #ifndef GLOBALVARIABLES_H
 #define GLOBALVARIABLES_H
-
+#include <fstream>
 #include <QString>
 #include "application.h"
+
+
+#define TOLERANCE_HALF 2.5 //5 points (=> milimeters
+#define TOLERANCE_ANGLE 5.0 //5 deg.
+
 /**
   CHANGE!!
 */
@@ -15,6 +20,6 @@ extern Application * app;
 extern int adjustCallCount;
 extern int updateCallCount;
 
-
+extern fstream logFile;
 
 #endif // GLOBALVARIABLES_H

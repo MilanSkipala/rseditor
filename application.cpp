@@ -22,6 +22,9 @@ Application::Application(int argc, char ** argv) : QApplication(argc, argv)
 
 Application::~Application()
 {
+    logFile << "~Application";
+    logFile.close();
+    app=NULL;
     delete this->appData;
     delete this->window;
     delete this->userPreferences;

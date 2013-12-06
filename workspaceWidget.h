@@ -26,6 +26,7 @@ class WorkspaceWidget : public QGraphicsView ///public QScrollArea ///IMPLEMENTA
     QList<ModelItem*> * selection;
     bool mousePress;
     bool ctrlPress;
+    bool deletePress;
 
     bool rotationMode;
     bool heightProfileMode;
@@ -36,8 +37,10 @@ public:
     int selectItem(ModelItem* item);
     int deselectItem(ModelItem* item);
 
+    int connectFragments(ModelFragment * a);
+    /**
     int connectFragments(ModelFragment * a, ModelFragment * b, QPointF * aP, QPointF * bP);///MISSING
-    int connectFragments(int index1, int index2, QPointF * aP, QPointF * bP);///MISSING
+    int connectFragments(int index1, int index2, QPointF * aP, QPointF * bP);///MISSING*/
     //int disconnectFragments(ModelFragment * a, ModelFragment * b);///MISSING
     //int disconnectFragments(int index1, int index2);///MISSING
     int addFragment(ModelFragment * frag);///INCOMPLETE
@@ -49,7 +52,7 @@ public:
     ModelFragment * findFragmentByApproxPos(QPointF * point);
     ModelItem * findItemByApproxPos(QPointF * point);
 
-
+    int getFragmentIndex(ModelFragment* frag);
 
     ModelFragment * getActiveFragment() const;
     void setActiveFragment(ModelFragment * frag);
@@ -69,6 +72,8 @@ public:
 
     bool getRotationMode();
     bool getHeightProfileMode();
+
+    bool getDeletePress() const;
 
 public slots:
     void toggleRotationMode();

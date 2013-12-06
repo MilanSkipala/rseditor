@@ -9,11 +9,15 @@ QString folderPathLinux  = "./RTEditor/";
 QString folderPathWin  = ".\\RTEditor\\";
 Application * app;
 
+fstream logFile;
+
 int adjustCallCount = 0;
 int updateCallCount = 0;
 
 int main(int argc, char ** argv)
 {
+    logFile.open("log.txt",ios_base::out);
+    logFile << "application is starting" << endl;
     //QApplication app(argc,argv);
     Application application(argc,argv);
     app = &application;

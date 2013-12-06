@@ -123,8 +123,7 @@ void HeightPathItem::setAngle(qreal angle)
         this->parentItem->getType()==X2 ||
         this->parentItem->getType()==JM ||
         this->parentItem->getType()==HE ||
-        this->parentItem->getType()==HS
-         ))
+        this->parentItem->getType()==HS))
         latClimb = sin(angle*PI/180)*(2*abs(this->parentItem->getRadius()));
     else
         latClimb = sin(angle*PI/180)*(abs(this->parentItem->getRadius()-this->parentItem->getSecondRadius()));

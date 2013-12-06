@@ -6,6 +6,7 @@
 #include "itemTypeEnums.h"
 #include "scales.h"
 
+class WorkspaceWidget;
 class ProductLine;
 class ModelItem;
 class GraphicsPathItem : public QObject, public QGraphicsPathItem
@@ -28,6 +29,7 @@ class GraphicsPathItem : public QObject, public QGraphicsPathItem
 public:
     GraphicsPathItem(ModelItem * item, QGraphicsItem * parent = 0);
     GraphicsPathItem(ModelItem * item, const QPainterPath & path, QGraphicsItem * parent = 0);
+    ~GraphicsPathItem();
     bool contains( const QPointF & point ) const;
     QRectF boundingRect() const;
     QPainterPath shape() const;
@@ -71,6 +73,8 @@ class SlotTrackInfo
      *-SlotTrackInfo.fstLaneDist stores the distance of the first "outer-most" lane
 */
 public:
+    SlotTrackInfo();
+    SlotTrackInfo(const SlotTrackInfo & s);
     unsigned int numberOfLanes;
     qreal lanesGauge;
     qreal lanesGaugeEnd; //is used only for SB part - straight bottleneck
@@ -131,13 +135,15 @@ public:
               QList<QPointF> & endPoints ,QList<qreal> angles, qreal turnRadius,
               qreal width, qreal height, ItemType type, ProductLine * prodLine, QWidget * parentWidg = 0);
 
+    ~ModelItem();
 
     QString * getPartNo() const;
     QString * getNameEn() const;
     QString * getNameCs() const;
     ////QPointF * getStartPoint() const;
     QPointF * getEndPoint(int index = 1) const;
-    qreal getTurnDegree(int index = 1) const;
+    qreal getTurnAngle(int index = 1) const;
+    qreal getTurnAngle(QPointF * pt) const;
     qreal getRadius() const;
     qreal getItemWidth() const;
     qreal getItemHeight() const;
@@ -183,6 +189,7 @@ public:
 
 
     void setEndPointAngle(int index, qreal angle);
+    void setEndPointAngle(QPointF * pt, qreal angle);
 
     SlotTrackInfo * getSlotTrackInfo();
     int setSlotTrackInfo(SlotTrackInfo * s);
@@ -192,6 +199,9 @@ public:
 
     int setNeighbour(ModelItem * neighbour, int index);
     int setNeighbour(ModelItem * neighbour, QPointF * pos);
+
+    bool leftRightDifference180 (int index1, int index2) const;
+    bool leftRightDifference180 (QPointF * pt1, QPointF * pt2) const;
 
 protected:
 
@@ -242,6 +252,8 @@ class ModelFragment// : public QWidget //inherits from QWidget, because QWidget 
 
     QDialog * infoDialog;
 
+    //friend WorkspaceWidget;
+
 public:
     ////add new constructor without startPt
     ModelFragment();
@@ -249,14 +261,21 @@ public:
     ModelFragment(ModelItem* item);
     //ModelFragmentWidget(ModelFragmentWidget * mfw);
 
+    ~ModelFragment();
+
+    ModelItem * findEndPointItem(QPointF * approxPos);
 
     QList <ModelItem*> * getFragmentItems() const;
     QList<ProductLine*> * getProductLines() const;
     QList<QPointF *> * getEndPoints() const;
+    QList<QGraphicsEllipseItem*> * getEndPointsGraphics() const;
     QList<qreal> * getEndPointsAngles() const;
+    QList<ModelItem*> * getEndPointsItems() const;
 
     int addFragmentItems(QList <ModelItem*> * listToAppend);
-    int addFragmentItem(ModelItem* item, QPointF * point);
+    int addFragmentItem(ModelItem* item, QPointF * point, int insertionIndex = 0);
+
+    //return-value -1 means that item is the only item of fragment and whole fragment should be deleted by workspacewidget
     int deleteFragmentItem(ModelItem * item);
     /* pseudocode:
      * ModelItem * toDelete = item;
@@ -270,7 +289,7 @@ public:
 
     int setStartPoint(QPointF * pt);
     //int addEndPoints (QList<QPointF *> * listToAppend);
-    int addEndPoint (QPointF* pt);
+    int addEndPoint (QPointF* pt, bool additionalInfo = false, qreal rotation = 0, ModelItem * endPointItem = NULL);
     int removeEndPoint (QPointF * pt);
     int removeEndPoint (int index);
     int setEndPointAngle(QPointF * pt, qreal angle);
@@ -282,9 +301,12 @@ public:
     void moveBy(qreal dx, qreal dy);
     void rotate(qreal angle, QPointF * center);
 
+    bool leftSide(ModelItem *item, ModelItem *&firstItemWith180Diff);
+
 };
 
 void makeNewItem(QPointF eventPos, GraphicsPathItem * gpi, ModelItem * parentItem, ModelItem * toMake, bool key);
+void recursivelyAdd(ModelItem * item, ModelFragment * fragment, QPointF *pt);
 
 
 #endif // PARTSRELATED_H
