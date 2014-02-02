@@ -9,11 +9,13 @@
 class WorkspaceWidget;
 class ProductLine;
 class ModelItem;
+
+/**
+  GPI class contains graphic representation of the item and some additional information
+*/
+
 class GraphicsPathItem : public QObject, public QGraphicsPathItem
 {
-    /*
-     *boundingRect(), shape(), and contains()
-    */
     Q_OBJECT
     GraphicsPathItem * restrictedCountPath;
     ModelItem * parentItem;
@@ -33,14 +35,30 @@ public:
     bool contains( const QPointF & point ) const;
     QRectF boundingRect() const;
     QPainterPath shape() const;
+    /**
+      method changeCountPath deletes old QGraphicsPathItem representing count of available parts
+      and creates new QGPI.
+      Parameter radius is used for computation of QGPI's position
+    */
     void changeCountPath(unsigned int count, qreal radius);
+
+    /**
+      initialize dialog using of which the count of available items can be changed
+    */
     int initDialog();
-    int initInfoDialog();
+    //int initInfoDialog();
+
+    /**
+      initialize context menus - 1 is used in SideBarWidget, 1 in WorkspaceWidget
+    */
     int initMenus();
 
     //protected events
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    /**
+      mouseDoubleClickEvent() calls creating of the new ModelItem instance which is based on the data of parentItem attribute
+    */
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -50,6 +68,9 @@ private slots:
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    /**
+      mouseMoveEvent() provides moving and rotation functionality
+    */
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
 
@@ -118,6 +139,7 @@ class ModelItem
 
     bool recursionStopper;
     bool recursionStopperAdj;
+    bool deleteFlag;
 
 public:
     //use this constructor only if QWidget isn't inherited
@@ -136,6 +158,9 @@ public:
               qreal width, qreal height, ItemType type, ProductLine * prodLine, QWidget * parentWidg = 0);
 
     ~ModelItem();
+
+    bool getDeleteFlag() const;
+    void setDeleteFlag();
 
     QString * getPartNo() const;
     QString * getNameEn() const;
@@ -200,7 +225,17 @@ public:
     int setNeighbour(ModelItem * neighbour, int index);
     int setNeighbour(ModelItem * neighbour, QPointF * pos);
 
+    /**
+     leftRightDifference180 returns if there is 180 deg. difference between two points
+     @param index1 index of the first point
+     @param index2 index of the second point
+     */
     bool leftRightDifference180 (int index1, int index2) const;
+    /**
+     leftRightDifference180 returns if there is 180 deg. difference between two points
+     @param pt1 the first point
+     @param pt2 the second point
+     */
     bool leftRightDifference180 (QPointF * pt1, QPointF * pt2) const;
 
 protected:
@@ -290,8 +325,8 @@ public:
     int setStartPoint(QPointF * pt);
     //int addEndPoints (QList<QPointF *> * listToAppend);
     int addEndPoint (QPointF* pt, bool additionalInfo = false, qreal rotation = 0, ModelItem * endPointItem = NULL);
-    int removeEndPoint (QPointF * pt);
-    int removeEndPoint (int index);
+    int removeEndPoint (QPointF *&pt);
+    //int removeEndPoint (int index);
     int setEndPointAngle(QPointF * pt, qreal angle);
     int setEndPointAngle(int index, qreal angle);
 
@@ -304,9 +339,18 @@ public:
     bool leftSide(ModelItem *item, ModelItem *&firstItemWith180Diff);
 
 };
-
+/**
+ * @brief makeNewItem creates new instance of ModelItem based on the parameters and either creates new fragment or inserts the new instance
+ * into the current active fragment
+ * @param eventPos position of mouseEvent - decides whether the left or right turn/item will be created
+ * @param gpi graphic representation of the original item
+ * @param parentItem
+ * @param toMake
+ * @param key
+ */
 void makeNewItem(QPointF eventPos, GraphicsPathItem * gpi, ModelItem * parentItem, ModelItem * toMake, bool key);
 void recursivelyAdd(ModelItem * item, ModelFragment * fragment, QPointF *pt);
+void rebuildFragment(ModelItem * startItem, ModelFragment * fragment);
 
 
 #endif // PARTSRELATED_H

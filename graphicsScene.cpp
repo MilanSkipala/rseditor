@@ -26,7 +26,7 @@ void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         if (app->getWindow()->getWorkspaceWidget()->getHeightProfileMode())
         {
             QPointF * pos = new QPointF(event->scenePos());
-            ModelItem* item = app->getWindow()->getWorkspaceWidget()->findItemByApproxPos(pos);
+            ModelItem* item = app->getWindow()->getWorkspaceWidget()->findItemByApproxPos(pos,NULL);
             if (item!=NULL)
             {
                 app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(pos);

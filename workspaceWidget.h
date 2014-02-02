@@ -50,7 +50,7 @@ public:
     //value of point will be modified to value of endpoint which was found.
     //if it is too far, function returns NULL and *point remains the same.
     ModelFragment * findFragmentByApproxPos(QPointF * point);
-    ModelItem * findItemByApproxPos(QPointF * point);
+    ModelItem * findItemByApproxPos(QPointF * point, ModelItem * dontWantThisItem);
 
     int getFragmentIndex(ModelFragment* frag);
 

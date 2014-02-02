@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QComboBox>
 #include <QContextMenuEvent>
+#include <QMessageBox>
 #include <QGLWidget>
 #include <QGraphicsItem>
 #include <QGraphicsSceneMouseEvent>

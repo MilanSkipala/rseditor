@@ -20,14 +20,14 @@ Radius=437
 
 [12345abcde]
 NameEn=Turnout Manual C Track
-NameCs=vyhýbka manuální profil C
+NameCs=výhybka manuální profil C
 Type=J5
 Radius=90
 Radius2=25
 
 [24xyz]
 NameEn=Turnout Manual C Track
-NameCs=vyhýbka manuální profil C
+NameCs=výhybka manuální profil C
 Type=J2
 Degree=30
 Angle2=0
@@ -44,7 +44,7 @@ Radius2=572.50
 
 [24612]
 NameEn=Turnout Manual C Track
-NameCs=vyhýbka manuální profil C
+NameCs=výhybka manuální profil C
 Type=J1
 Degree=24.3
 Angle2=0
@@ -161,7 +161,7 @@ Radius=78
 Radius2=175
 FirstLane=39
 LaneDist=78
-LanesNum=2
+LanesNum=4
 
 [C2345]
 NameEn=straight 350
@@ -224,3 +224,69 @@ FirstLane=39
 LaneDist=39
 LanesNum=2
 
+[[[Tillig]]]
+Type=1
+Scale=H0
+Gauge=Standard
+
+[[Track]]
+[82119]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=22.5
+Radius=380
+
+[82820]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=425.2
+
+[82322]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J2
+Degree=15
+Angle2=0
+Radius=600
+
+
+[82321]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J1
+Degree=15
+Angle2=0
+Radius=600
+
+
+
+[24064]
+NameEn=Straight
+NameCs=rovinka
+Type=E1
+Degree=0
+Radius=80
+
+
+[82124]
+NameEn=Straight track
+NameCs=rovinka
+Type=S1
+Degree=0
+Radius=114
+
+
+[[Accesories]]
+[xyz]
+NameEn
+NameCs
+AssociatedPartNo=20224
+
+[[Other models]]
+[abc]
+NameEn
+NameCs
+AssociatedModelData=txt file?

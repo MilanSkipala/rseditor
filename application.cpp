@@ -76,8 +76,9 @@ bool Application::setAllowMixedProductLines(bool mode)
 }
 int Application::setupUI()
 {
-    bool result = false;
-    result = this->window->setMainMenuBar(new QMenuBar(this->window));
+    //bool result = false;
+    //result = this->window->setMainMenuBar(new QMenuBar(this->window));
+    this->window->setMainMenuBar(new QMenuBar(this->window));
     this->window->setMenuBar(this->window->getMainMenuBar());
 
 
@@ -443,6 +444,12 @@ AppData::AppData()
     this->heightProfilePixmap = new QPixmap("./Ikony/HeightProfile.png");
     this->heightProfileUpPixmap = new QPixmap("./Ikony/HeightProfileUp.png");
     this->heightProfileDownPixmap = new QPixmap("./Ikony/HeightProfileDown.png");
+
+    this->messageDialog = new QMessageBox();
+    this->messageDialog->setText("");
+    this->messageDialog->setIcon(QMessageBox::Warning);
+    this->messageDialog->setButtonText(0,"OK");
+
 }
 
 QPixmap * AppData::getNewFilePixmap()
@@ -496,10 +503,30 @@ Database * AppData::getDatabase()
     return this->database;
 }
 
-Preferences::Preferences(QString *path)
+void AppData::setMessageDialogText(QString textEn, QString textCs)
 {
-
+    if (*app->getUserPreferences()->getLocale()==QString("EN"))
+        this->messageDialog->setText(textEn);
+    else
+        this->messageDialog->setText(textCs);
 }
 
+Preferences::Preferences(QString *path)
+{
+    ///...
+    this->locale = new QString("EN");
+    ///...
+}
+
+QString *Preferences::getLocale()
+{
+    return this->locale;
+}
+
+
+QMessageBox *AppData::getMessageDialog()
+{
+    return this->messageDialog;
+}
 
 

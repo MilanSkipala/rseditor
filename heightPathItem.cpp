@@ -5,7 +5,7 @@
 #include "globalVariables.h"
 #include "mathFunctions.h"
 
-HeightPathItem::HeightPathItem(ModelItem *item, QGraphicsItem *parent) : QGraphicsPathItem(parent), QObject()
+HeightPathItem::HeightPathItem(ModelItem *item, QGraphicsItem *parent) : QObject(), QGraphicsPathItem(parent)
 {
     this->parentItem=item;
     this->slotTrackDialog=NULL;
@@ -22,7 +22,7 @@ HeightPathItem::HeightPathItem(ModelItem *item, QGraphicsItem *parent) : QGraphi
 
 }
 
-HeightPathItem::HeightPathItem(ModelItem *item, const QPainterPath &path, QGraphicsItem *parent) : QGraphicsPathItem(path,parent), QObject()
+HeightPathItem::HeightPathItem(ModelItem *item, const QPainterPath &path, QGraphicsItem *parent) : QObject(), QGraphicsPathItem(path,parent)
 {
     this->parentItem=item;
     this->slotTrackDialog=NULL;
@@ -37,7 +37,7 @@ HeightPathItem::HeightPathItem(ModelItem *item, const QPainterPath &path, QGraph
     this->setFlag(QGraphicsItem::ItemIsMovable,true);
 }
 
-HeightPathItem::HeightPathItem(const HeightPathItem &hpi)
+HeightPathItem::HeightPathItem(const HeightPathItem &hpi): QGraphicsPathItem(), QObject()
 {
     this->parentItem=hpi.parentItem;
     this->slotTrackDialog=hpi.slotTrackDialog;
@@ -130,7 +130,8 @@ void HeightPathItem::setAngle(qreal angle)
 
     *this->latAngle=angle;
     *this->lastLatSBValue=latClimb;
-    this->latSpinBox->setValue(latClimb);
+    if (this->parentItem->getSlotTrackInfo()->numberOfLanes>1)
+        this->latSpinBox->setValue(latClimb);
 
     /*cout << (int)this->parentItem << ", PtAddr:" << (int)this << ", lastVal:"<<(int)this->lastLatSBValue<< "||||" << endl;
     cout << this->parentItem->getType() << endl;*/
@@ -223,7 +224,7 @@ void HeightPathItem::adjustHeightOfParentItem()
 
         if (this->latSpinBox->value()-*this->lastLatSBValue!=0)//(((int)angle-(int)*this->latAngle)!=0)//
         {
-            for (int i = 0; i < this->parentItem->getSlotTrackInfo()->numberOfLanes*2; i+=2)
+            for (unsigned int i = 0; i < this->parentItem->getSlotTrackInfo()->numberOfLanes*2; i+=2)
             {
                 rotatePoint(&point,*this->latAngle-angle);
                 qreal yOld = point.y();

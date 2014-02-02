@@ -546,7 +546,13 @@ Database::Database()
                 case T8:
                 case T9:
                 case T10:
-
+/*
+ this generates points in the way which complicates other algorithms
+ 0  n+1
+ 1  n+2
+ 2  n+3
+ 3  n+4
+ n  ...
                     pt1 = QPointF(-rad,0);
                     pt2 = QPointF(rad,0);
                     xLen = 2*rad;
@@ -575,7 +581,52 @@ Database::Database()
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+*/
 
+                    /*
+                     *this generates points in this way
+                     0  1
+                     2  3
+                     4  5
+                     .. ..
+*/
+                    pt1 = QPointF(-rad,0);
+                    pt2 = QPointF(rad,0);
+                    xLen = 2*rad;
+                    yHeight = (t-8)*(2*trackGaugeHalf+4);
+                    endPoints.append(generatePointCopies((t-8),pt1));
+                    endPoints.append(generatePointCopies((t-8),pt2));
+
+                    //!caution: xLen2 is used as "index"
+                    xLen2 = 0;
+
+                    endPointsIterator=endPoints.begin();
+                    while(xLen2!=(t-8))
+                    {
+                        movePoint(&*endPointsIterator,0,xLen2*(2*trackGaugeHalf+4));
+                        angles.push_back(0);
+                        endPointsIterator++;
+                        xLen2+=1;
+                    }
+                    xLen2=0;
+                    while (endPointsIterator!=endPoints.end())
+                    {
+                        movePoint(&*endPointsIterator,0,xLen2*(2*trackGaugeHalf+4));
+                        angles.push_back(0);
+                        endPointsIterator++;
+                        xLen2+=1;
+                    }
+                    xLen2=0;
+                    for (int i = 0; i < (t-8);i++)
+                    {
+                        endPoints.push_back(endPoints.at(i));
+                        endPoints.push_back(endPoints.at(i+t-8));
+                    }
+                    for (int i = 0; i < 2*(t-8);i++)
+                        endPoints.removeAt(0);
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
 
                     break;
                 default:
@@ -636,7 +687,7 @@ Database::Database()
                     yHeight -= trackGaugeHalf;
 
                     rad -=sti->fstLaneDist;
-                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
                     {
                         qreal ptX;// = 2*rad*(cos((90-(ang1/2.0))*PI/180));
                         qreal ptY;
@@ -669,7 +720,7 @@ Database::Database()
                     qreal ptX = radi2sl;
 
                     rad -=sti->fstLaneDist;
-                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
                     {
 
                         qreal ptY = rad;
@@ -715,7 +766,7 @@ Database::Database()
                     yHeight -= trackGaugeHalf;
 
                     rad -=sti->fstLaneDist;
-                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
                     {
                         qreal ptX = radi2sl;
                         qreal ptY = rad;
@@ -728,7 +779,7 @@ Database::Database()
                         rad-=sti->lanesGauge;
                     }
                     rad = sti->fstLaneDist;
-                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
                     {
                         qreal ptX = rad;
                         qreal ptY = radi2sl;
@@ -758,7 +809,7 @@ Database::Database()
 
                     rad -=sti->fstLaneDist;
                     qreal ptY2 = rad-(sti->lanesGauge-sti->lanesGaugeEnd);
-                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
                     {
                         qreal ptX = radi2sl;
                         qreal ptY = rad;
@@ -788,7 +839,7 @@ Database::Database()
 
                     rad -=sti->fstLaneDist;
                     qreal ptY2 = rad-(sti->lanesGauge-sti->lanesGaugeEnd);
-                    for (int i = 0; i < sti->numberOfLanes; i++)
+                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
                     {
                         qreal ptX = radi2sl;
                         qreal ptY = rad;

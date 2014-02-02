@@ -41,6 +41,8 @@ class AppData //IMPLEMENTATION COMPLETE ï¿½ï¿½ï¿½ï¿½-NOT ENOUGH PIXMAPS-ï¿½ï¿½ï¿
 
     Database * database;
 
+    QMessageBox * messageDialog;
+
 public:
     AppData();
     QPixmap * getNewFilePixmap()  ;
@@ -56,7 +58,11 @@ public:
     // ...
 
 
-    Database * getDatabase()  ;
+    Database * getDatabase();
+
+    void setMessageDialogText(QString textEn, QString textCs);
+    QMessageBox * getMessageDialog();
+
 };
 
 class Window : public QMainWindow ///IMPLEMENTATION INCOMPLETE
@@ -100,9 +106,9 @@ class Preferences
     ///...
 public:
     Preferences(QString * path);
-    QString * getLocale()  ;
-    QSize * getLastSize()  ;
-    QString ** getLastProjects()  ;
+    QString * getLocale();
+    QSize * getLastSize();
+    QString ** getLastProjects();
 };
 
 //probably should exist as a global variable (then you can remove some db and other pointers)
