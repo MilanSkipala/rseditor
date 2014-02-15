@@ -2,6 +2,7 @@
 #define INCLUDEHEADERS_H
 
 
+
 #include <iostream>
 #include <fstream>
 #include <QApplication>
@@ -21,6 +22,7 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QScrollBar>
 #include <QStatusBar>
 #include <QSvgWidget>
 #include <QToolBar>

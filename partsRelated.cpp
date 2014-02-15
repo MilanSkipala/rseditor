@@ -1738,6 +1738,10 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point)//, bool ignoreRecursi
     if (this->recursionStopperAdj)
         return 0;
 
+    QString str = QString("height point %1 %2 %3 %4 %5").arg(QString::number(dz),QString::number(point->x()),QString::number(point->y()),QString::number(this->contourModelNoText->scenePos().x()),QString::number(this->contourModelNoText->scenePos().y()));
+    QString negStr = QString("height point %1 %2 %3 %4 %5").arg(QString::number(-dz),QString::number(point->x()),QString::number(point->y()),QString::number(this->contourModelNoText->scenePos().x()),QString::number(this->contourModelNoText->scenePos().y()));
+    app->getWindow()->getWorkspaceWidget()->pushBackCommand(str,negStr);
+
     adjustCallCount++;
     if (point==NULL)
         return 1;
@@ -2179,7 +2183,7 @@ int ModelItem::setNeighbour(ModelItem *neighbour, QPointF *pos)
 
     for (int i = 0; i < this->endPoints->count();i++)
     {
-        if (*this->endPoints->at(i)==*pos)
+        if (pointsAreCloseEnough(this->endPoints->at(i),pos))
         {
             index = i;
             break;
@@ -2323,6 +2327,7 @@ GraphicsPathItem::GraphicsPathItem(ModelItem * item, QGraphicsItem * parent) : Q
 {
     this->setFlag(QGraphicsItem::ItemIsMovable,true);
     this->setFlag(QGraphicsItem::ItemIsSelectable,true);
+
     this->restrictedCountPath = NULL;
     this->parentItem=item;
     this->dialog=NULL;
@@ -2353,6 +2358,8 @@ GraphicsPathItem::~GraphicsPathItem()
 void GraphicsPathItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     this->mousePressed=true;
+
+    app->getWindow()->getWorkspaceWidget()->selectItem(this->parentItem);
 
     QGraphicsPathItem::mousePressEvent(event);
 }
@@ -2420,6 +2427,11 @@ QPainterPath GraphicsPathItem::shape() const
     QPainterPath * p = new QPainterPath();
     p->addRect(this->path().controlPointRect());
     return *p;
+}
+
+ModelItem *GraphicsPathItem::getParentItem()
+{
+    return this->parentItem;
 }
 
 void GraphicsPathItem::changeCountPath(unsigned int count, qreal radius)
@@ -2501,6 +2513,11 @@ int GraphicsPathItem::initMenus()
     return 0;
 }
 
+int GraphicsPathItem::type() const
+{
+    return Type;
+}
+
 void GraphicsPathItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     if (this->parentItem->getParentWidget()!=app->getWindow()->getWorkspaceWidget() && (app->getRestrictedInventoryMode() && this->restrictedCountPath!=NULL))
@@ -2509,7 +2526,45 @@ void GraphicsPathItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     }
     else if ((!app->getRestrictedInventoryMode() || this->parentItem->getParentWidget()==app->getWindow()->getWorkspaceWidget()) && this->restrictedCountPath!=NULL)
         this->restrictedCountPath->setVisible(false);
-    QGraphicsPathItem::paint(painter,option,widget);
+
+    if (this->isSelected())// && this->parentItem->getParentFragment()!=NULL)
+    {
+
+        if (this->parentItem->getSlotTrackInfo()!=NULL)
+        {
+            QBrush b = this->brush();
+            b.setColor(QColor(64,110,64));
+            this->setBrush(b);
+        }
+        else
+        {
+            QPen p = this->pen();
+            p.setColor(QColor(0,200,0));
+            this->setPen(p);
+        }
+    }
+    else
+    {
+        if (this->parentItem->getSlotTrackInfo()!=NULL)
+        {
+            QBrush b = this->brush();
+            b.setColor(QColor(64,68,64));
+            this->setBrush(b);
+        }
+        else
+        {
+            QPen p = this->pen();
+            p.setColor(QColor(0,0,0));
+            this->setPen(p);
+        }
+    }
+
+
+    QStyleOptionGraphicsItem myoption = (*option);
+    //if (this->parentItem->getParentFragment()!=NULL)
+        myoption.state &= !QStyle::State_Selected;
+
+    QGraphicsPathItem::paint(painter,&myoption,widget);
 }
 
 
@@ -2710,14 +2765,16 @@ void makeNewItem(QPointF eventPos, GraphicsPathItem * gpi, ModelItem * parentIte
                 }
 
 
-
+                it->moveBy(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->x(),app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->y());
                 //ModelFragmentWidget * fragment = new ModelFragmentWidget(it,this->parentItem->getProdLine(),this->parentItem->getEndPoint(0), endPoints, endDegrees);
                 ModelFragment * fragment = new ModelFragment(it);
 
                 app->getWindow()->getWorkspaceWidget()->addFragment(fragment);
                 app->getWindow()->getWorkspaceWidget()->setActiveFragment(fragment);
 
-                fragment->moveBy(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->x(),app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->y());
+                app->getWindow()->getWorkspaceWidget()->setLastInserted(it);
+
+                ///fragment->moveBy(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->x(),app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->y());
 
                 QPointF * newActive = NULL;
 
@@ -2817,6 +2874,7 @@ void makeNewItem(QPointF eventPos, GraphicsPathItem * gpi, ModelItem * parentIte
 
 
                 app->getWindow()->getWorkspaceWidget()->getActiveFragment()->addFragmentItem(it,app->getWindow()->getWorkspaceWidget()->getActiveEndPoint());
+                app->getWindow()->getWorkspaceWidget()->setLastInserted(it);
 
             }
 
@@ -2847,7 +2905,12 @@ void GraphicsPathItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             }
         }
 
-        makeNewItem(event->scenePos(),this,this->parentItem,this->parentItem, false);
+
+        app->getWindow()->getWorkspaceWidget()->makeItem(this->parentItem,NULL,event->scenePos());
+
+        //if (app->getWindow()->getWorkspaceWidget()->canInsert(this->parentItem))
+        //    makeNewItem(event->scenePos(),this,this->parentItem,this->parentItem, false);
+
 
     }
     //app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->invalidate(this->scene()->sceneRect());
@@ -3011,7 +3074,7 @@ ModelFragment::ModelFragment()
     //this->endPointsGraphics=new QList<QGraphicsPathItem*>();
     this->endPointsGraphics=new QList<QGraphicsEllipseItem*>();
     this->infoDialog = NULL;
-
+    this->fragmentID=-1024;
 
 }
 
@@ -3048,6 +3111,7 @@ ModelFragment::ModelFragment(ModelItem *item)
 
     this->infoDialog = NULL;
     //this->transformMatrix = NULL;
+    this->fragmentID=-1024;
 
 
 }
@@ -3093,6 +3157,32 @@ ModelFragment::~ModelFragment()
     //contains pointers to ProductLines, which will be probably re-used -> delete just pointers
     delete this->lines;
     this->lines=NULL;
+}
+
+void ModelFragment::setID(int id)
+{
+    //if (this->fragmentID==-1024)
+    this->fragmentID=id;
+}
+
+int ModelFragment::getID() const
+{
+    return this->fragmentID;
+}
+
+ModelItem *ModelFragment::findEndPointItem(QPointF *approxPos)
+{
+    ModelItem * mi = NULL;
+    for (int i = 0; i < this->endPoints->count(); i++)
+    {
+        if (pointsAreCloseEnough(this->endPoints->at(i),approxPos))
+        {
+            *approxPos=*this->endPoints->at(i);
+            mi=this->endPointsItems->at(i);
+            break;
+        }
+    }
+    return mi;
 }
 /*
 ModelFragmentWidget::ModelFragmentWidget(ModelItem* item, ProductLine* line, QPointF * startPt,QList<QPointF *> *endPts,QList<qreal> * endPtAngles)
@@ -3274,6 +3364,9 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
     item->setParentFragment(this);
     this->fragmentItems->push_back(item);
 
+    if (!this->lines->contains(item->getProdLine()))
+        this->lines->push_back(item->getProdLine());
+
     //find fragment's endPoint which equals to "point" parameter and remove it - it can't be used as endPoint anymore
     qreal currentFragmentRotation = 0;
     ModelItem * endPointItem = NULL;
@@ -3311,7 +3404,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
     {
         if (180==abs(currentFragmentRotation-(item->getTurnAngle(insertionIndex))))
         {
-            cout << "watch out" << endl;
+            //cout << "watch out" << endl;
         }
 
         //rotate 2D model and modify item's attributes
@@ -3321,13 +3414,13 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
 
 
     QPointF pointOfInsertion(*point);
-
+    QPointF point2 = *point;
 
 
     //by default item's endPoints are in local item's coordinates (center of item=[0,0] => without -(i.EP(0)) "point" parameter would be in the [0,0] of "item" parameter
-    *point-=*item->getEndPoint(insertionIndex);
-    qreal dx = point->x();
-    qreal dy = point->y();
+    point2-=*item->getEndPoint(insertionIndex);
+    qreal dx = point2.x();
+    qreal dy = point2.y();
 
     //this fixes the strange behaviour of T1 2D Model
     if (item->getType()==T1)
@@ -3514,7 +3607,9 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
     {
         //-1 is missing
         if (!doNotAddThese.contains(insertionIndex+1))
+        {
             app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPt);
+        }
         else
         {
             if (item->getSlotTrackInfo()!=NULL)
@@ -4553,6 +4648,7 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         else
                         {
                             logFile << "    4131: indexOld == -1" << endl;
+                            return;
                         }
                         k++;
                     }
@@ -4944,6 +5040,9 @@ int ModelFragment::deleteFragmentItem(ModelItem *item)
     //if count of fragment items == 1 && item==fragment item
     if (this->fragmentItems->count()==1 && item==this->fragmentItems->first())
     {
+        QPointF * newActive = new QPointF();
+        app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
+        app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newActive);        
         //destruct the fragment in workspace widget
         return -1;
 
@@ -4960,6 +5059,32 @@ int ModelFragment::deleteFragmentItem(ModelItem *item)
     //start from fragmentItems[0] - if [0]!=item, create new Fragment and start recursion from [0]
     //iterate through the list
 
+    QPointF * newActive = new QPointF();
+    {
+        for (int k = 0; k < this->getEndPoints()->count();k++)
+        {
+            if (*this->getEndPoints()->at(k)==*app->getWindow()->getWorkspaceWidget()->getActiveEndPoint())
+            {
+                if (this->endPointsItems->at(k)!=item)
+                    *newActive = *this->getEndPoints()->at(k);
+                else
+                {
+                    int m = 0;
+                    while (item->getEndPoint(m)!=NULL)
+                    {
+                        if (item->getNeighbour(m)!=NULL)
+                        {
+                            *newActive = *item->getEndPoint(m);
+                            k=this->getEndPoints()->count()+1;
+                            break;
+                        }
+                        m++;
+                    }
+
+                }
+            }
+        }
+    }
 
     //separate neighbours
     int i = 0;
@@ -5116,6 +5241,7 @@ int ModelFragment::deleteFragmentItem(ModelItem *item)
         item->setNeighbour(NULL,i);
         i++;
     }
+    bool first = true;
 
     for (int j = 0; j < this->fragmentItems->count() ;j++)
     {
@@ -5230,14 +5356,42 @@ int ModelFragment::deleteFragmentItem(ModelItem *item)
 
                 logFile << "    New fragment has been created from item " << this->fragmentItems->at(j) << " at j==[" << j << "] and address " << newF << endl;
 
-                app->getWindow()->getWorkspaceWidget()->addFragment(newF);
+                if (first)
+                {
+                    app->getWindow()->getWorkspaceWidget()->addFragment(newF,item->getParentFragment()->getID());
+                    first = false;
+                }
+                else
+                    app->getWindow()->getWorkspaceWidget()->addFragment(newF);
                 //QPointF ptZero(0,0);
                 //recursivelyAdd(this->fragmentItems->at(j),newF,&ptZero);
 
                 rebuildFragment(this->fragmentItems->at(j),newF);
+                if (newF->getFragmentItems()->count()==1)
+                {
+                    int k = 0;
+                    while (newF->getFragmentItems()->first()->getEndPoint(k)!=NULL)
+                    {
+                        newF->getFragmentItems()->first()->setNeighbour(NULL,newF->getFragmentItems()->first()->getEndPoint(k));
+                        k++;
+                    }
+                }
+
+                if (*newActive==QPointF(0,0))
+                {
+                    if (newF->getEndPoints()->count()>1)
+                        *newActive = *newF->getEndPoints()->at(1);
+                    else
+                        *newActive = *newF->getEndPoints()->at(0);
+                }
+
+                 app->getWindow()->getWorkspaceWidget()->setActiveFragment(newF);
             }
         }
     }
+
+    app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newActive);
+
 
 
     QList<ModelItem*> list;
@@ -5343,6 +5497,11 @@ int ModelFragment::showInfoDialog()
     int result = 0;
     if (this->infoDialog==NULL)
         result = this->initInfoDialog();
+    else
+    {
+        this->infoDialog->deleteLater();
+        result = this->initInfoDialog();
+    }
 
     if (result)
         return result;
@@ -5369,22 +5528,79 @@ int ModelFragment::initInfoDialog()
     QString str (QString::number(this->fragmentItems->count()));
     QLabel * label = new QLabel(str, this->infoDialog);
     QListWidget * listWidgetI = new QListWidget(this->infoDialog);
+    QListWidget * listWidgetM = new QListWidget(this->infoDialog);
+
+    //int = count, QString = partNo (prodLine)
+    QMap<QString,int> itemsMap;
+    QMap<QString,int> prodLineMap;
+
+    //fill both maps
     for (int i = 0; i < this->fragmentItems->count();i++)
     {
         QString str;
         str.append(*this->fragmentItems->at(i)->getPartNo());
-        listWidgetI->addItem(str);
+        str.append(" (");
+        str.append(*this->fragmentItems->at(i)->getProdLine()->getName());
+        str.append(")");
+
+        itemsMap[str]++;
+        prodLineMap[*this->fragmentItems->at(i)->getProdLine()->getName()]++;
+
+        //listWidgetI->addItem(str);
     }
+
+    //print both maps
+    QMap<QString,int>::Iterator it = itemsMap.begin();
+    for (int i = 0; i < itemsMap.count(); i++, it++)
+    {
+        QString val = QString::number(it.value());
+        val.append("x ");
+        val.append(it.key());
+        listWidgetI->addItem(val);
+    }
+
+    it = prodLineMap.begin();
+    for (int i = 0; i < prodLineMap.count(); i++, it++)
+    {
+        QString val = QString::number(it.value());
+        val.append("x ");
+        val.append(it.key());
+        listWidgetM->addItem(val);
+    }
+
+    //get approximate size of the fragment
+    QPolygonF poly;
+    for (int i = 0; i < this->fragmentItems->count(); i++)
+    {
+        int j = 0;
+        while (this->fragmentItems->at(i)->getEndPoint(j)!=NULL)
+        {
+            poly << *this->fragmentItems->at(i)->getEndPoint(j);
+            j++;
+        }
+    }
+    ///how to get exact dimensions of the fragment
+    ///create QGraphicsScene and add (copies?) of 2D models
+    ///sceneSize should equal to the dimensions
+
+
+    QString sizeStr;
+    if (this->lines->first()->getType())
+        sizeStr.append(QString::number((int)poly.boundingRect().width()+this->lines->first()->getScaleEnum()));
+    else
+        sizeStr.append(QString::number((int)poly.boundingRect().height()));
+    sizeStr.append("x");
+    if (this->lines->first()->getType())
+        sizeStr.append(QString::number((int)poly.boundingRect().height()+this->lines->first()->getScaleEnum()));
+    else
+        sizeStr.append(QString::number((int)poly.boundingRect().height()));
+    sizeStr.append("mm");
+    QLabel * label2 = new QLabel(sizeStr);
 
     layout->insertRow(0,"Parts count:",label);
     layout->insertRow(1,"Parts used:",listWidgetI);
-
-    QListWidget * listWidgetM = new QListWidget(this->infoDialog);
-    for (int i = 0; i < this->fragmentItems->count(); i++)
-    {
-        listWidgetM->addItem(*this->fragmentItems->at(i)->getProdLine()->getName());
-    }
     layout->insertRow(2,"Parts' manufacturer(s)",listWidgetM);
+    layout->insertRow(3,"Total size (approx.): ", label2);
 
     this->infoDialog->setLayout(layout);
     return 0;
@@ -5395,6 +5611,7 @@ void ModelFragment::moveBy(qreal dx, qreal dy)
     if (dx==0 && dy==0)
         return;
     logFile << "    Moving fragment " << app->getWindow()->getWorkspaceWidget()->getFragmentIndex(this) << " by [" << dx << "," << dy << "]" << endl;
+    QString str = (QString("move fragment %1 %2 %3 ").arg(QString::number(this->fragmentID),QString::number(dx),QString::number(dy)));
 
     for (int i = 0; i < this->fragmentItems->count(); i++)
     {
@@ -5411,6 +5628,9 @@ void ModelFragment::moveBy(qreal dx, qreal dy)
         it2++;
     }
 
+    QString negStr = (QString("move fragment %1 %2 %3").arg(QString::number(this->fragmentID),QString::number(-dx),QString::number(-dy)));
+    app->getWindow()->getWorkspaceWidget()->pushBackCommand(str,negStr);
+
 
 }
 
@@ -5418,6 +5638,11 @@ void ModelFragment::rotate(qreal angle, QPointF * center)
 {
     if (angle!=0)
         logFile << "    Rotating fragment "  << app->getWindow()->getWorkspaceWidget()->getFragmentIndex(this) << " by " << angle << endl;
+
+    QString str = (QString("rotate fragment %1 %2 %3 %4 ").arg(QString::number(this->fragmentID),QString::number(center->x()),QString::number(center->y()),QString::number(angle)));
+
+
+
     QList<ModelItem*>::Iterator itemIter = this->fragmentItems->begin();
     QList<qreal>::Iterator angleIter = this->endPointsAngles->begin();
     for (int i = 0; i < this->fragmentItems->count(); i++)
@@ -5446,6 +5671,9 @@ void ModelFragment::rotate(qreal angle, QPointF * center)
         it2++;
         angleIter++;
     }
+
+    QString negStr = (QString("rotate fragment %1 %2 %3 %4 ").arg(QString::number(this->fragmentID),QString::number(center->x()),QString::number(center->y()),QString::number(-angle)));;
+    app->getWindow()->getWorkspaceWidget()->pushBackCommand(str,negStr);
 
 }
 

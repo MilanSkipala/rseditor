@@ -28,6 +28,8 @@ class GraphicsPathItem : public QObject, public QGraphicsPathItem
     bool mousePressed;
     QPointF * offset;
 
+    enum { Type = UserType + 2 };
+
 public:
     GraphicsPathItem(ModelItem * item, QGraphicsItem * parent = 0);
     GraphicsPathItem(ModelItem * item, const QPainterPath & path, QGraphicsItem * parent = 0);
@@ -35,6 +37,9 @@ public:
     bool contains( const QPointF & point ) const;
     QRectF boundingRect() const;
     QPainterPath shape() const;
+
+    ModelItem * getParentItem();
+
     /**
       method changeCountPath deletes old QGraphicsPathItem representing count of available parts
       and creates new QGPI.
@@ -52,6 +57,8 @@ public:
       initialize context menus - 1 is used in SideBarWidget, 1 in WorkspaceWidget
     */
     int initMenus();
+
+    int type() const;
 
     //protected events
 protected:
@@ -287,6 +294,8 @@ class ModelFragment// : public QWidget //inherits from QWidget, because QWidget 
 
     QDialog * infoDialog;
 
+    int fragmentID;
+
     //friend WorkspaceWidget;
 
 public:
@@ -297,6 +306,9 @@ public:
     //ModelFragmentWidget(ModelFragmentWidget * mfw);
 
     ~ModelFragment();
+
+    void setID(int id); //this method may be called ONLY in WorkspaceWidget::addFragment()
+    int getID() const;
 
     ModelItem * findEndPointItem(QPointF * approxPos);
 

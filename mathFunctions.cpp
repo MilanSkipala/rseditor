@@ -1,4 +1,5 @@
 #include "mathFunctions.h"
+#include "globalVariables.h"
 
 void rotatePoint(QPointF *pt, qreal angle)
 {
@@ -31,4 +32,10 @@ void toCartesian(qreal r, qreal phi, qreal &x, qreal &y)
 {
     x = r*sin(phi*PI/180);
     y = r*cos(phi*PI/180);
+}
+
+
+bool pointsAreCloseEnough(QPointF *pt1, QPointF *pt2)
+{
+    return QRectF(pt1->x()-TOLERANCE_HALF,pt1->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF).contains(*pt2);
 }

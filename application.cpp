@@ -1,3 +1,4 @@
+#include <QFileDialog>
 #include "partsRelated.h"
 #include "application.h"
 #include "database.h"
@@ -15,6 +16,7 @@ Application::Application(int argc, char ** argv) : QApplication(argc, argv)
 
     this->appData = new AppData();
     this->restrictedInventoryMode=false;
+    this->allowMixedProductLines=false;
     this->window = new Window();
     this->setupUI();
 
@@ -74,6 +76,109 @@ bool Application::setAllowMixedProductLines(bool mode)
     this->allowMixedProductLines=mode;
     return true;
 }
+
+void Application::save()
+{
+
+
+    QString qpath = QFileDialog::getSaveFileName(this->window, "Save file", "", ".rte");
+    if (!qpath.endsWith(".rte"))
+        qpath.append(".rte");
+
+    //string path("outputFile.txt");
+    ofstream outputFile;
+    outputFile.open(qpath.toStdString().c_str());
+    if (qpath=="")
+        return;
+
+    if (!outputFile.is_open())
+    {
+        this->appData->setMessageDialogText(QString("The file \"%1\" could not be saved").arg(qpath),QString("Nepodařilo se uložit soubor \"%1\".").arg(qpath));
+        this->appData->getMessageDialog()->exec();
+        return;
+    }
+    outputFile << "PROJECT DATA" << endl;
+    outputFile << "Project name: " << qpath.toStdString() << endl;
+    outputFile << "Loaded manufacturers:" << endl;
+    for (int i = 0; i < this->window->getSideBarWidget()->getProductLines()->count(); i++)
+        outputFile << this->window->getSideBarWidget()->getProductLines()->itemText(i).toStdString() << endl;
+
+    outputFile << "Active manufacturer:" << endl;
+    outputFile << this->window->getSideBarWidget()->getProductLines()->currentText().toStdString() << endl;
+
+    outputFile << "WORKSPACE DATA" << endl;
+    this->window->getWorkspaceWidget()->exportCurrentState(outputFile);
+
+
+    outputFile.close();
+}
+
+void Application::open()
+{
+
+    //QFileDialog::setDefaultSuffix("rte");
+    QString qpath = QFileDialog::getOpenFileName(this->window, tr("Open File"),
+                                 "",
+                                 tr("RTEditor files (*.rte)"));
+                                 //"*.rte");
+
+    if (qpath=="")
+        return;
+
+    ifstream inputFile;
+    //string path("outputFile.txt");
+    //inputFile.open(path.c_str());
+    inputFile.open(qpath.toStdString().c_str());
+
+    if (!inputFile.is_open())
+    {
+        //this->appData->getMessageDialog()->setText(QString("File %1 could not be opened.").arg(path.c_str()));
+        this->appData->setMessageDialogText(QString("The file \"%1\" could not be opened").arg(qpath),QString("Nepodařilo se otevřít soubor \"%1\".").arg(qpath));
+        this->appData->getMessageDialog()->exec();
+        return;
+    }
+
+    QString activeProdLine;
+    string str;
+    getline(inputFile,str);
+    QString qstr = QString().fromStdString(str);
+    if (!qstr.startsWith("PROJECT DATA"))
+    {
+        this->appData->setMessageDialogText(QString("The file \"%1\" could not be opened").arg(qpath),QString("Nepodařilo se otevřít soubor \"%1\".").arg(qpath));
+        this->appData->getMessageDialog()->exec();
+        return;
+    }
+
+    bool readProdLines = false;
+    while(!qstr.startsWith("WORKSPACE DATA"))
+    {
+
+        if (qstr.startsWith("Loaded manufacturers:"))
+        {
+            readProdLines = true;
+            getline(inputFile,str);
+            qstr = QString().fromStdString(str);
+        }
+        else if (qstr.startsWith("Active manufacturer"))
+        {
+            readProdLines = false;
+            getline(inputFile,str);
+            activeProdLine.fromStdString(str);
+        }
+        if (readProdLines)
+        {
+            this->window->getSideBarWidget()->getProductLines()->addItem(QString().fromStdString(str));
+        }
+
+
+        getline(inputFile,str);
+        qstr = QString().fromStdString(str);
+    }
+    this->window->getSideBarWidget()->getProductLines()->setCurrentText(activeProdLine);
+
+    this->window->getWorkspaceWidget()->setCurrentState(inputFile);
+    inputFile.close();
+}
 int Application::setupUI()
 {
     //bool result = false;
@@ -113,6 +218,8 @@ int Application::setupUI()
     QAction * deleteAction = new QAction(*this->getAppData()->getUndoPixmap(),"Delete",editMenu);
     QAction * preferencesAction = new QAction(*this->getAppData()->getUndoPixmap(),"Preferences",editMenu);
 
+
+
     QAction * restrictedAction = new QAction("Restricted mode",modelMenu);
     QAction * manufactAction = new QAction("Mix manufacturers",modelMenu);
     QAction * addManuAction = new QAction(*this->getAppData()->getUndoPixmap(),"Add manufacturer",modelMenu);
@@ -124,6 +231,8 @@ int Application::setupUI()
     restrictedAction->setChecked(false);
     manufactAction->setChecked(false);
     connect(restrictedAction,SIGNAL(toggled(bool)),this,SLOT(setRestrictedInventoryMode(bool)));
+    connect(manufactAction,SIGNAL(toggled(bool)),this,SLOT(setAllowMixedProductLines(bool)));
+
 
     QAction * aboutAction = new QAction(*this->getAppData()->getUndoPixmap(),"About", aboutMenu);
     QAction * helpAction = new QAction(*this->getAppData()->getUndoPixmap(),"Help", aboutMenu);
@@ -294,6 +403,11 @@ int Application::setupUI()
     connect(heightProfileToggleAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(toggleHeightProfileMode()));
     connect(heightProfileUpAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(adjustHeightOfActive()));
     connect(heightProfileDownAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(adjustHeightOfActive()));
+
+    connect(undoAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(undo()));
+    connect(redoAction,SIGNAL(triggered()),this->window->getWorkspaceWidget(),SLOT(redo()));
+    connect(saveFileAction,SIGNAL(triggered()),this,SLOT(save()));
+    connect(openFileAction,SIGNAL(triggered()),this,SLOT(open()));
 
     this->window->getSideBarWidget()->setMinimumWidth(150);
 

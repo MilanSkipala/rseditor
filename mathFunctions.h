@@ -11,5 +11,6 @@ void rotatePoint(QPointF * pt, qreal angle, QPointF *center);
 void movePoint(QPointF * pt, qreal dx, qreal dy);
 //toPolar(qreal & r, qreal & phi, qreal & x, qreal & y)
 void toCartesian(qreal r, qreal phi, qreal & x, qreal & y);
+bool pointsAreCloseEnough(QPointF * pt1, QPointF * pt2);
 
 #endif // MATHFUNCTIONS_H

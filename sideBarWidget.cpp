@@ -1,3 +1,4 @@
+#include <QScrollBar>
 #include "sideBarWidget.h"
 
 SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) : QFrame(parent, parent->windowFlags())//QWidget(parent, parent->windowFlags())
@@ -27,8 +28,7 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
     this->addButton->setMaximumWidth(50);
     this->delButton->setMaximumWidth(50);
 
-    /**
-      TODO
+    /*
       -following should result in better looking SBW
     */
     this->prodLineCBox->setMinimumWidth(80);
@@ -88,28 +88,30 @@ void SideBarWidget::paintEvent(QPaintEvent *evt)
     QFrame::paintEvent(evt);
 
     //ProductLine * pl = this->database->findProductLineByName(this->prodLineCBox->currentText());
+    QGraphicsScene * sceneBefore = this->currentScene;
     QString text = this->prodLineCBox->currentText();
     if (this->prodLineCBox->currentText()!="")
         this->currentScene = this->database->findSceneByString(text);
+
+
+
+
     this->graphicsView->setScene(this->currentScene);
-    //this->currentScene->set
-
-
-    /*
-    if (tr.m11()>=0.8 && this->currentScene!=NULL)
-        tr.scale(0.5,0.5);
-    this->graphicsView->setTransform(tr);//scale(0.5,0.5);*/
-    ///if (this->currentScene!=NULL)
-        ///this->graphicsView->fitInView(0,0,this->currentScene->width(),(this->currentScene->height()/this->currentScene->width())*this->currentScene->height(),Qt::KeepAspectRatioByExpanding);
 
     if (this->currentScene!=NULL)
     {
-        QTransform tr(this->graphicsView->transform());
+        QTransform tr;//(this->graphicsView->transform());
         qreal sceneScale = 1;
         sceneScale = 110/this->currentScene->width();
         tr.scale(sceneScale,sceneScale);
-        if (tr.m11()>=sceneScale)
-            this->graphicsView->setTransform(tr);
+        //if (tr.m11()>=sceneScale || this->graphicsView->scene()!=sceneBefore)
+        //if (tr.m11()>=sceneScale)
+        this->graphicsView->setTransform(tr);
+    }
+
+    if (sceneBefore!=this->currentScene)
+    {
+        this->graphicsView->verticalScrollBar()->setValue(this->graphicsView->verticalScrollBar()->minimum());
     }
 
 
@@ -121,12 +123,12 @@ void SideBarWidget::paintEvent(QPaintEvent *evt)
 
 void SideBarWidget::showAddDialog()
 {
-    this->addDialog->show();
+    this->addDialog->exec();
 }
 
 void SideBarWidget::showDelDialog()
 {
-    this->delDialog->show();
+    this->delDialog->exec();
 }
 
 void SideBarWidget::closeAddDialog()
@@ -261,4 +263,9 @@ QDialog * SideBarWidget::initDelDialog()
 QGraphicsScene *SideBarWidget::getCurrentScene() const
 {
     return this->currentScene;
+}
+
+QComboBox *SideBarWidget::getProductLines()
+{
+    return this->prodLineCBox;
 }

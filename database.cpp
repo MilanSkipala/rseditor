@@ -630,7 +630,11 @@ Database::Database()
 
                     break;
                 default:
-                    //show error dialog
+                    /**
+                      TODO
+                     *show error dialog
+
+                    */
                     break;
 
 
@@ -920,14 +924,20 @@ Database::Database()
         text.append(*(*iter)->getName());
 
         QList<ModelItem*>::Iterator itemIter = (*iter)->getItemsList()->begin();
+        int currentMovement = 0;
         int i = 0;
         while(itemIter!=(*iter)->getItemsList()->end())
         {
-
-            (*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
+            (*itemIter)->get2DModel()->moveBy(0,currentMovement);
+            //(*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
             scene->addItem((*itemIter)->get2DModel());
+
+            ///TODO: almost right, needs some tuning - see the values of boundingRect.x() - can it be used usefully?
+            currentMovement+=(*itemIter)->get2DModel()->boundingRect().size().height()+48;
+
             itemIter++;
             i++;
+
 
 
         }
@@ -978,6 +988,20 @@ ProductLine * Database::getCurrentProductLine()
 QMap<QString,ProductLine*>::Iterator Database::getDatabaseIterator()
 {
     return this->productLines->begin();
+}
+
+ModelItem *Database::findModelItemByName(QString &manufactName, QString &partName) const
+{
+    ProductLine * pl = this->findProductLineByName(manufactName);
+    if (pl==NULL)
+        return NULL;
+
+    for (int i = 0; i < pl->getItemsList()->count(); i++)
+    {
+        if (*pl->getItemsList()->at(i)->getPartNo()==partName)
+            return pl->getItemsList()->at(i);
+    }
+    return NULL;
 }
 
 /*

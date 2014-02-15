@@ -39,6 +39,8 @@ public:
 
     QGraphicsScene * getCurrentScene() const;
 
+    QComboBox *getProductLines();
+
 protected:
     void paintEvent(QPaintEvent * evt);
     void contextMenuEvent(QContextMenuEvent * evt);

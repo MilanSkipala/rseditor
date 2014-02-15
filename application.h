@@ -143,11 +143,14 @@ public:
 
     bool setAppData(AppData * d);
 
-    bool setAllowMixedProductLines(bool mode);
+
     int setupUI();
 
 public slots:
     bool setRestrictedInventoryMode(bool mode);
+    bool setAllowMixedProductLines(bool mode);
+    void save();
+    void open();
 
 };
 

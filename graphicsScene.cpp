@@ -29,9 +29,10 @@ void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             ModelItem* item = app->getWindow()->getWorkspaceWidget()->findItemByApproxPos(pos,NULL);
             if (item!=NULL)
             {
-                app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(pos);
                 app->getWindow()->getWorkspaceWidget()->setActiveItem(item);
                 app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
+                app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(pos);
+                app->getWindow()->getWorkspaceWidget()->selectItem(item);
             }
             else
                 delete pos;
@@ -42,12 +43,16 @@ void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             ModelFragment* frag = app->getWindow()->getWorkspaceWidget()->findFragmentByApproxPos(pos);
             if (frag!=NULL)
             {
-                app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(pos);
                 app->getWindow()->getWorkspaceWidget()->setActiveFragment(frag);
+                app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(pos);
                 app->getWindow()->getWorkspaceWidget()->setActiveItem(NULL);
+                app->getWindow()->getWorkspaceWidget()->selectItem(frag->findEndPointItem(pos));
             }
             else
                 delete pos;
+
+
+            //app->getWindow()->getWorkspaceWidget()->commandExecution(QString("select item %1 %2").arg(pos->x()).arg(pos->y()));
         }
     }
 
@@ -56,17 +61,24 @@ void GraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void GraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (!this->mouseMode)
+    /*if (!this->mouseMode)
         QGraphicsScene::mouseDoubleClickEvent(event);
     else
-    {
+    {*/
+/*
+    QString command ("make point ");
+    command.append(QString::number(event->scenePos().x()));
+    command.append(" ");
+    command.append(QString::number(event->scenePos().y()));
+    app->getWindow()->getWorkspaceWidget()->commandExecution(command);
+*/
 
-        QPointF * newPoint = new QPointF(event->scenePos());
-        app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPoint);
-        app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
+    QPointF * newPoint = new QPointF(event->scenePos());
+    app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
+    app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPoint);
 
-        QGraphicsScene::mouseDoubleClickEvent(event);
-    }
+    QGraphicsScene::mouseDoubleClickEvent(event);
+    //}
 }
 
 void GraphicsScene::toggleMode()
