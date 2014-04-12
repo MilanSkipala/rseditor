@@ -13,7 +13,7 @@ class Database
     QString *currentProductLine;
     QString *currentItem;
 public:
-    Database();
+    Database(QString &lang);
 
     ProductLine * findProductLineByName(QString &name) const;
 
@@ -21,9 +21,14 @@ public:
     QString * getCurrentProductLinesName();
     ProductLine * getCurrentProductLine();
     QMap<QString,ProductLine*>::Iterator getDatabaseIterator();
+    QMap<QString,ProductLine*>::Iterator getDatabaseEndIterator();
 
     ModelItem * findModelItemByName(QString &manufactName, QString &partName) const;
+
     ModelItem * getNextModelItem(QString &manufactName) const;
+
+    BorderItem * findBorderItemByName(QString &manufactName, QString &partName) const;
+    VegetationItem * findVegetationItemByName(QString &manufactName, QString &partName) const;
 
     QGraphicsScene * findSceneByString(QString &scaleAndname) const;
 

@@ -39,3 +39,11 @@ bool pointsAreCloseEnough(QPointF *pt1, QPointF *pt2)
 {
     return QRectF(pt1->x()-TOLERANCE_HALF,pt1->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF).contains(*pt2);
 }
+
+
+qreal dist(QPointF *ptA, QPointF *ptB)
+{
+    qreal dx = ptA->x()-ptB->x();
+    qreal dy = ptA->y()-ptB->y();
+    return sqrt(dx*dx+dy*dy);
+}

@@ -32,7 +32,7 @@ QList<QPointF>generatePointCopies(int n, QPointF & original)
     return list;
 }
 
-Database::Database()
+Database::Database(QString &lang)
 {
 
     this->currentItem=new QString("");
@@ -50,15 +50,21 @@ Database::Database()
 
 
     int loadMode = 0; //0=loading track parts 1=loading track accesories 2=loading other models
-    path.append("partsSet.set");
+    path.append("partsSet.rsd");
 
 
     QFile * dbFile = new QFile(path);
 
+
+
     if (!dbFile->open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+
         exit(1);
+    }
 
     QTextStream in(dbFile);
+    in.setCodec("ISO 8859-2");
     QString line("");//in.readLine();
     while (!line.isNull())
     {
@@ -122,11 +128,11 @@ Database::Database()
             else
             {
                 if (scale=="1:24")
-                    s=SCALE_T;
+                    s=SCALE_24;
                 else if (scale=="1:32")
-                    s=SCALE_T;
+                    s=SCALE_32;
                 else if (scale=="1:43")
-                    s=SCALE_T;
+                    s=SCALE_43;
                 else if (scale=="1:64" || scale=="1:87" || scale=="HO" || scale=="H0")
                     s=SCALE_HOSLOT;
                 else
@@ -149,7 +155,13 @@ Database::Database()
               -what causes rubbish in the db file?
             */
 
+            while (this->productLines->value(name,NULL)!=NULL)
+            {
+                name.append(" ");
+            }
+
             ProductLine * productLine = new ProductLine(name,scale,s, gauge, type);
+
             this->addProductLine(productLine);
             this->setCurrentProductLine(name);
 
@@ -167,6 +179,7 @@ Database::Database()
             {
                 //loadMode=0;
                 //skip(line,in);
+                loadMode=0;
                 continue;
             }
             else if (line.startsWith("[[Accesories"))
@@ -175,7 +188,7 @@ Database::Database()
                 //skip(line,in);
                 continue;
             }
-            else //other models
+            else //vegetation
             {
                 loadMode=2;
                 //skip(line,in);
@@ -241,6 +254,8 @@ Database::Database()
                 t = T10;
             else if (typeStr=="C2")
                 t = C2;
+            else if (typeStr=="CB")
+                t = CB;
             else if (typeStr=="CH")
                 t = CH;
             else if (typeStr=="X2")
@@ -255,7 +270,7 @@ Database::Database()
             QString angle1;
             qreal ang1 = 0;
 
-            if (!(t>=T1 && t<=T10) && t!=J5)
+            if (!(t>=T1 && t<=T10) && t!=J5 && t!=X2)
             {
                 angle1 = in.readLine();
                 angle1.remove(0,7);
@@ -379,7 +394,7 @@ Database::Database()
                             rotatePoint(&pt2,ang1/2.0);
                             pt2.setX(xCoord - xLen/2.0);
                             pt2.setY(-pt2.y());
-                            cout << "hello";
+
                         }
                     }
                     else
@@ -388,6 +403,14 @@ Database::Database()
                             rotatePoint(&pt2,180+ang1);
                         else
                         {
+                            xCoord = 0;
+                            xLen2 = 2*radi2*(cos((90-(ang2/2.0))*PI/180));
+                            xCoord = xLen2/2.0 + (xLen2-xLen)/2.0;
+                            xCoord += xLen/2.0;
+                            pt2 = QPointF(xCoord,-cos((90-ang2/2.0)*PI/180)*xLen2);
+                            rotatePoint(&pt2,180+ang1/2.0);
+                            pt2.setX(-xCoord + xLen/2.0);
+                            pt2.setY(pt2.y());
                         }
                     }
 
@@ -474,18 +497,15 @@ Database::Database()
                     angles.push_back(ang1);
                     angles.push_back(-ang1);
 
-                    /**
-        *fix yHeight
-    */
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                     break;
 
                 case J5:
-                    pt1 = QPointF(-rad,radi2);
-                    pt2 = QPointF(rad,radi2);
-                    pt3 = QPointF(-rad,-radi2);
-                    pt4 = QPointF(rad,-radi2);
+                    pt1 = QPointF(-rad,-radi2);
+                    pt2 = QPointF(rad,-radi2);
+                    pt3 = QPointF(-rad,radi2);
+                    pt4 = QPointF(rad,radi2);
 
                     endPoints.push_back(pt1);
                     endPoints.push_back(pt2);
@@ -647,7 +667,7 @@ Database::Database()
 
                 trackGaugeHalf = abs(rad-radi2)/2.0;
 
-                SlotTrackInfo * sti = new SlotTrackInfo();//memory leak in assignment? (later - not at this line)
+
                 QString radius2Str = in.readLine();
                 radius2Str.remove(0,8);
                 QString fstLaneStr = in.readLine();
@@ -655,7 +675,7 @@ Database::Database()
                 QString laneDistStr = in.readLine();
                 laneDistStr.remove(0,9);
                 QString laneDistEndStr=laneDistStr;
-                if (t==HS || t==HE)
+                if (t==HS || t==HE || t==CH)
                 {
                     laneDistEndStr = in.readLine();
                     laneDistEndStr.remove(0,12);
@@ -669,20 +689,52 @@ Database::Database()
                 QString numOfLanesStr = in.readLine();
                 numOfLanesStr.remove(0,9);
 
+                QString latAngleStr("0");
+                if (t==CB)
+                {
+                    latAngleStr = in.readLine();
+                    latAngleStr.remove(0,13);
+                }
+
                 qreal radi2sl = radius2Str.toDouble();
                 qreal fstLane = fstLaneStr.toDouble();
                 qreal laneDist = laneDistStr.toDouble();
                 qreal laneDistEnd = laneDistEndStr.toDouble();
                 qreal numOfLanes = numOfLanesStr.toDouble();
 
-
-                sti->fstLaneDist=fstLane;
-                sti->lanesGauge=laneDist;
-                sti->lanesGaugeEnd=laneDistEnd;
-                sti->numberOfLanes=numOfLanes;
+                qreal lateralAngle = latAngleStr.toDouble();
 
 
-                if (t==C1 || t==C2)
+                bool error = false;
+                if (t==C1 || t==C2 || t==CB)
+                {
+                    qreal itemWidth = abs(rad-radi2sl);
+                    if (itemWidth<((numOfLanes-1)*laneDist+fstLane))
+                        error = true;
+                }
+                else
+                {
+                    qreal itemWidth = abs(2*rad);
+                    if (itemWidth<((numOfLanes-1)*laneDist+fstLane))
+                        error = true;
+                }
+                if (error)
+                {
+                    logFile << "Wrong data in database: itemWidth is smaller than n*laneDist" << endl;
+                    QMessageBox * messageDialog = new QMessageBox();
+
+                    if (lang.startsWith("EN"))
+                        messageDialog->setText(QString("Database contains wrong data: the width of item %1 is smaller than the width needed for the lanes. Item will not be loaded.").arg(partNo));
+                    else
+                        messageDialog->setText(QString("Databáze obsahuje chybná data: šířka dílu %1 je menší než šířka potřebná pro všechny dráhy. Díl nebude načten.").arg(partNo));
+                    messageDialog->setIcon(QMessageBox::Warning);
+                    messageDialog->setButtonText(0,"OK");
+                    messageDialog->exec();
+                    continue;
+                }
+
+
+                if (t==C1 || t==C2 || t==CB)
                 {
                     //compute dimensions of item
                     qreal itemRadius = rad;
@@ -690,8 +742,8 @@ Database::Database()
                     yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
                     yHeight -= trackGaugeHalf;
 
-                    rad -=sti->fstLaneDist;
-                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
+                    rad -=fstLane;
+                    for (unsigned int i = 0; i < numOfLanes; i++)
                     {
                         qreal ptX;// = 2*rad*(cos((90-(ang1/2.0))*PI/180));
                         qreal ptY;
@@ -699,7 +751,7 @@ Database::Database()
 
                         toCartesian(rad,phi,ptX,ptY);
 
-                        //ptY = i*sti->lanesGauge+sti->fstLaneDist;
+                        //ptY = i*laneDist+fstLane;
 
                         endPoints.push_back(QPointF(-ptX,-ptY+itemRadius));
                         //endPoints.push_back(QPointF(-ptX,ptY));
@@ -708,11 +760,44 @@ Database::Database()
 
                         angles.push_back(-ang1/2.0);
                         angles.push_back(ang1/2.0);
-                        rad-=sti->lanesGauge;
+                        rad-=laneDist;
                     }
+
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+
+                    if (t==CB)
+                    {
+                        //updateEndP... works with slotTrackInfo -> this itemType needs to have STI set sooner than other items
+
+                        SlotTrackInfo * sti = new SlotTrackInfo(mi,numOfLanes,laneDist,laneDistEnd,fstLane);//memory leak in assignment? (later - not at this line)
+                        mi->setSlotTrackInfo(sti);
+
+                        mi->updateEndPointsHeightGraphics();
+
+                        QPointF point2(abs(mi->getRadius())-fstLane,0);
+                        QPointF point(abs(radi2sl),0);
+
+                        rotatePoint(&point,lateralAngle);
+                        int innerRadiusClimb = (int)point.y();
+
+
+                        point=point2;
+
+                        for (unsigned int i = 0; i < 2*numOfLanes; i+=2)
+                        {
+                            rotatePoint(&point,lateralAngle);
+
+                            mi->adjustHeightProfile((int)point.y()-innerRadiusClimb,mi->getEndPoint(i),false);
+                            mi->adjustHeightProfile((int)point.y()-innerRadiusClimb,mi->getEndPoint(i+1),false);
+
+                            point2.setX(point2.x()-laneDist);
+                            point=point2;
+                        }
+
+                    }
+
                 }
                 else if (t==S1 || t==SC || t==X2 || t==JM || t==J5 || t==J1 || t==J2)
                 {
@@ -723,8 +808,8 @@ Database::Database()
 
                     qreal ptX = radi2sl;
 
-                    rad -=sti->fstLaneDist;
-                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
+                    rad -=fstLane;
+                    for (unsigned int i = 0; i < numOfLanes; i++)
                     {
 
                         qreal ptY = rad;
@@ -742,25 +827,26 @@ Database::Database()
 
                         angles.push_back(-ang1/2.0);
                         angles.push_back(ang1/2.0);
-                        rad-=sti->lanesGauge;
+                        rad-=laneDist;
                     }
                     if (t==J1)
                     {
-                       endPoints.push_back(QPointF(ptX,endPoints.at(2*sti->numberOfLanes-1).y()+sti->lanesGauge));
+                       endPoints.push_back(QPointF(ptX,endPoints.at(2*numOfLanes-1).y()+laneDist));
                        angles.push_back(ang1/2.0);
                     }
                     else if (t==J2)
                     {
-                        endPoints.push_back(QPointF(ptX,endPoints.at(0).y()-sti->lanesGauge));
+                        endPoints.push_back(QPointF(ptX,endPoints.at(0).y()-laneDist));
                         angles.push_back(ang1/2.0);
                     }
 
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    mi->setSecondRadius(radi2sl);
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                 }
-                else if (t==CH)
-                {}
+                /*else if ()
+                {}*/
                 else if (t==X1)
                 {
                     ///
@@ -769,8 +855,8 @@ Database::Database()
                     yHeight = rad;
                     yHeight -= trackGaugeHalf;
 
-                    rad -=sti->fstLaneDist;
-                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
+                    rad -=fstLane;
+                    for (unsigned int i = 0; i < numOfLanes; i++)
                     {
                         qreal ptX = radi2sl;
                         qreal ptY = rad;
@@ -780,18 +866,18 @@ Database::Database()
                         endPoints.push_back(QPointF(ptX,-ptY+itemRadius));
                         angles.push_back(0);
                         angles.push_back(0);
-                        rad-=sti->lanesGauge;
+                        rad-=laneDist;
                     }
-                    rad = sti->fstLaneDist;
-                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
+                    rad = fstLane;
+                    for (unsigned int i = 0; i < numOfLanes; i++)
                     {
                         qreal ptX = rad;
                         qreal ptY = radi2sl;
-                        endPoints.push_back(QPointF(ptX,-sti->fstLaneDist));
-                        endPoints.push_back(QPointF(ptX,2*itemRadius-sti->fstLaneDist));
+                        endPoints.push_back(QPointF(ptX,-fstLane));
+                        endPoints.push_back(QPointF(ptX,2*itemRadius-fstLane));
                         angles.push_back(-90);
                         angles.push_back(90);
-                        rad+=sti->lanesGauge;
+                        rad+=laneDist;
                     }
 
 
@@ -811,9 +897,9 @@ Database::Database()
                     yHeight = rad;
                     yHeight -= trackGaugeHalf;
 
-                    rad -=sti->fstLaneDist;
-                    qreal ptY2 = rad-(sti->lanesGauge-sti->lanesGaugeEnd);
-                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
+                    rad -=fstLane;
+                    qreal ptY2 = rad-(laneDist-laneDistEnd);
+                    for (unsigned int i = 0; i < numOfLanes; i++)
                     {
                         qreal ptX = radi2sl;
                         qreal ptY = rad;
@@ -826,8 +912,8 @@ Database::Database()
 
                         angles.push_back(-ang1/2.0);
                         angles.push_back(ang1/2.0);
-                        rad-=sti->lanesGauge;
-                        ptY2-=sti->lanesGaugeEnd;
+                        rad-=laneDist;
+                        ptY2-=laneDistEnd;
                     }
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
@@ -841,9 +927,9 @@ Database::Database()
                     yHeight = rad;
                     yHeight -= trackGaugeHalf;
 
-                    rad -=sti->fstLaneDist;
-                    qreal ptY2 = rad-(sti->lanesGauge-sti->lanesGaugeEnd);
-                    for (unsigned int i = 0; i < sti->numberOfLanes; i++)
+                    rad -=fstLane;
+                    qreal ptY2 = rad-(laneDist-laneDistEnd);
+                    for (unsigned int i = 0; i < numOfLanes; i++)
                     {
                         qreal ptX = radi2sl;
                         qreal ptY = rad;
@@ -856,15 +942,19 @@ Database::Database()
 
                         angles.push_back(-ang1/2.0);
                         angles.push_back(ang1/2.0);
-                        rad-=sti->lanesGauge;
-                        ptY2-=sti->lanesGaugeEnd;
+                        rad-=laneDist;
+                        ptY2-=laneDistEnd;
                     }
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                 }
-                else if (t==H1)
-                {}
+                else if (t==CH)
+                {
+                    logFile << "CH ItemType not implemented" << endl;
+                }
+                //else if (t==H1)
+                //{}
                 /*
                 else if (t==SC)
                 {}*/
@@ -873,6 +963,12 @@ Database::Database()
                 else
                 {/*show error dialog*/}
 
+                /** SlotTrackInfo * sti = new SlotTrackInfo(mi);//memory leak in assignment? (later - not at this line)
+                sti->fstLaneDist=fstLane;
+                sti->lanesGauge=laneDist;
+                sti->lanesGaugeEnd=laneDistEnd;
+                sti->numberOfLanes=numOfLanes;*/
+                SlotTrackInfo * sti = new SlotTrackInfo(mi,numOfLanes,laneDist,laneDistEnd,fstLane);//memory leak in assignment? (later - not at this line)
 
                 mi->setSecondRadius(radi2sl);
                 mi->setSlotTrackInfo(sti);
@@ -890,7 +986,155 @@ Database::Database()
 
         }
 
+        else if ((!line.isNull() || line.startsWith("[")) && loadMode==1)
+        {
+            QString partNo = line; //in.readLine();
+            partNo = partNo.replace("[","");
+            partNo = partNo.replace("]","");
 
+            QString nameEn = in.readLine();
+            QString nameCs = in.readLine();
+            nameEn=nameEn.remove(0,7);
+            nameCs=nameCs.remove(0,7);
+
+
+            QString angle1 = in.readLine();
+            angle1.remove(0,6);
+            qreal ang1 = angle1.toDouble();
+
+
+            QString radius = in.readLine();
+            radius.remove(0,7);
+            qreal rad = radius.toDouble();
+
+            bool innerBorder = false;
+            bool endingBorderFlag = false;
+
+            QString borderType = in.readLine();
+            if (ang1>2)
+            {
+                innerBorder = borderType.contains("1");
+            }
+            else
+            {
+                endingBorderFlag = borderType.contains("1");
+            }
+
+            QList<QPointF> endPoints;
+
+
+
+            //more endpoints have to be generated with generateQPointFList(n);
+            /*QPointF pt1;
+            QPointF pt2;
+            QPointF pt3;
+            QPointF pt4;*/
+            BorderItem * bi = NULL;
+
+            qreal xLen = 0;
+
+
+            if (ang1>2)
+            {
+                qreal trackGaugeHalf = (*this->productLines->find(*this->currentProductLine))->getScaleEnum()/2.0;
+
+                //xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                //qreal yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
+
+                int n = ang1/22.5;
+                qreal angle = -ang1/2+22.5/2;
+
+                for (int i = 0; i < n; i++)
+                {
+                    QPointF pt(0,-rad);
+                    rotatePoint(&pt,-angle);
+                    pt.setY(pt.y()+rad);
+                    endPoints << pt;
+                    angle+=22.5;
+                }
+
+                /** if (ang1<23)
+                    endPoints.push_back(QPointF());
+                else if (ang1 < 46)
+                {
+                    ///endPoints.push_back(QPointF(-xLen/2,0));
+                    ///endPoints.push_back(QPointF(xLen/2,0));
+                    QPointF pt(0,rad);
+                    rotatePoint(&pt,ang1/2);
+                    pt.setY(yHeight);
+                    endPoints.push_back(pt);
+
+                    pt = QPointF(0,rad);
+                    rotatePoint(&pt,-ang1/2);
+                    pt.setY(yHeight);
+                    endPoints.push_back(pt);
+
+                } */
+                //else
+                //{
+
+                //}
+
+                /*
+                yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
+
+                yHeight -= trackGaugeHalf;
+
+                angles.push_back(-ang1/2.0);
+                angles.push_back(ang1/2.0);*/
+
+                bi = new BorderItem(partNo,nameEn,nameCs,ang1,rad, endPoints, innerBorder,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                (*this->productLines->find(*this->currentProductLine))->addItem(bi);
+            }
+            else
+            {
+
+                qreal stdStraight = (*this->productLines->find(*this->currentProductLine))->getMaxStraight();
+                //int n = stdStraight/(rad)-1;
+                ///qreal n = (rad)/stdStraight+1;
+                int n = (rad)/stdStraight+1;
+                qreal xCoord = -abs(((int)n-1)*(stdStraight/2));
+                for (int i = 0; i < n; i++)
+                {
+                    endPoints.push_back(QPointF(xCoord,0));
+                    xCoord+=stdStraight;
+                }
+                //endPoints.push_back(QPointF(rad,0));
+
+
+
+                bi = new BorderItem(partNo,nameEn,nameCs,0,rad,endPoints,endingBorderFlag,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                (*this->productLines->find(*this->currentProductLine))->addItem(bi);
+            }
+
+        }
+
+        else if ((!line.isNull() || line.startsWith("[")) && loadMode==2)
+        {
+            QString partNo = line; //in.readLine();
+            partNo = partNo.replace("[","");
+            partNo = partNo.replace("]","");
+
+            QString nameEn = in.readLine();
+            QString nameCs = in.readLine();
+            nameEn=nameEn.remove(0,7);
+            nameCs=nameCs.remove(0,7);
+
+            QString season = in.readLine();
+            season.remove(0,7);
+
+            QString widthStr = in.readLine();
+            widthStr.remove(0,6);
+            qreal width = widthStr.toDouble();
+
+            QString heightStr = in.readLine();
+            heightStr.remove(0,7);
+            qreal height = heightStr.toDouble();
+
+            VegetationItem * item = new VegetationItem(partNo,nameEn,nameCs,season,width,height,*this->productLines->find(*this->currentProductLine));
+            (*this->productLines->find(*this->currentProductLine))->addItem(item);
+
+        }
     }
 
     //generate 2D and 3D models
@@ -902,12 +1146,36 @@ Database::Database()
         {
             (*itemIter)->generate2DModel(true);
             (*itemIter)->get2DModel()->setFlag(QGraphicsItem::ItemIsMovable,false);
-
-
             (*itemIter)->generate2DModel(false);
 
             itemIter++;
         }
+        QList<VegetationItem*>::Iterator itemIterV = (*iter1)->getVegetationItemsList()->begin();
+        while(itemIterV!=(*iter1)->getVegetationItemsList()->end())
+        {
+            (*itemIterV)->generate2DModel(true);
+            (*itemIterV)->get2DModel()->setFlag(QGraphicsItem::ItemIsMovable,false);
+            (*itemIterV)->generate2DModel(false);
+
+            itemIterV++;
+        }
+
+        if (!(*iter1)->getType())
+        {
+            QList<BorderItem*>::Iterator itemIter = (*iter1)->getBorderItemsList()->begin();
+            while(itemIter!=(*iter1)->getBorderItemsList()->end())
+            {
+                (*itemIter)->generate2DModel(true);
+                (*itemIter)->get2DModel()->setFlag(QGraphicsItem::ItemIsMovable,false);
+
+
+                (*itemIter)->generate2DModel(false);
+
+                itemIter++;
+            }
+        }
+
+
         //(*iter1)->generate2DModels();
         iter1++;
     }
@@ -922,6 +1190,7 @@ Database::Database()
         QString text = *(*iter)->getScale();
         text.append(" ");
         text.append(*(*iter)->getName());
+        text = text.toUtf8();
 
         QList<ModelItem*>::Iterator itemIter = (*iter)->getItemsList()->begin();
         int currentMovement = 0;
@@ -932,7 +1201,7 @@ Database::Database()
             //(*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
             scene->addItem((*itemIter)->get2DModel());
 
-            ///TODO: almost right, needs some tuning - see the values of boundingRect.x() - can it be used usefully?
+            ///TODO: almost right, needs some tuning - see the values of boundingRect.x() - can it be useful?
             currentMovement+=(*itemIter)->get2DModel()->boundingRect().size().height()+48;
 
             itemIter++;
@@ -941,9 +1210,41 @@ Database::Database()
 
 
         }
+        QList<VegetationItem*>::Iterator itemIterV = (*iter)->getVegetationItemsList()->begin();
+        while(itemIterV!=(*iter)->getVegetationItemsList()->end())
+        {
+            (*itemIterV)->get2DModel()->moveBy(0,currentMovement);
+            //(*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
+            scene->addItem((*itemIterV)->get2DModel());
+
+            ///TODO: almost right, needs some tuning - see the values of boundingRect.x() - can it be useful?
+            currentMovement+=(*itemIterV)->get2DModel()->boundingRect().size().height()+48;
+
+            itemIterV++;
+            i++;
+        }
+
+        if (!(*iter)->getType())
+        {
+            QList<BorderItem*>::Iterator itemIter = (*iter)->getBorderItemsList()->begin();
+            while(itemIter!=(*iter)->getBorderItemsList()->end())
+            {
+                (*itemIter)->get2DModel()->moveBy(0,currentMovement);
+                //(*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
+                scene->addItem((*itemIter)->get2DModel());
+
+                ///TODO: almost right, needs some tuning - see the values of boundingRect.x() - can it be useful?
+                currentMovement+=(*itemIter)->get2DModel()->boundingRect().size().height()+48;
+
+                itemIter++;
+                i++;
+            }
+        }
         this->scenes->insert(text,scene);
         iter++;
     }
+
+    dbFile->close();
 
 }
 
@@ -988,6 +1289,11 @@ ProductLine * Database::getCurrentProductLine()
 QMap<QString,ProductLine*>::Iterator Database::getDatabaseIterator()
 {
     return this->productLines->begin();
+}
+
+QMap<QString,ProductLine*>::Iterator Database::getDatabaseEndIterator()
+{
+    return this->productLines->end();
 }
 
 ModelItem *Database::findModelItemByName(QString &manufactName, QString &partName) const
@@ -1040,5 +1346,39 @@ QGraphicsScene *Database::findSceneByString(QString &scaleAndName) const
 {
     if (scaleAndName=="")
         return NULL;
-    return *this->scenes->find(scaleAndName);
+    QMap<QString,QGraphicsScene*>::Iterator it = this->scenes->find(scaleAndName.toUtf8());
+    if (it==this->scenes->end())
+        return NULL;
+    else
+        return *it;
+
+}
+
+
+BorderItem *Database::findBorderItemByName(QString &manufactName, QString &partName) const
+{
+    ProductLine * pl = this->findProductLineByName(manufactName);
+    if (pl==NULL)
+        return NULL;
+
+    for (int i = 0; i < pl->getBorderItemsList()->count(); i++)
+    {
+        if (*pl->getBorderItemsList()->at(i)->getPartNo()==partName)
+            return pl->getBorderItemsList()->at(i);
+    }
+    return NULL;
+}
+
+VegetationItem *Database::findVegetationItemByName(QString &manufactName, QString &partName) const
+{
+    ProductLine * pl = this->findProductLineByName(manufactName);
+    if (pl==NULL)
+        return NULL;
+
+    for (int i = 0; i < pl->getVegetationItemsList()->count(); i++)
+    {
+        if (*pl->getVegetationItemsList()->at(i)->getPartNo()==partName)
+            return pl->getVegetationItemsList()->at(i);
+    }
+    return NULL;
 }

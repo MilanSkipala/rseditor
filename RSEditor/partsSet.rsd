@@ -1,0 +1,681 @@
+[[[Märklin]]]
+Type=1
+Scale=H0
+Gauge=Standard
+
+[[Track]]
+[24107]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=7.5
+Radius=360
+
+[24115]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=15
+Radius=360
+
+[24130]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=380
+
+[24206]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=5.7
+Radius=437
+
+[24207]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=7.5
+Radius=437
+
+[24215]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=15
+Radius=437
+
+[24224]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=24.3
+Radius=437
+
+[24230]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=437
+
+[24330]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=515
+
+[24430]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=579.3
+
+[24530]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=643.6
+
+[24912]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=12.1
+Radius=1069
+
+
+[24611]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J2
+Degree=24.3
+Angle2=0
+Radius=437
+
+[24612]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J1
+Degree=24.3
+Angle2=0
+Radius=437
+
+[20671]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J2
+Degree=30
+Angle2=15
+Radius=360
+Radius2=515
+
+[20671]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J1
+Degree=30
+Angle2=30
+Radius=360
+Radius2=515
+
+[24711]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J2
+Degree=12.1
+Angle2=0
+Radius=1114.6
+
+[24712]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J1
+Degree=12.1
+Angle2=0
+Radius=1114.6
+
+
+
+
+
+[12345abcde]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J5
+Radius=90
+Radius2=25
+
+[24xyz]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J2
+Degree=30
+Angle2=0
+Radius=437
+
+[42377]
+NameEn=Roco výhybka
+NameCs=výhybka manuální profil C
+Type=J1
+Degree=30
+Angle2=26.30
+Radius=457.20
+Radius2=572.50
+
+[24620]
+NameEn=Track crossing
+NameCs=køížení
+Type=J4
+Degree=24.3
+Radius=188.3
+
+[24630]
+NameEn=Roco 42316
+NameCs=výhybka manuální profil C
+Type=J3
+Degree=24.3
+Angle2=24.3
+Radius=360
+
+
+[TTTTT]
+NameEn=Turntable
+NameCs=Turntable
+Type=T1
+Radius=100
+
+
+[T2T2T]
+NameEn=Turntable
+NameCs=Turntable
+Type=T2
+Radius=100
+
+[T2T2T]
+NameEn=Turntable
+NameCs=Turntable
+Type=T5
+Radius=90
+
+[T2T2T]
+NameEn=Turntable
+NameCs=Turntable
+Type=T10
+Radius=79.8
+
+
+
+[99999]
+NameEn=Track crossing
+NameCs=køížení
+Type=X1
+Degree=15
+Radius=120
+
+[24640]
+NameEn=Track crossing
+NameCs=køížení
+Type=X1
+Degree=24.3
+Radius=188.3
+
+[24649]
+NameEn=Track crossing
+NameCs=køížení
+Type=X1
+Degree=48.6
+Radius=103.3
+
+[88888]
+NameEn=Track crossing
+NameCs=køížení
+Type=J4
+Degree=15
+Radius=870
+
+[24064]
+NameEn=Straight
+NameCs=rovinka
+Type=E1
+Degree=0
+Radius=80
+
+
+[20360]
+NameEn=Straight track
+NameCs=rovinka
+Type=S1
+Degree=0
+Radius=36
+
+
+[[[Scalextric]]]
+Type=0
+Scale=1:32
+Gauge=Standard
+
+
+[[Accesories]]
+[8240]
+NameEn=Border
+NameCs=Mantinel
+Angle=45
+Radius=214
+Inner=0
+
+[8228]
+NameEn=Border
+NameCs=Mantinel
+Angle=45
+Radius=370
+Inner=0
+
+[8???]
+NameEn=Border
+NameCs=Mantinel
+Angle=22.5
+Radius=370
+Inner=0
+
+[[Track]]
+[C8278]
+NameEn=curve
+NameCs=zatáèka
+Type=C1
+Degree=22.5
+Radius=214
+Radius2=58
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8234]
+NameEn=curve
+NameCs=zatáèka
+Type=C1
+Degree=22.5
+Radius=370
+Radius2=214
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8204]
+NameEn=curve
+NameCs=zatáèka
+Type=C1
+Degree=22.5
+Radius=526
+Radius2=370
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8235]
+NameEn=curve
+NameCs=zatáèka
+Type=C1
+Degree=22.5
+Radius=682
+Radius2=526
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8202]
+NameEn=curve
+NameCs=zatáèka
+Type=C1
+Degree=45
+Radius=214
+Radius2=58
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8206]
+NameEn=curve
+NameCs=zatáèka
+Type=C1
+Degree=45
+Radius=370
+Radius2=214
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8296]
+NameEn=banked curve
+NameCs=zatáèka klopená
+Type=CB
+Degree=45
+Radius=370
+Radius2=214
+FirstLane=39
+LaneDist=78
+LanesNum=2
+LateralAngle=10
+
+
+[C8203]
+NameEn=curve
+NameCs=zatáèka
+Type=C2
+Degree=90
+Radius=370
+Radius2=214
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8201]
+NameEn=hairpin
+NameCs=zatáèka
+Type=C1
+Degree=90
+Radius=214
+Radius2=58
+FirstLane=39
+LaneDist=39
+LanesNum=2
+
+[C7016]
+NameEn=straight 175
+NameCs=rovinka
+Type=S1
+Degree=0
+Radius=39
+Radius2=87.5
+FirstLane=39
+LaneDist=78
+LanesNum=1
+
+[[Accesories]]
+
+[8ABC]
+NameEn=Border
+NameCs=Mantinel
+Angle=22.5
+Radius=214
+Inner=1
+
+[8DEF]
+NameEn=Border
+NameCs=Mantinel
+Angle=45
+Radius=214
+Inner=1
+
+[[Track]]
+
+[C7018]
+NameEn=starter grid 175
+NameCs=rovinka
+Type=SC
+Degree=0
+Radius=78
+Radius2=175
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C7036]
+NameEn=lane change
+NameCs=rovinka
+Type=J5
+Radius=78
+Radius2=87.5
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C7036NO]
+NameEn=lane change
+NameCs=rovinka
+Type=X2
+Radius=78
+Radius2=87.5
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+
+[C8200]
+NameEn=straight 87
+NameCs=rovinka
+Type=S1
+Degree=0
+Radius=78
+Radius2=43.5
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8205]
+NameEn=straight 350
+NameCs=rovinka
+Type=S1
+Degree=0
+Radius=78
+Radius2=175
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8207]
+NameEn=straight 175
+NameCs=rovinka
+Type=S1
+Degree=0
+Radius=78
+Radius2=87.5
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[C8210]
+NameEn=straight crossover
+NameCs=rovinka
+Type=X1
+Degree=90
+Radius=175
+Radius2=175
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+
+[C8246A]
+NameEn=straight 350
+NameCs=rovinka
+Type=HS
+Degree=0
+Radius=78
+Radius2=175
+FirstLane=39
+LaneDist=78
+LaneDistEnd=39
+LanesNum=2
+
+[C8246B]
+NameEn=straight 350
+NameCs=rovinka
+Type=HE
+Degree=0
+Radius=78
+Radius2=175
+FirstLane=39
+LaneDist=78
+LaneDistEnd=39
+LanesNum=2
+
+
+[[[Tillig]]]
+Type=1
+Scale=TT
+Gauge=Standard
+
+[[Track]]
+[82119]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=22.5
+Radius=380
+
+[82820]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=425.2
+
+[82322]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J2
+Degree=15
+Angle2=0
+Radius=600
+
+[82321]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J1
+Degree=15
+Angle2=0
+Radius=600
+
+[24064]
+NameEn=Straight
+NameCs=rovinka
+Type=E1
+Degree=0
+Radius=80
+
+[82124]
+NameEn=Straight track
+NameCs=rovinka
+Type=S1
+Degree=0
+Radius=114
+
+[[[Tillig]]]
+Type=1
+Scale=H0
+Gauge=Standard
+
+[[Track]]
+[H82119]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=22.5
+Radius=380
+
+[H82820]
+NameEn=Curved C Track
+NameCs=zatáèka profil C
+Type=C1
+Degree=30
+Radius=425.2
+
+[H82322]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J2
+Degree=15
+Angle2=0
+Radius=600
+
+[H82321]
+NameEn=Turnout Manual C Track
+NameCs=výhybka manuální profil C
+Type=J1
+Degree=15
+Angle2=0
+Radius=600
+
+[H24064]
+NameEn=Straight
+NameCs=rovinka
+Type=E1
+Degree=0
+Radius=80
+
+
+[H82124]
+NameEn=Straight track
+NameCs=rovinka
+Type=S1
+Degree=0
+Radius=114
+
+
+[[[ModelTrees]]]
+Type=1
+Scale=H0
+Gauge=None
+
+[[Vegetation]]
+[98765432]
+NameEn=Tree 1
+NameCs=Strom 1
+Season=Spring
+Width=40
+Height=20
+
+[800000AB]
+NameEn=Tree 1
+NameCs=Strom 1
+Season=Summer
+Width=40
+Height=20
+
+[70]
+NameEn=Tree 1
+NameCs=Strom 1
+Season=Autumn
+Width=40
+Height=20
+
+[6]
+NameEn=Tree 1
+NameCs=Strom 1
+Season=Winter
+Width=40
+Height=20
+
+[5]
+NameEn=Tree 1
+NameCs=Strom 1
+Season=Spring
+Width=20
+Height=20
+
+[4]
+NameEn=Tree 1
+NameCs=Strom 1
+Season=Summer
+Width=20
+Height=20
+
+[300000]
+NameEn=Tree 1
+NameCs=Strom 1
+Season=Autumn
+Width=20
+Height=20
+
+[2]
+NameEn=Tree 1
+NameCs=Strom 1
+Season=Winter
+Width=20
+Height=20
+

@@ -26,8 +26,9 @@ enum ItemType {
 
                     //special parts for slot tracks
                     C2, //curved crossing
+                    CB, //banked curve
                     CH, //straight part with chicane
-                    H1, //hairpin curve
+                    //H1, //hairpin curve
                     HS, //straight bottleneck section
                     HE, //straight with end of hairpin
                     SC, //straight with lap counter

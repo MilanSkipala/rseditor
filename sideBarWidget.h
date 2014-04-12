@@ -29,8 +29,8 @@ class SideBarWidget : public QFrame//QWidget
 
 public:
 
-    SideBarWidget(Database * db, QWidget * parent = 0);
-    SideBarWidget(Database * db, QMenu * context, QWidget * parent = 0); ///DO NOT USE THIS ONE
+    SideBarWidget(QString * lang, Database * db, QWidget * parent = 0);
+    SideBarWidget(QString * lang, Database * db, QMenu * context, QWidget * parent = 0); ///DO NOT USE THIS ONE
     Database * getDatabase() const;
 
     QDialog * initAddDialog();
@@ -40,6 +40,10 @@ public:
     QGraphicsScene * getCurrentScene() const;
 
     QComboBox *getProductLines();
+    void resetSideBar();
+
+    int setInventoryState(QTextStream & input);
+    void printInventoryState(QTextStream & output);
 
 protected:
     void paintEvent(QPaintEvent * evt);

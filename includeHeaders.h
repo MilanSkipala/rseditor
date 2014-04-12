@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <QApplication>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QContextMenuEvent>
 #include <QMessageBox>
@@ -23,6 +24,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QSplitter>
 #include <QStatusBar>
 #include <QSvgWidget>
 #include <QToolBar>

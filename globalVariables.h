@@ -5,14 +5,14 @@
 #include "application.h"
 
 
-#define TOLERANCE_HALF 2.5 //5 points (=> milimeters)
+#define TOLERANCE_HALF 10 //10 points (=> milimeters)
 #define TOLERANCE_ANGLE 5.0 //5 deg.
 #define SEARCH_TOLERANCE_HALF 2.5
 
 /**
   CHANGE!!
 */
-extern QString folderPathLinux;/// = "/media/sf_Shared_Virtual/RTEditor/";//"/etc/";
+extern QString folderPathLinux;/// = "/media/sf_Shared_Virtual/RSEditor/";//"/etc/";
 extern QString folderPathWin;/// = "C:\\";
 
 extern Application * app;

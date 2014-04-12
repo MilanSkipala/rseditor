@@ -30,6 +30,8 @@ public:
     qreal getAngle() const;
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+
+protected slots:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
 public slots:

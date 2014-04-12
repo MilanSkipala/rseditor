@@ -12,5 +12,6 @@ void movePoint(QPointF * pt, qreal dx, qreal dy);
 //toPolar(qreal & r, qreal & phi, qreal & x, qreal & y)
 void toCartesian(qreal r, qreal phi, qreal & x, qreal & y);
 bool pointsAreCloseEnough(QPointF * pt1, QPointF * pt2);
+qreal dist(QPointF * ptA, QPointF * ptB);
 
 #endif // MATHFUNCTIONS_H

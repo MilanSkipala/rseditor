@@ -1,28 +1,41 @@
 #include <QScrollBar>
 #include "sideBarWidget.h"
+#include "globalVariables.h"
 
-SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) : QFrame(parent, parent->windowFlags())//QWidget(parent, parent->windowFlags())
+SideBarWidget::SideBarWidget(QString * lang, Database * db, QMenu * context, QWidget * parent): QFrame(parent, parent->windowFlags())//QWidget(parent, parent->windowFlags())
 {
     this->database=db;
 
-    /**
-      TODO
-      -custom context menu
-      -remove "context" param from constructor
-    */
     this->contextMenu=context;
     this->layout = new QGridLayout(this);
+    this->layout->setSizeConstraint(QLayout::SetNoConstraint);
 
     this->prodLineCBox=new QComboBox(this);
     this->graphicsView = new QGraphicsView(this);
     this->graphicsView->setRenderHint(QPainter::Antialiasing);
-    this->graphicsView->setAlignment(Qt::AlignTop);
+    this->graphicsView->setAlignment(Qt::AlignHCenter);
 
     this->currentScene=NULL;
+
 
     this->addButton = new QPushButton("Add",this);
     this->delButton = new QPushButton("Del",this);
 
+    if (lang->startsWith("EN"))
+    {
+        this->addButton->setStatusTip("Add items from selected manufacturers");
+        this->delButton->setStatusTip("Remove manufacturer from the list");
+
+    }
+    else
+    {
+        this->addButton->setStatusTip("Přidat díly od vybraných výrobců");
+        this->delButton->setStatusTip("Odstranit výrobce ze seznamu");
+        this->addButton->setText("Přidat");
+        this->delButton->setText("Odebrat");
+    }
+
+    /*
     this->addButton->setMinimumWidth(25);
     this->delButton->setMinimumWidth(25);
     this->addButton->setMaximumWidth(50);
@@ -31,12 +44,14 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
     /*
       -following should result in better looking SBW
     */
+
+    /**
     this->prodLineCBox->setMinimumWidth(80);
-    this->prodLineCBox->setMaximumWidth(190);
+    this->prodLineCBox->setMaximumWidth(390);
     this->layout->setSizeConstraint(QLayout::SetMaximumSize);
 
     this->graphicsView->setMinimumWidth(130);
-
+*/
 
 
     QPalette pal = this->palette();
@@ -51,7 +66,8 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
 
     this->setLayout(this->layout);
 
-    this->setGeometry(0,0,215,420);
+
+    //this->setGeometry(0,0,215,420);
 
     connect(this->addButton, SIGNAL(clicked()),this,SLOT(showAddDialog()));
     connect( this->delButton, SIGNAL(clicked()),this,SLOT(showDelDialog()));
@@ -59,6 +75,15 @@ SideBarWidget::SideBarWidget(Database * db, QMenu * context, QWidget * parent) :
     //initialize add and del dialog
     this->addDialog = this->initAddDialog();
     this->delDialog = this->initDelDialog();
+
+    if (lang->startsWith("CS"))
+    {
+        this->addDialog->setWindowTitle("Přidat výrobce");
+        this->delDialog->setWindowTitle("Odebrat výrobce");
+    }
+
+
+
 
 
 }
@@ -71,17 +96,10 @@ void SideBarWidget::mousePressEvent(QMouseEvent *evt)
 {
     QFrame::mousePressEvent(evt);
     //this->graphicsView->event(evt);
-
-    /**
-    TODO
-    */
 }
 void SideBarWidget::mouseMoveEvent(QMouseEvent *evt)
 {
     QFrame::mouseMoveEvent(evt);
-    /**
-    TODO
-    */
 }
 void SideBarWidget::paintEvent(QPaintEvent *evt)
 {
@@ -91,10 +109,14 @@ void SideBarWidget::paintEvent(QPaintEvent *evt)
     QGraphicsScene * sceneBefore = this->currentScene;
     QString text = this->prodLineCBox->currentText();
     if (this->prodLineCBox->currentText()!="")
+    {
         this->currentScene = this->database->findSceneByString(text);
-
-
-
+        if (this->currentScene==NULL)
+        {
+            logFile << "ERROR: currentScene==NULL" << endl;
+            return;
+        }
+    }
 
     this->graphicsView->setScene(this->currentScene);
 
@@ -102,44 +124,35 @@ void SideBarWidget::paintEvent(QPaintEvent *evt)
     {
         QTransform tr;//(this->graphicsView->transform());
         qreal sceneScale = 1;
-        sceneScale = 110/this->currentScene->width();
+        //subtract the width of the scrollbar
+        sceneScale = (this->graphicsView->width()-16)/this->currentScene->width();
         tr.scale(sceneScale,sceneScale);
         //if (tr.m11()>=sceneScale || this->graphicsView->scene()!=sceneBefore)
         //if (tr.m11()>=sceneScale)
         this->graphicsView->setTransform(tr);
+        cout << sceneScale << endl;
     }
 
     if (sceneBefore!=this->currentScene)
     {
+        if (sceneBefore!=NULL)
+            sceneBefore->clearSelection();
         this->graphicsView->verticalScrollBar()->setValue(this->graphicsView->verticalScrollBar()->minimum());
     }
-
-
-
-//*/
-
 
 }
 
 void SideBarWidget::showAddDialog()
-{
-    this->addDialog->exec();
-}
+{this->addDialog->exec();}
 
 void SideBarWidget::showDelDialog()
-{
-    this->delDialog->exec();
-}
+{this->delDialog->exec();}
 
 void SideBarWidget::closeAddDialog()
-{
-    this->addDialog->close();
-}
+{this->addDialog->close();}
 
 void SideBarWidget::closeDelDialog()
-{
-    this->delDialog->close();
-}
+{this->delDialog->close();}
 
 void SideBarWidget::importSelection()
 {
@@ -161,6 +174,10 @@ void SideBarWidget::importSelection()
     }
 
     closeAddDialog();
+    if (app->getUserPreferences()->getLocale()->startsWith("EN"))
+        app->getWindow()->statusBar()->showMessage("Double-click the item to place it in the workspace");
+    else
+        app->getWindow()->statusBar()->showMessage("Dvojitým kliknutím na dílek ho vložíte na pracovní plochu");
 }
 
 void SideBarWidget::deleteSelection()
@@ -215,6 +232,12 @@ QDialog * SideBarWidget::initAddDialog()
 
     QPushButton * pb = new QPushButton("Add selected");
     QPushButton * pb2 = new QPushButton("Close");
+    //if (!app->getUserPreferences()->getLocale()->startsWith("EN"))
+    if (this->addButton->statusTip().startsWith("Přidat"))
+    {
+        pb->setText("Přidat vybrané");
+        pb2->setText("Storno");
+    }
     connect(pb2,SIGNAL(clicked()),this,SLOT(closeAddDialog()));
     connect(pb,SIGNAL(clicked()),this,SLOT(importSelection()));
 
@@ -250,6 +273,11 @@ QDialog * SideBarWidget::initDelDialog()
 
     QPushButton * pb = new QPushButton("Remove selected");
     QPushButton * pb2 = new QPushButton("Close");
+    if (this->addButton->statusTip().startsWith("Přidat"))
+    {
+        pb->setText("Odstranit vybrané");
+        pb2->setText("Storno");
+    }
     connect(pb2,SIGNAL(clicked()),this,SLOT(closeDelDialog()));
     connect(pb,SIGNAL(clicked()),this,SLOT(deleteSelection()));
 
@@ -261,11 +289,152 @@ QDialog * SideBarWidget::initDelDialog()
 }
 
 QGraphicsScene *SideBarWidget::getCurrentScene() const
-{
-    return this->currentScene;
-}
+{return this->currentScene;}
 
 QComboBox *SideBarWidget::getProductLines()
+{return this->prodLineCBox;}
+
+void SideBarWidget::resetSideBar()
 {
-    return this->prodLineCBox;
+    this->listWidget->clearSelection();
+    this->listWidgetD->clearSelection();
+    if (this->currentScene!=NULL)
+        this->currentScene->clearSelection();
+    this->currentScene=NULL;
+    this->prodLineCBox->clear();
+
+
+#ifdef Q_OS_LINUX
+    QString path(folderPathLinux);
+#endif
+
+
+#ifdef Q_OS_WIN
+    QString path(folderPathWin);
+#endif
+
+    path.append("Inventory.rsi");
+
+    QFile input(path);
+
+    input.open(QFile::ReadOnly);
+
+    QTextStream inputFile(&input);
+    if (!input.isOpen())
+    {
+        logFile << "Inventory file couldn't be opened" << endl;
+    }
+    else
+        this->setInventoryState(inputFile);
+}
+
+int SideBarWidget::setInventoryState(QTextStream &input)
+{
+    logFile << "Setting state of inventory" << endl;
+
+    QString str;
+    ProductLine * productLine = NULL;
+    int mode = 0; //0=modelItems, 1=borderItems, 2=vegetationItems
+    while (!input.atEnd())
+    {
+        str = input.readLine();
+        if (str.startsWith("ProductLine="))
+        {
+            productLine = this->database->findProductLineByName(str.remove(0,12));
+            if (productLine==NULL)
+            {
+                logFile << "    Product line was not found: " << str.toStdString() << endl;
+                return 1;
+            }
+            mode=0;
+
+        }
+        else if (str.startsWith("---"))
+            mode++;
+        else if (str.startsWith("INVENTORY"))
+        {}
+        else
+        {
+            if (mode==0)
+            {
+                QString str2 = str.left(str.indexOf("="));
+                ModelItem * it = productLine->findItemByPartNo(&str2);
+                if (it==NULL)
+                {
+                    logFile << "    Item was not found: " << productLine->getName()->toStdString() << " " << str.toStdString() << endl;
+                    return 1;
+                }
+                str.remove(0,str2.count()+1);
+                it->setAvailableCount(str.toUInt());
+                it->get2DModel()->changeCountPath(it->getAvailableCount());
+            }
+            else if (mode==1)
+            {
+                QString str2 = str.left(str.indexOf("="));
+                BorderItem * it = productLine->findBorderItemByPartNo(&str2);
+                if (it==NULL)
+                {
+                    logFile << "    Item was not found: " << productLine->getName()->toStdString() << " " << str.toStdString() << endl;
+                    return 1;
+                }
+                str.remove(0,str2.count()+1);
+                it->setAvailableCount(str.toUInt());
+                it->get2DModel()->changeCountPath(it->getAvailableCount());
+            }
+            else
+            {
+                QString str2 = str.left(str.indexOf("="));
+                VegetationItem * it = productLine->findVegetationItemByPartNo(&str2);
+                if (it==NULL)
+                {
+                    logFile << "    Item was not found: " << productLine->getName()->toStdString() << " " << str.toStdString() << endl;
+                    return 1;
+                }
+                str.remove(0,str2.count()+1);
+                it->setAvailableCount(str.toUInt());
+                it->get2DModel()->changeCountPath(it->getAvailableCount());
+            }
+
+        }
+    }
+
+
+
+
+}
+
+void SideBarWidget::printInventoryState(QTextStream &output)
+{
+    output << "INVENTORY" << endl;
+
+    QMap<QString,ProductLine*>::Iterator dbIter = this->database->getDatabaseIterator();
+    QMap<QString,ProductLine*>::Iterator dbEndIter = this->database->getDatabaseEndIterator();
+
+
+    //for (int i = 0; i < this->prodLineCBox->count(); i++)
+    while (dbIter!=dbEndIter)
+    {
+        //QString name = this->prodLineCBox->itemText(i);
+        //name.remove(0,name.indexOf(" ")+1);
+        ProductLine * pl = dbIter.value();//this->database->findProductLineByName(name);
+        output << "ProductLine=" << *pl->getName() << endl;
+        for (int j = 0; j < pl->getItemsList()->count(); j++)
+        {
+            output << *pl->getItemsList()->at(j)->getPartNo() << "=" << pl->getItemsList()->at(j)->getAvailableCount() << endl;
+        }
+        output << "---" << endl;
+        for (int j = 0; j < pl->getBorderItemsList()->count(); j++)
+        {
+            output << *pl->getBorderItemsList()->at(j)->getPartNo() << "=" << pl->getBorderItemsList()->at(j)->getAvailableCount() << endl;
+        }
+        output << "---" << endl;
+        for (int j = 0; j < pl->getVegetationItemsList()->count(); j++)
+        {
+            output << *pl->getVegetationItemsList()->at(j)->getPartNo() << "=" << pl->getVegetationItemsList()->at(j)->getAvailableCount() << endl;
+        }
+
+        dbIter++;
+    }
+
+
 }
