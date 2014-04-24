@@ -1,3 +1,23 @@
+/*
+    Slot track and model railway editor by Milan Skipala
+    Copyright (C) 2014 Milan Skipala
+
+    This file is a part of Rail & Slot Editor.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include <QScrollBar>
 #include "sideBarWidget.h"
 #include "globalVariables.h"
@@ -41,7 +61,7 @@ SideBarWidget::SideBarWidget(QString * lang, Database * db, QMenu * context, QWi
     this->addButton->setMaximumWidth(50);
     this->delButton->setMaximumWidth(50);
 
-    /*
+    / *
       -following should result in better looking SBW
     */
 
@@ -130,7 +150,7 @@ void SideBarWidget::paintEvent(QPaintEvent *evt)
         //if (tr.m11()>=sceneScale || this->graphicsView->scene()!=sceneBefore)
         //if (tr.m11()>=sceneScale)
         this->graphicsView->setTransform(tr);
-        cout << sceneScale << endl;
+        //cout << sceneScale << endl;
     }
 
     if (sceneBefore!=this->currentScene)
@@ -398,9 +418,7 @@ int SideBarWidget::setInventoryState(QTextStream &input)
         }
     }
 
-
-
-
+    return 0;
 }
 
 void SideBarWidget::printInventoryState(QTextStream &output)

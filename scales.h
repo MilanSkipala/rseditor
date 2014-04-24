@@ -1,3 +1,22 @@
+/*
+    Slot track and model railway editor by Milan Skipala
+    Copyright (C) 2014 Milan Skipala
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef SCALES_H
 #define SCALES_H
 
@@ -37,10 +56,10 @@ enum ScaleEnum {
             SCALE_ZZ = 5,
             SCALE_T = 3,
 
-            SCALE_24 = 100,
-            SCALE_32 = 80,
-            SCALE_43 = 60,
-            SCALE_HOSLOT = 50,
+            SCALE_24 = 60,//100,
+            SCALE_32 = 40,//80,
+            SCALE_43 = 25,//60,
+            SCALE_HOSLOT = 17,//50,
 
             SCALE_undef = 1
 

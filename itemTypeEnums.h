@@ -1,3 +1,22 @@
+/*
+    Slot track and model railway editor by Milan Skipala
+    Copyright (C) 2014 Milan Skipala
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef ITEMTYPEENUMS_H
 #define ITEMTYPEENUMS_H
 
@@ -27,14 +46,16 @@ enum ItemType {
                     //special parts for slot tracks
                     C2, //curved crossing
                     CB, //banked curve
-                    CH, //straight part with chicane
+                    HC, //straight part with chicane
                     //H1, //hairpin curve
                     HS, //straight bottleneck section
                     HE, //straight with end of hairpin
                     SC, //straight with lap counter
                     JM, //jump
-                    X2 //crossing on one straight piece
+                    X2, //crossing on one straight piece
                     //X3 //"bridged" crossing - exists in db and sbw, but when it is being inserted into workspacewidget, program creates two S1 items with different height profiles
+
+                    UNKNOWN
 
 
 

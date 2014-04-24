@@ -1,3 +1,23 @@
+/*
+    Slot track and model railway editor by Milan Skipala
+    Copyright (C) 2014 Milan Skipala
+
+    This file is a part of Rail & Slot Editor.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include <QtGlobal>
 #include <cmath>
 #include "mathFunctions.h"
@@ -49,6 +69,8 @@ Database::Database(QString &lang)
 #endif
 
 
+    path.prepend(qApp->applicationDirPath());
+
     int loadMode = 0; //0=loading track parts 1=loading track accesories 2=loading other models
     path.append("partsSet.rsd");
 
@@ -59,6 +81,7 @@ Database::Database(QString &lang)
 
     if (!dbFile->open(QIODevice::ReadOnly | QIODevice::Text))
     {
+        logFile << "couldnt open the database file" << endl;
 
         exit(1);
     }
@@ -210,7 +233,7 @@ Database::Database(QString &lang)
 
             QString typeStr = in.readLine();
             typeStr.remove(0,5);
-            ItemType t;
+            ItemType t = UNKNOWN;
 
             if (typeStr=="C1")
                 t = C1;
@@ -256,8 +279,8 @@ Database::Database(QString &lang)
                 t = C2;
             else if (typeStr=="CB")
                 t = CB;
-            else if (typeStr=="CH")
-                t = CH;
+            else if (typeStr=="HC")
+                t = HC;
             else if (typeStr=="X2")
                 t = X2;
             else if (typeStr=="HS")
@@ -526,7 +549,8 @@ Database::Database(QString &lang)
                     break;
                 case C2:
                     break;
-                case CH:
+                case HC:
+
                     break;
                 case T1:
                     //!caution: xLen variable is used for storing the perimeter of circle
@@ -675,7 +699,7 @@ Database::Database(QString &lang)
                 QString laneDistStr = in.readLine();
                 laneDistStr.remove(0,9);
                 QString laneDistEndStr=laneDistStr;
-                if (t==HS || t==HE || t==CH)
+                if (t==HS || t==HE || t==HC)
                 {
                     laneDistEndStr = in.readLine();
                     laneDistEndStr.remove(0,12);
@@ -775,6 +799,10 @@ Database::Database(QString &lang)
                         mi->setSlotTrackInfo(sti);
 
                         mi->updateEndPointsHeightGraphics();
+                        //global variable "app" is null at this moment and updateEnd...
+                        //uses it, so following call cant be used:
+                        //mi->setLateralAngle(lateralAngle);
+
 
                         QPointF point2(abs(mi->getRadius())-fstLane,0);
                         QPointF point(abs(radi2sl),0);
@@ -872,7 +900,7 @@ Database::Database(QString &lang)
                     for (unsigned int i = 0; i < numOfLanes; i++)
                     {
                         qreal ptX = rad;
-                        qreal ptY = radi2sl;
+                        //qreal ptY = radi2sl;
                         endPoints.push_back(QPointF(ptX,-fstLane));
                         endPoints.push_back(QPointF(ptX,2*itemRadius-fstLane));
                         angles.push_back(-90);
@@ -917,6 +945,7 @@ Database::Database(QString &lang)
                     }
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    mi->setSecondRadius(radi2sl);
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                 }
                 else if (t==HE)
@@ -947,11 +976,37 @@ Database::Database(QString &lang)
                     }
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    mi->setSecondRadius(radi2sl);
                     (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                 }
-                else if (t==CH)
+                else if (t==HC)
                 {
-                    logFile << "CH ItemType not implemented" << endl;
+                    qreal itemRadius = rad;
+
+                    xLen = 2*radi2sl;
+                    yHeight = rad;
+                    yHeight -= trackGaugeHalf;
+
+
+                    qreal ptX = radi2sl;
+                    qreal ptY = fstLane;
+                    qreal ptYOther = rad-(laneDistEnd*(numOfLanes/2-0.5));
+
+                    for (unsigned int i = 0; i < numOfLanes; i++)
+                    {
+                        endPoints.push_back(QPointF(-ptX,ptY));
+                        endPoints.push_back(QPointF(ptX,ptYOther));
+
+                        angles.push_back(-ang1/2.0);
+                        angles.push_back(ang1/2.0);
+
+                        ptY += laneDist;
+                        ptYOther += laneDistEnd;
+                    }
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    mi->setSecondRadius(radi2sl);
+                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
                 }
                 //else if (t==H1)
                 //{}
@@ -1031,12 +1086,12 @@ Database::Database(QString &lang)
             QPointF pt4;*/
             BorderItem * bi = NULL;
 
-            qreal xLen = 0;
+            //qreal xLen = 0;
 
 
             if (ang1>2)
             {
-                qreal trackGaugeHalf = (*this->productLines->find(*this->currentProductLine))->getScaleEnum()/2.0;
+                //qreal trackGaugeHalf = (*this->productLines->find(*this->currentProductLine))->getScaleEnum()/2.0;
 
                 //xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
                 //qreal yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
@@ -1083,6 +1138,7 @@ Database::Database(QString &lang)
                 angles.push_back(-ang1/2.0);
                 angles.push_back(ang1/2.0);*/
 
+
                 bi = new BorderItem(partNo,nameEn,nameCs,ang1,rad, endPoints, innerBorder,*this->productLines->find(*this->currentProductLine));//parentWidget??
                 (*this->productLines->find(*this->currentProductLine))->addItem(bi);
             }
@@ -1101,7 +1157,20 @@ Database::Database(QString &lang)
                 }
                 //endPoints.push_back(QPointF(rad,0));
 
+                if (endPoints.empty())
+                {
+                    logFile << "empty endPoints list for borderItem " << partNo.toStdString() << endl;
+                    QMessageBox * messageDialog = new QMessageBox();
 
+                    if (lang.startsWith("EN"))
+                        messageDialog->setText(QString("No end-points were generated for track border item No: %1. Please move its specification in the parts database. It has to placed after the specification of the longest straight track item.").arg(partNo));
+                    else
+                        messageDialog->setText(QString("Pro díl %1 nebyly vygenerovány žádné koncové body. Prosím upravte databázi dílů. Specifikace rovného mantinelu musí být umístěna až za specifikací nejdelšího rovného dílu trati.").arg(partNo));
+                    messageDialog->setIcon(QMessageBox::Warning);
+                    messageDialog->setButtonText(0,"OK");
+                    messageDialog->exec();
+                    continue;
+                }
 
                 bi = new BorderItem(partNo,nameEn,nameCs,0,rad,endPoints,endingBorderFlag,*this->productLines->find(*this->currentProductLine));//parentWidget??
                 (*this->productLines->find(*this->currentProductLine))->addItem(bi);
@@ -1252,9 +1321,10 @@ Database::Database(QString &lang)
 
 ProductLine * Database::findProductLineByName(QString &name) const
 {
-    if (name == "")
-        return NULL;
-    return *this->productLines->find(name);
+    QMap<QString,ProductLine*>::Iterator it = this->productLines->find(name);
+    if (it!=this->productLines->end())
+        return *it;
+    return NULL;
 }
 
 int Database::setCurrentProductLine(QString &name)

@@ -1,4 +1,4 @@
-[[[M‰rklin]]]
+[[[M√§rklin]]]
 Type=1
 Scale=H0
 Gauge=Standard
@@ -6,84 +6,84 @@ Gauge=Standard
 [[Track]]
 [24107]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=7.5
 Radius=360
 
 [24115]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=15
 Radius=360
 
 [24130]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=30
 Radius=380
 
 [24206]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=5.7
 Radius=437
 
 [24207]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=7.5
 Radius=437
 
 [24215]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=15
 Radius=437
 
 [24224]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=24.3
 Radius=437
 
 [24230]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=30
 Radius=437
 
 [24330]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=30
 Radius=515
 
 [24430]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=30
 Radius=579.3
 
 [24530]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=30
 Radius=643.6
 
 [24912]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=12.1
 Radius=1069
@@ -91,7 +91,7 @@ Radius=1069
 
 [24611]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J2
 Degree=24.3
 Angle2=0
@@ -99,7 +99,7 @@ Radius=437
 
 [24612]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J1
 Degree=24.3
 Angle2=0
@@ -107,16 +107,16 @@ Radius=437
 
 [20671]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J2
 Degree=30
 Angle2=15
 Radius=360
 Radius2=515
 
-[20671]
+[20672]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J1
 Degree=30
 Angle2=30
@@ -125,7 +125,7 @@ Radius2=515
 
 [24711]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J2
 Degree=12.1
 Angle2=0
@@ -133,7 +133,7 @@ Radius=1114.6
 
 [24712]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J1
 Degree=12.1
 Angle2=0
@@ -145,22 +145,22 @@ Radius=1114.6
 
 [12345abcde]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J5
 Radius=90
 Radius2=25
 
 [24xyz]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J2
 Degree=30
 Angle2=0
 Radius=437
 
 [42377]
-NameEn=Roco v˝hybka
-NameCs=v˝hybka manu·lnÌ profil C
+NameEn=Roco v√Ωhybka
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J1
 Degree=30
 Angle2=26.30
@@ -169,14 +169,14 @@ Radius2=572.50
 
 [24620]
 NameEn=Track crossing
-NameCs=k¯ÌûenÌ
+NameCs=k√∏√≠¬ûen√≠
 Type=J4
 Degree=24.3
 Radius=188.3
 
 [24630]
 NameEn=Roco 42316
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J3
 Degree=24.3
 Angle2=24.3
@@ -212,28 +212,28 @@ Radius=79.8
 
 [99999]
 NameEn=Track crossing
-NameCs=k¯ÌûenÌ
+NameCs=k√∏√≠¬ûen√≠
 Type=X1
 Degree=15
 Radius=120
 
 [24640]
 NameEn=Track crossing
-NameCs=k¯ÌûenÌ
+NameCs=k√∏√≠¬ûen√≠
 Type=X1
 Degree=24.3
 Radius=188.3
 
 [24649]
 NameEn=Track crossing
-NameCs=k¯ÌûenÌ
+NameCs=k√∏√≠¬ûen√≠
 Type=X1
 Degree=48.6
 Radius=103.3
 
 [88888]
 NameEn=Track crossing
-NameCs=k¯ÌûenÌ
+NameCs=k√∏√≠¬ûen√≠
 Type=J4
 Degree=15
 Radius=870
@@ -252,6 +252,349 @@ NameCs=rovinka
 Type=S1
 Degree=0
 Radius=36
+
+
+[[[SCX Digital]]]
+Type=0
+Scale=1:32
+Gauge=Standard
+
+[[Track]]
+[20110]
+NameEn=Inner Curve
+NameCs=Vnit√∏n√≠ zat√°√®ka
+Type=C1
+Degree=45
+Radius=214
+Radius2=58
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[20010]
+NameEn=Standard Curve
+NameCs=Standardn√≠ zat√°√®ka
+Type=C1
+Degree=45
+Radius=370
+Radius2=214
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[20260]
+NameEn=Outer Curve
+NameCs=Vn√¨j¬ö√≠ zat√°√®ka
+Type=C1
+Degree=22.5
+Radius=526
+Radius2=370
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+
+[84030]
+NameEn=Outer Outer Curve
+NameCs=Velk√° vn√¨j¬ö√≠ zat√°√®ka
+Type=C1
+Degree=22.5
+Radius=682
+Radius2=526
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[25100]
+NameEn=Banked curve
+NameCs=Klopen√° zat√°√®ka
+Type=CB
+Degree=180
+Radius=370
+Radius2=214
+FirstLane=39
+LaneDist=78
+LanesNum=2
+LateralAngle=10
+
+[25090C]
+NameEn=Supersliding Curve Oil Effect
+NameCs=Kluzk√° zat√°√®ka
+Type=C1
+Degree=45
+Radius=370
+Radius2=214
+FirstLane=78
+LaneDist=78
+LanesNum=1
+
+[25090S]
+NameEn=Supersliding Curve Oil Effect Lead-In/Out
+NameCs=Kluzk√° zat√°√®ka - rovn√Ω d√≠l
+Type=HC
+Degree=0
+Radius=78
+Radius2=180
+FirstLane=39
+LaneDist=78
+LaneDistEnd=0
+LanesNum=2
+
+[[Accesories]]
+[25090BC]
+NameEn=Border for Supersliding Curve
+NameCs=Mantinel pro kluzkou zat√°√®ku
+Angle=22.5
+Radius=370
+Inner=0
+
+[25090BS]
+NameEn=Border for Supersliding Curve
+NameCs=Mantinel pro kluzkou zat√°√®ku
+Angle=0
+Radius=90
+Inner=1
+
+[[Track]]
+[20210]
+NameEn=Single Outer Curve of the Inner Curve
+NameCs=Vn√¨j¬ö√≠ dr√°ha vnit√∏n√≠ zat√°√®ky
+Type=C1
+Degree=45
+Radius=214
+Radius2=136
+FirstLane=39
+LaneDist=78
+LanesNum=1
+
+
+[25050]
+NameEn=Changeover curve
+NameCs=Zat√°√®ka s v√Ωm√¨nou drah
+Type=C2
+Degree=90
+Radius=370
+Radius2=214
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[20130]
+NameEn=Straight 90
+NameCs=Rovinka 90
+Type=S1
+Degree=0
+Radius=78
+Radius2=45
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[20020]
+NameEn=Straight 180
+NameCs=Rovinka 180
+Type=S1
+Degree=0
+Radius=78
+Radius2=90
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+
+[20000]
+NameEn=Terminal track 360
+NameCs=Rovinka p√∏√≠pojn√° 360
+Type=S1
+Degree=0
+Radius=78
+Radius2=180
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+
+[20200]
+NameEn=Single lane Straight 360
+NameCs=Jednodr√°hov√° rovinka 360
+Type=S1
+Degree=0
+Radius=39
+Radius2=180
+FirstLane=39
+LaneDist=78
+LanesNum=1
+
+[20190]
+NameEn=Terminal track 360
+NameCs=Rovinka p√∏√≠pojn√° 360
+Type=SC
+Degree=0
+Radius=78
+Radius2=180
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[20030]
+NameEn=Changeover track
+NameCs=Rovinka s v√Ωm√¨nou drah
+Type=J5
+Radius=78
+Radius2=180
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+
+[20160]
+NameEn=Left Side Access track
+NameCs=Rovinka s levou v√Ωhybkou
+Type=J2
+Degree=0
+Radius=78
+Radius2=180
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[20150]
+NameEn=Right Side Access track
+NameCs=Rovinka s pravou v√Ωhybkou
+Type=J1
+Degree=0
+Radius=78
+Radius2=180
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[25020S]
+NameEn=Bridge straight 360
+NameCs=Most - rovinka 360
+Type=S1
+Degree=0
+Radius=78
+Radius2=180
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+[[Accesories]]
+[25020BS]
+NameEn=Border for Bridge
+NameCs=Mantinel pro kluzkou zat√°ƒçku
+Angle=0
+Radius=90
+Inner=0
+
+[[Track]]
+[20250]
+NameEn=Closing straight
+NameCs=Ukonƒçovac√≠ rovinka
+Type=S1
+Degree=0
+Radius=78
+Radius2=40
+FirstLane=39
+LaneDist=78
+LanesNum=2
+
+
+[25130OUT]
+NameEn=Chicane lead out
+NameCs=≈†ikana ukonƒçen√≠
+Type=J2
+Degree=0
+Radius=39
+Radius2=180
+FirstLane=39
+LaneDist=78
+LanesNum=1
+
+[25130IN]
+NameEn=Chicane lead in
+NameCs=≈†ikana zaƒç√°tek
+Type=J1
+Degree=0
+Radius=39
+Radius2=180
+FirstLane=39
+LaneDist=78
+LanesNum=1
+
+[25130ST]
+NameEn=Chicane straight
+NameCs=≈°ikana rovinka
+Type=S1
+Degree=0
+Radius=39
+Radius2=51
+FirstLane=39
+LaneDist=78
+LanesNum=1
+
+[25130C]
+NameEn=Chicane curve
+NameCs=≈°ikana zat√°ƒçka
+Type=C1
+Degree=53
+Radius=136
+Radius2=58
+FirstLane=39
+LaneDist=78
+LanesNum=1
+
+[[Accesories]]
+[20290OUT]
+NameEn=Border
+NameCs=Mantinel
+Angle=22.5
+Radius=214
+Inner=0
+
+[20290IN]
+NameEn=Border
+NameCs=Mantinel
+Angle=22.5
+Radius=58
+Inner=1
+
+[20300]
+NameEn=Border
+NameCs=Mantinel
+Angle=22.5
+Radius=526
+Inner=0
+
+[20040]
+NameEn=Border
+NameCs=Mantinel
+Angle=22.5
+Radius=370
+Inner=0
+
+[20120]
+NameEn=Border
+NameCs=Mantinel
+Angle=22.5
+Radius=214
+Inner=0
+
+[20050]
+NameEn=Border
+NameCs=Mantinel
+Angle=0
+Radius=40
+Inner=1
+
+[20100]
+NameEn=Border
+NameCs=Mantinel
+Angle=0
+Radius=90
+Inner=0
+
 
 
 [[[Scalextric]]]
@@ -285,7 +628,7 @@ Inner=0
 [[Track]]
 [C8278]
 NameEn=curve
-NameCs=zat·Ëka
+NameCs=zat√°√®ka
 Type=C1
 Degree=22.5
 Radius=214
@@ -296,7 +639,7 @@ LanesNum=2
 
 [C8234]
 NameEn=curve
-NameCs=zat·Ëka
+NameCs=zat√°√®ka
 Type=C1
 Degree=22.5
 Radius=370
@@ -307,7 +650,7 @@ LanesNum=2
 
 [C8204]
 NameEn=curve
-NameCs=zat·Ëka
+NameCs=zat√°√®ka
 Type=C1
 Degree=22.5
 Radius=526
@@ -318,7 +661,7 @@ LanesNum=2
 
 [C8235]
 NameEn=curve
-NameCs=zat·Ëka
+NameCs=zat√°√®ka
 Type=C1
 Degree=22.5
 Radius=682
@@ -329,7 +672,7 @@ LanesNum=2
 
 [C8202]
 NameEn=curve
-NameCs=zat·Ëka
+NameCs=zat√°√®ka
 Type=C1
 Degree=45
 Radius=214
@@ -340,7 +683,7 @@ LanesNum=2
 
 [C8206]
 NameEn=curve
-NameCs=zat·Ëka
+NameCs=zat√°√®ka
 Type=C1
 Degree=45
 Radius=370
@@ -351,7 +694,7 @@ LanesNum=2
 
 [C8296]
 NameEn=banked curve
-NameCs=zat·Ëka klopen·
+NameCs=zat√°√®ka klopen√°
 Type=CB
 Degree=45
 Radius=370
@@ -364,7 +707,7 @@ LateralAngle=10
 
 [C8203]
 NameEn=curve
-NameCs=zat·Ëka
+NameCs=zat√°√®ka
 Type=C2
 Degree=90
 Radius=370
@@ -375,7 +718,7 @@ LanesNum=2
 
 [C8201]
 NameEn=hairpin
-NameCs=zat·Ëka
+NameCs=zat√°√®ka
 Type=C1
 Degree=90
 Radius=214
@@ -456,6 +799,18 @@ FirstLane=39
 LaneDist=78
 LanesNum=2
 
+[C9876]
+NameEn=chicane 350
+NameCs=rovinka
+Type=HC
+Degree=0
+Radius=156
+Radius2=175
+FirstLane=39
+LaneDist=78
+LaneDistEnd=20
+LanesNum=4
+
 [C8205]
 NameEn=straight 350
 NameCs=rovinka
@@ -523,21 +878,21 @@ Gauge=Standard
 [[Track]]
 [82119]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=22.5
 Radius=380
 
 [82820]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=30
 Radius=425.2
 
 [82322]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J2
 Degree=15
 Angle2=0
@@ -545,7 +900,7 @@ Radius=600
 
 [82321]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J1
 Degree=15
 Angle2=0
@@ -573,21 +928,21 @@ Gauge=Standard
 [[Track]]
 [H82119]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=22.5
 Radius=380
 
 [H82820]
 NameEn=Curved C Track
-NameCs=zat·Ëka profil C
+NameCs=zat√°√®ka profil C
 Type=C1
 Degree=30
 Radius=425.2
 
 [H82322]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J2
 Degree=15
 Angle2=0
@@ -595,7 +950,7 @@ Radius=600
 
 [H82321]
 NameEn=Turnout Manual C Track
-NameCs=v˝hybka manu·lnÌ profil C
+NameCs=v√Ωhybka manu√°ln√≠ profil C
 Type=J1
 Degree=15
 Angle2=0

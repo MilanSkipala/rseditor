@@ -25,4 +25,6 @@ SOURCES += \
     heightPathItem.cpp \
     bezier.cpp
 
-QT += gui widgets svg opengl
+QMAKE_CXXFLAGS += -Wextra -Wall -Werror
+
+QT += gui widgets

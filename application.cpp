@@ -1,3 +1,23 @@
+/*
+    Slot track and model railway editor by Milan Skipala
+    Copyright (C) 2014 Milan Skipala
+
+    This file is a part of Rail & Slot Editor.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QSignalMapper>
@@ -15,9 +35,17 @@ Application::Application(int argc, char ** argv) : QApplication(argc, argv)
     ///TODO: change the path
     QString * userPref = new QString(argv[0]); // load data from userpref.conf
 
+#ifdef Q_OS_LINUX
     int index = userPref->lastIndexOf("/");
     userPref->remove(index,userPref->length()-index);
-    userPref->append("/user.pref");
+    userPref->append("/RSEditor/user.pref");
+#endif
+#ifdef Q_OS_WIN
+    int index = userPref->lastIndexOf("\\");
+    userPref->remove(index,userPref->length()-index);
+    userPref->append("\\RSEditor\\user.pref");
+#endif
+
     this->userPreferences = new Preferences(userPref); //new QString(userPref);
     this->preferencesDialog = NULL;
 
@@ -141,15 +169,15 @@ void Application::save()
         return;
     }
 
-    if (!this->window->windowTitle().endsWith("Untitled"))
+    /*if (!this->window->windowTitle().endsWith("Untitled"))
     {
         if (this->window->windowTitle().endsWith("*"))
             this->window->setWindowTitle(this->window->windowTitle().remove(this->window->windowTitle().length()-1,1));
     }
     else
-    {
+    {*/
         this->window->setWindowTitle(qpath.mid(qpath.lastIndexOf("/")+1,qpath.length()-qpath.lastIndexOf("/")).remove(".rse").prepend("Rail & Slot Editor - "));
-    }
+    //}
 
     outputFile << "PROJECT DATA" << endl;
     outputFile << "Project name: " << qpath << endl;
@@ -1183,9 +1211,9 @@ int Application::setupUI()
         chbIcons->setChecked(this->userPreferences->getSmallIconsFlag());
 
         if (this->userPreferences->getLocale()->contains("EN"))
-            prefLayout->addRow("Display large icons in menu",chbIcons);
+            prefLayout->addRow("Display small icons in menu",chbIcons);
         else
-            prefLayout->addRow("Zobraz větší ikony v menu",chbIcons);
+            prefLayout->addRow("Zobraz menší ikony v menu",chbIcons);
 
         prefLayout->addRow(discard,saveChanges);
 
@@ -1322,6 +1350,35 @@ void Window::keyReleaseEvent(QKeyEvent *evt)
     app->sendEvent(this->workspace,evt);
 }
 
+void Window::closeEvent(QCloseEvent * event)
+{
+    if (this->getWorkspaceWidget()->unsavedChangesFlag())
+    {
+        QMessageBox * unsaved = new QMessageBox(this);
+        if (app->getUserPreferences()->getLocale()->contains("EN"))
+            unsaved->setText(QString("There are some unsaved changes.\n Would you like to save the file?"));
+        else
+            unsaved->setText(QString("Soubor obsahuje neuložené změny.\n Přejete si soubor uložit?"));
+        QPushButton * saveB = unsaved->addButton(QMessageBox::Yes);
+        QPushButton * dontSaveB = unsaved->addButton(QMessageBox::No);
+        QPushButton * cancelB = unsaved->addButton(QMessageBox::Cancel);
+
+        unsaved->exec();
+        QPushButton * clicked = (QPushButton*)unsaved->clickedButton();
+        if (clicked==saveB)
+            app->save();
+        else if (clicked==dontSaveB)
+        {}
+        else if (clicked==cancelB)
+        {
+            event->ignore();
+            return;
+        }
+    }
+    event->accept();
+    return;
+}
+
 void Window::resizeEvent(QResizeEvent * evt)
 {
 
@@ -1339,47 +1396,49 @@ void Window::keyReleaseEvent(QKeyEvent *evt)
 AppData::AppData(QString &lang)
 {
     this->database =new Database(lang);
-    //this->newFilePixmap = new QPixmap("/etc/RSEditor/icons/..");
-    /*
-    this->newFilePixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/NewFile.png");
-    this->openFilePixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/OpenFile.png");
-    this->saveFilePixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/SaveFile.png");
 
-    this->undoPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/Undo.png");
-    this->redoPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/Redo.png");
+#ifdef Q_OS_LINUX
+    QString path(folderPathLinux);
+    path.append("Icons/");
+#endif
 
-    this->newPointPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/NewPoint.png");
-    this->rotateToolPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/RotateTool.png");
 
-    this->heightProfilePixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/HeightProfile.png");
-    this->heightProfileUpPixmap = new QPixmap("/media/sf_Shared_Virtual/Ikony/HeightProfileUp.png");
-    */
-    this->newFilePixmap = new QPixmap("./Ikony/NewFile.png");
+#ifdef Q_OS_WIN
+    QString path(folderPathWin);
+    path.append("Icons\\");
+#endif
 
-    this->openFilePixmap = new QPixmap("./Ikony/OpenFile.png");
-    this->saveFilePixmap = new QPixmap("./Ikony/SaveFile.png");
+    path.prepend(qApp->applicationDirPath());
 
-    this->undoPixmap = new QPixmap("./Ikony/Undo.png");
-    this->redoPixmap = new QPixmap("./Ikony/Redo.png");
-    this->undoPixmapL = new QPixmap("./Ikony/UndoL.png");
-    this->redoPixmapL = new QPixmap("./Ikony/RedoL.png");
 
-    //this->newPointPixmap = new QPixmap("./Ikony/NewPoint.png");
-    this->rotateToolPixmap = new QPixmap("./Ikony/RotateTool.png");
-    this->rotateToolPixmapL = new QPixmap("./Ikony/RotateToolL.png");
+    this->newFilePixmap = new QPixmap(QString("%1NewFile.png").arg(path));
 
-    this->heightProfilePixmap = new QPixmap("./Ikony/HeightProfile.png");
-    this->heightProfileUpPixmap = new QPixmap("./Ikony/HeightProfileUp.png");
-    this->heightProfileDownPixmap = new QPixmap("./Ikony/HeightProfileDown.png");
+    this->openFilePixmap = new QPixmap(QString("%1OpenFile.png").arg(path));
+    this->saveFilePixmap = new QPixmap(QString("%1SaveFile.png").arg(path));
 
-    this->heightProfilePixmapL = new QPixmap("./Ikony/HeightProfileL.png");
-    this->heightProfileUpPixmapL = new QPixmap("./Ikony/HeightProfileUpL.png");
-    this->heightProfileDownPixmapL = new QPixmap("./Ikony/HeightProfileDownL.png");
+    this->undoPixmap = new QPixmap(QString("%1Undo.png").arg(path));
+    this->redoPixmap = new QPixmap(QString("%1Redo.png").arg(path));
+    this->undoPixmapL = new QPixmap(QString("%1UndoL.png").arg(path));
+    this->redoPixmapL = new QPixmap(QString("%1RedoL.png").arg(path));
 
-    this->bendPixmap = new QPixmap("./Ikony/Bend.png");
-    this->completePixmap =  new QPixmap("./Ikony/Complete.png");
-    this->bendPixmapL = new QPixmap("./Ikony/BendL.png");
-    this->completePixmapL = new QPixmap("./Ikony/CompleteL.png");
+    //this->newPointPixmap = new QPixmap(QString("%1NewPoint.png").arg(path));
+    this->rotateToolPixmap = new QPixmap(QString("%1RotateTool.png").arg(path));
+    this->rotateToolPixmapL = new QPixmap(QString("%1RotateToolL.png").arg(path));
+
+    this->heightProfilePixmap = new QPixmap(QString("%1HeightProfile.png").arg(path));
+    this->heightProfileUpPixmap = new QPixmap(QString("%1HeightProfileUp.png").arg(path));
+    this->heightProfileDownPixmap = new QPixmap(QString("%1HeightProfileDown.png").arg(path));
+
+    this->heightProfilePixmapL = new QPixmap(QString("%1HeightProfileL.png").arg(path));
+    this->heightProfileUpPixmapL = new QPixmap(QString("%1HeightProfileUpL.png").arg(path));
+    this->heightProfileDownPixmapL = new QPixmap(QString("%1HeightProfileDownL.png").arg(path));
+
+    this->bendPixmap = new QPixmap(QString("%1Bend.png").arg(path));
+    this->completePixmap =  new QPixmap(QString("%1Complete.png").arg(path));
+    this->bendPixmapL = new QPixmap(QString("%1BendL.png").arg(path));
+    this->completePixmapL = new QPixmap(QString("%1CompleteL.png").arg(path));
+
+    logFile << "icons were loaded" << endl;
 
 
     this->messageDialog = new QMessageBox();

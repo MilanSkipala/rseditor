@@ -1,3 +1,22 @@
+/*
+    Slot track and model railway editor by Milan Skipala
+    Copyright (C) 2014 Milan Skipala
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef PARTSRELATED_H
 #define PARTSRELATED_H
 
@@ -79,7 +98,7 @@ class GenericModelItem
 
 public:
     GenericModelItem(QString &partNo, QString &nameEn, QString &nameCs, ProductLine * productLine, QWidget * parentWidget = NULL);
-    ~GenericModelItem();
+    virtual ~GenericModelItem();
 
     QString * getPartNo() const;
     QString * getNameEn() const;
@@ -455,9 +474,11 @@ public:
     */
     void setSecondRadius (qreal radi2);
 
-    int adjustHeightProfile(int dz, QPointF * point, bool printCommand = true);//, bool ignoreRecursionStopper = false);
+    int adjustHeightProfile(int dz, QPointF * point, bool printCommand = true, bool adjustOnlyThis = false);//, bool ignoreRecursionStopper = false);
     void updateEndPointsHeightGraphics(bool forceUpdate = false);
     int getHeightProfileAt(QPointF * point);
+    void setLateralAngle(qreal angle);
+
 
 
     //check if it is necessary
@@ -584,7 +605,7 @@ public:
     BorderItem * findBorderItemByPartNo(QString * partNo);
     VegetationItem * findVegetationItemByPartNo(QString * partNo);
 
-    int setItemsList(QList<ModelItem*>* list);
+    //int setItemsList(QList<ModelItem*>* list);
     int addItem(ModelItem* item);
     int addItem(BorderItem* item);
     int addItem(VegetationItem* item);

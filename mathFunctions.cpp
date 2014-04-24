@@ -1,3 +1,23 @@
+/*
+    Slot track and model railway editor by Milan Skipala
+    Copyright (C) 2014 Milan Skipala
+
+    This file is a part of Rail & Slot Editor.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "mathFunctions.h"
 #include "globalVariables.h"
 
@@ -35,9 +55,10 @@ void toCartesian(qreal r, qreal phi, qreal &x, qreal &y)
 }
 
 
-bool pointsAreCloseEnough(QPointF *pt1, QPointF *pt2)
+bool pointsAreCloseEnough(QPointF *pt1, QPointF *pt2, const qreal toleranceHalf)
 {
-    return QRectF(pt1->x()-TOLERANCE_HALF,pt1->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF).contains(*pt2);
+    //return QRectF(pt1->x()-TOLERANCE_HALF,pt1->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF).contains(*pt2);
+    return QRectF(pt1->x()-toleranceHalf,pt1->y()-toleranceHalf,2*toleranceHalf,2*toleranceHalf).contains(*pt2);
 }
 
 

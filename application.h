@@ -1,3 +1,22 @@
+/*
+    Slot track and model railway editor by Milan Skipala
+    Copyright (C) 2014 Milan Skipala
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
@@ -45,6 +64,9 @@ class AppData /// ����-NOT ENOUGH PIXMAPS-����
     QPixmap * heightProfileDownPixmapL;
     QPixmap * bendPixmapL;
     QPixmap * completePixmapL;
+
+
+
     /// ...
 
 
@@ -119,12 +141,11 @@ public:
     bool setWorkspaceWidget(WorkspaceWidget * ws);
     bool setSideBarWidget(SideBarWidget * sb);
 
-protected:  ///REALLY PROTECTED??
-    void contextMenuEvent(QContextMenuEvent * evt);
-    void keyPressEvent(QKeyEvent * evt); ///TODO: P,Ctrl+Shift+S
-    void keyReleaseEvent(QKeyEvent * evt); ///TODO
-
 protected:
+    void contextMenuEvent(QContextMenuEvent * evt);
+    void keyPressEvent(QKeyEvent * evt);
+    void keyReleaseEvent(QKeyEvent * evt);
+    void closeEvent(QCloseEvent *event);
     void resizeEvent(QResizeEvent *evt);
 
 };

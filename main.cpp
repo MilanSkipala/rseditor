@@ -1,12 +1,32 @@
+/*
+    Slot track and model railway editor by Milan Skipala
+    Copyright (C) 2014 Milan Skipala
+
+    This file is a part of Rail & Slot Editor.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "includeHeaders.h"
 #include "application.h"
 #include "partsRelated.h"
 #include "database.h"
 
 //QString folderPathLinux  = "/media/sf_Shared_Virtual/RSEditor/";
-QString folderPathLinux  = "./RSEditor/";
+QString folderPathLinux  = "/RSEditor/";
 //QString folderPathWin  = "C:\\";
-QString folderPathWin  = ".\\RSEditor\\";
+QString folderPathWin  = "/RSEditor/";
 Application * app;
 
 fstream logFile;
@@ -17,27 +37,18 @@ int updateCallCount = 0;
 
 int main(int argc, char ** argv)
 {
-    //fstream commands;
-    //commands.open("IOfile.txt");
     logFile.open("log.txt",ios_base::out);
     logFile << "application is starting" << endl;
-    //QApplication app(argc,argv);
+
     Application application(argc,argv);
     app = &application;
     application.getWindow()->show();
 
-    /*while(!commands.eof())
-    {
-        string str;
-        getline(commands,str);
-        app->getWindow()->getWorkspaceWidget()->actionListRedo.push_back(QString(str.c_str()));
-    }*/
-
 
 
     int result = application.exec();
-    int a = adjustCallCount;
-    int u = updateCallCount;
+    //int a = adjustCallCount;
+    //int u = updateCallCount;
 /**
     how should inventory saving work:
         -first load basic info about scene etc.
@@ -65,18 +76,6 @@ IMPLEMENTED WAY:
 
 
 */
-
-/**
-
-    todo all borders:
-        -graphics - R2 or R3 should contain circa 22 red or white "squares"*/
-
-/*    for (int i = 0; i < app->getWindow()->getWorkspaceWidget()->actionListRedo.count(); i++)
-        commands << app->getWindow()->getWorkspaceWidget()->actionListRedo.at(i).toStdString() << endl;
-*/
-    //commands.close();
-
-
     return result;
 }
 
