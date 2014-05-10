@@ -26,6 +26,23 @@
 #include "itemTypeEnums.h"
 #include "scales.h"
 
+
+void showDBError(const QString & messageEn,const QString & messageCs, const QString & lang)
+{
+    QMessageBox * messageDialog = new QMessageBox();
+    if (lang.startsWith("EN"))
+        messageDialog->setText(messageEn);
+    else
+        messageDialog->setText(messageCs);
+    messageDialog->setIcon(QMessageBox::Critical);
+    if (lang.startsWith("EN"))
+        messageDialog->setButtonText(0,"Accept");
+    else
+        messageDialog->setButtonText(0,"OK");
+
+    messageDialog->exec();
+}
+
 int skip(QString &line, QTextStream &in)
 {
     line = in.readLine();
@@ -56,7 +73,7 @@ Database::Database(QString &lang)
 {
 
     this->currentItem=new QString("");
-    this->currentProductLine= new QString("");
+    this->currentProductLine= NULL;
     this->productLines = new QMap<QString,ProductLine*>();
 
 #ifdef Q_OS_LINUX
@@ -81,13 +98,28 @@ Database::Database(QString &lang)
 
     if (!dbFile->open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        logFile << "couldnt open the database file" << endl;
+        logFile << "Couldnt open the database file" << endl;
+        logFile << "Application was executed from path: " << qApp->applicationDirPath().toStdString() << endl;
+
+        QMessageBox * messageDialog = new QMessageBox();
+        if (lang.startsWith("EN"))
+            messageDialog->setText(QString("Database file couldn't be opened. Please check if it is placed in \"RSEditor\" folder. Application will exit."));
+        else
+            messageDialog->setText(QString("Nepodařilo se otevřít databázi dílu. Prosím ověřte, zda je soubor umístěn ve složce \"RSEditor\". Aplikace se ukončí."));
+        messageDialog->setIcon(QMessageBox::Critical);
+        messageDialog->setButtonText(0,"OK");
+        messageDialog->exec();
 
         exit(1);
     }
 
     QTextStream in(dbFile);
-    in.setCodec("ISO 8859-2");
+    QString encoding = in.readLine();
+
+    if (encoding.startsWith("ISO 8859-2"))
+        in.setCodec("ISO 8859-2");
+    else
+        in.setCodec("UTF-8");
     QString line("");//in.readLine();
     while (!line.isNull())
     {
@@ -95,6 +127,7 @@ Database::Database(QString &lang)
          *load parts
         */
         skip(line,in);
+
 
         if (line.startsWith("[[["))
         {
@@ -166,21 +199,19 @@ Database::Database(QString &lang)
             skip(line,in);
 
             //get gauge
-            //line = in.readLine();
             QString gauge = line.remove(0,6);
 
             skip(line,in);
 
-
-
-            /**
-              TODO
-              -what causes rubbish in the db file?
-            */
-
             while (this->productLines->value(name,NULL)!=NULL)
             {
                 name.append(" ");
+            }
+
+            if (s==SCALE_undef)
+            {
+                showDBError(QString("Product line \"%1\" contains unsupported scale. It was added in the database anyway.").arg(name),QString("Produktová řada \"%1\" obsahuje nepodporované měřítko. I přesto byla přidána do databáze.").arg(name),lang);
+
             }
 
             ProductLine * productLine = new ProductLine(name,scale,s, gauge, type);
@@ -189,32 +220,22 @@ Database::Database(QString &lang)
             this->setCurrentProductLine(name);
 
 
-            /*
-            do
-                line = in.readLine();
-            while (line == "\n" || line=="");
-*/
-
         }
         if (line.startsWith("[["))
         {
             if (line.startsWith("[[Track"))
             {
-                //loadMode=0;
-                //skip(line,in);
                 loadMode=0;
                 continue;
             }
             else if (line.startsWith("[[Accesories"))
             {
                 loadMode=1;
-                //skip(line,in);
                 continue;
             }
             else //vegetation
             {
                 loadMode=2;
-                //skip(line,in);
                 continue;
             }
         }
@@ -223,7 +244,7 @@ Database::Database(QString &lang)
         {
 
 
-            QString partNo = line; //in.readLine();
+            QString partNo = line;
             partNo = partNo.replace("[","");
             partNo = partNo.replace("]","");
 
@@ -342,6 +363,12 @@ Database::Database(QString &lang)
             qreal xLen2 = 0;
             qreal trackGaugeHalf = (*this->productLines->find(*this->currentProductLine))->getScaleEnum()/2.0;
 
+            if (rad==0)
+            {
+                showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
+                continue;
+            }
+
 
             if ((*this->productLines->find(*this->currentProductLine))->getType())
             {
@@ -350,16 +377,12 @@ Database::Database(QString &lang)
                 {
                 case C1:
 
-                    //rad+=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
-
                     xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
                     pt1 = QPointF(-xLen/2,0);
                     pt2 = QPointF(xLen/2,0);
 
                     endPoints.push_back(pt1);
                     endPoints.push_back(pt2);
-
-                    //rad-=(*this->productLines->find(*this->currentProductLine))->getScaleEnum()/4.0;
 
                     yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
 
@@ -368,11 +391,24 @@ Database::Database(QString &lang)
                     angles.push_back(-ang1/2.0);
                     angles.push_back(ang1/2.0);
 
+                    if (ang1==0)
+                    {
+                        showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
+                        continue;
+                    }
+
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+
+
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                     break;
                 case S1:
-                case SC:
+                //case SC:
                 case E1:
 
                     pt1 = QPointF(-rad,0);
@@ -387,13 +423,26 @@ Database::Database(QString &lang)
                         angles.push_back(0);
                     }
 
-                    //ModelItem * mi = new ModelItem(partNo,nameEn,nameCs,start,end,deg,rad, rad, 0, *this->productLines->find(*this->currentProductLine));//parentWidget??
-                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
 
+
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                     break;
                 case J1:
                 case J2:
+
+                    if (ang1==0 || (ang2!=0 && radi2==0) || (ang2==0 && radi2!=0))
+                    {
+                        showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
+                        continue;
+                    }
+
+
                     xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
                     pt1 = QPointF(-xLen/2,0);
                     pt2 = QPointF(xLen/2,0);
@@ -458,11 +507,24 @@ Database::Database(QString &lang)
 
                     //mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-8, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-trackGaugeHalf, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                     mi->setSecondRadius(radi2);
 
                     break;
                 case J3:
+
+                    if (ang1==0 || ang2==0)
+                    {
+                        showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
+                        continue;
+                    }
+
+
                     xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
                     pt1 = QPointF(-xLen/2,0);
                     pt2 = QPointF(xLen/2,0);
@@ -488,18 +550,27 @@ Database::Database(QString &lang)
 
 
 
-                    //! -8 is correct? Check all scales
-                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-8, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, yHeight-8, t,*this->productLines->find(*this->currentProductLine));
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                     break;
 
-                //case J5:
-                //    break;
                 case J4:
                 case X1:
 
+
+                    if (ang1==0)
+                    {
+                        showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
+                        continue;
+                    }
+
                     if (t==J4)
-                        xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
+                        xLen = 2*rad;//*(cos((90-(ang1/2.0))*PI/180));
                     else
                         xLen = 2*rad;
 
@@ -507,6 +578,10 @@ Database::Database(QString &lang)
                     pt2 = QPointF(xLen/2.0,0);
                     pt3 = QPointF(-xLen/2.0,0);
                     pt4 = QPointF(xLen/2.0,0);
+                    /*pt1 = QPointF(-rad,0);
+                    pt2 = QPointF(rad,0);
+                    pt3 = QPointF(-rad,0);
+                    pt4 = QPointF(rad,0);*/
                     rotatePoint(&pt3,-ang1);
                     rotatePoint(&pt4,-ang1);
 
@@ -521,10 +596,22 @@ Database::Database(QString &lang)
                     angles.push_back(-ang1);
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, rad, 0, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                     break;
 
                 case J5:
+
+                    if (radi2==0)
+                    {
+                        showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
+                        continue;
+                    }
+
                     pt1 = QPointF(-rad,-radi2);
                     pt2 = QPointF(rad,-radi2);
                     pt3 = QPointF(-rad,radi2);
@@ -542,15 +629,25 @@ Database::Database(QString &lang)
 
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, radi2, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
 
                     mi->setSecondRadius(radi2);
 
                     break;
                 case C2:
-                    break;
                 case HC:
-
+                case HE:
+                case HS:
+                case CB:
+                case SC:
+                case JM:
+                case X2:
+                    showDBError(QString("Type of part %1 is not supported. Part will not be added in the database").arg(partNo),QString("Typ dílu %1 není podporován. Díl nebude přidán do databáze.").arg(partNo),lang);
                     break;
                 case T1:
                     //!caution: xLen variable is used for storing the perimeter of circle
@@ -577,7 +674,12 @@ Database::Database(QString &lang)
                     }
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, 2*rad, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
 
 
                     break;
@@ -590,42 +692,6 @@ Database::Database(QString &lang)
                 case T8:
                 case T9:
                 case T10:
-/*
- this generates points in the way which complicates other algorithms
- 0  n+1
- 1  n+2
- 2  n+3
- 3  n+4
- n  ...
-                    pt1 = QPointF(-rad,0);
-                    pt2 = QPointF(rad,0);
-                    xLen = 2*rad;
-                    yHeight = (t-8)*(2*trackGaugeHalf+4);
-                    endPoints.append(generatePointCopies((t-8),pt1));
-                    endPoints.append(generatePointCopies((t-8),pt2));
-                    //!caution: xLen2 is used as "index"
-                    xLen2 = 0;
-
-                    endPointsIterator=endPoints.begin();
-                    while(xLen2!=(t-8))
-                    {
-                        movePoint(&*endPointsIterator,0,xLen2*(2*trackGaugeHalf+4));
-                        angles.push_back(0);
-                        endPointsIterator++;
-                        xLen2+=1;
-                    }
-                    xLen2=0;
-                    while (endPointsIterator!=endPoints.end())
-                    {
-                        movePoint(&*endPointsIterator,0,xLen2*(2*trackGaugeHalf+4));
-                        angles.push_back(0);
-                        endPointsIterator++;
-                        xLen2+=1;
-                    }
-
-                    mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
-*/
 
                     /*
                      *this generates points in this way
@@ -633,7 +699,7 @@ Database::Database(QString &lang)
                      2  3
                      4  5
                      .. ..
-*/
+                    */
                     pt1 = QPointF(-rad,0);
                     pt2 = QPointF(rad,0);
                     xLen = 2*rad;
@@ -670,15 +736,18 @@ Database::Database(QString &lang)
                         endPoints.removeAt(0);
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,rad, 2*rad, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
 
                     break;
                 default:
-                    /**
-                      TODO
-                     *show error dialog
 
-                    */
+                    showDBError(QString("Item type %1 is not supported.").arg(typeStr),QString("Typ dílu %1 není podporován").arg(typeStr), lang);
+                    //app->getAppData()->getMessageDialog()->exec();
                     break;
 
 
@@ -757,9 +826,22 @@ Database::Database(QString &lang)
                     continue;
                 }
 
+                if (rad==0 || radi2sl==0 || laneDist==0 || numOfLanes==0)
+                {
+                    showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
+                    continue;
+                }
+
 
                 if (t==C1 || t==C2 || t==CB)
                 {
+
+                    if (ang1==0)
+                    {
+                        showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
+                        continue;
+                    }
+
                     //compute dimensions of item
                     qreal itemRadius = rad;
                     xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
@@ -789,7 +871,12 @@ Database::Database(QString &lang)
 
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
 
                     if (t==CB)
                     {
@@ -839,19 +926,12 @@ Database::Database(QString &lang)
                     rad -=fstLane;
                     for (unsigned int i = 0; i < numOfLanes; i++)
                     {
-
                         qreal ptY = rad;
-
-
-
-
                         endPoints.push_back(QPointF(-ptX,-ptY+itemRadius));
-                        //endPoints.push_back(QPointF(-ptX,ptY));
                         if (t==JM)
                             endPoints.push_back(QPointF(ptX+laneDistEnd,-ptY+itemRadius));
                         else
                             endPoints.push_back(QPointF(ptX,-ptY+itemRadius));
-                        //endPoints.push_back(QPointF(ptX,ptY));
 
                         angles.push_back(-ang1/2.0);
                         angles.push_back(ang1/2.0);
@@ -868,13 +948,15 @@ Database::Database(QString &lang)
                         angles.push_back(ang1/2.0);
                     }
 
-
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     mi->setSecondRadius(radi2sl);
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                 }
-                /*else if ()
-                {}*/
                 else if (t==X1)
                 {
                     ///
@@ -900,7 +982,6 @@ Database::Database(QString &lang)
                     for (unsigned int i = 0; i < numOfLanes; i++)
                     {
                         qreal ptX = rad;
-                        //qreal ptY = radi2sl;
                         endPoints.push_back(QPointF(ptX,-fstLane));
                         endPoints.push_back(QPointF(ptX,2*itemRadius-fstLane));
                         angles.push_back(-90);
@@ -910,13 +991,13 @@ Database::Database(QString &lang)
 
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                 }
-                /*
-                else if (t==X2)
-                {}
-                else if (t==X3)
-                {}*/
                 else if (t==HS)
                 {
                     qreal itemRadius = rad;
@@ -934,9 +1015,7 @@ Database::Database(QString &lang)
 
 
                         endPoints.push_back(QPointF(-ptX,-ptY+itemRadius));
-                        //endPoints.push_back(QPointF(-ptX,ptY));
                         endPoints.push_back(QPointF(ptX,-ptY2+itemRadius));
-                        //endPoints.push_back(QPointF(ptX,ptY));
 
                         angles.push_back(-ang1/2.0);
                         angles.push_back(ang1/2.0);
@@ -946,7 +1025,12 @@ Database::Database(QString &lang)
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     mi->setSecondRadius(radi2sl);
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                 }
                 else if (t==HE)
                 {
@@ -965,9 +1049,7 @@ Database::Database(QString &lang)
 
 
                         endPoints.push_back(QPointF(-ptX,-ptY2+itemRadius));
-                        //endPoints.push_back(QPointF(-ptX,ptY));
                         endPoints.push_back(QPointF(ptX,-ptY+itemRadius));
-                        //endPoints.push_back(QPointF(ptX,ptY));
 
                         angles.push_back(-ang1/2.0);
                         angles.push_back(ang1/2.0);
@@ -977,7 +1059,12 @@ Database::Database(QString &lang)
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     mi->setSecondRadius(radi2sl);
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                 }
                 else if (t==HC)
                 {
@@ -1006,44 +1093,28 @@ Database::Database(QString &lang)
 
                     mi = new ModelItem(partNo,nameEn,nameCs,endPoints,angles,itemRadius, xLen, yHeight, t,*this->productLines->find(*this->currentProductLine));//parentWidget??
                     mi->setSecondRadius(radi2sl);
-                    (*this->productLines->find(*this->currentProductLine))->addItem(mi);
+                    if ((*this->productLines->find(*this->currentProductLine))->addItem(mi)!=0)
+                    {
+                        showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                        delete mi;
+                        continue;
+                    }
                 }
-                //else if (t==H1)
-                //{}
-                /*
-                else if (t==SC)
-                {}*/
-                else if (t==JM)
-                {}
                 else
-                {/*show error dialog*/}
-
-                /** SlotTrackInfo * sti = new SlotTrackInfo(mi);//memory leak in assignment? (later - not at this line)
-                sti->fstLaneDist=fstLane;
-                sti->lanesGauge=laneDist;
-                sti->lanesGaugeEnd=laneDistEnd;
-                sti->numberOfLanes=numOfLanes;*/
+                {
+                    app->getAppData()->setMessageDialogText(QString("Item type %1 is not supported.").arg(typeStr),QString("Typ dílu %1 není podporován").arg(typeStr));
+                    app->getAppData()->getMessageDialog()->exec();
+                }
                 SlotTrackInfo * sti = new SlotTrackInfo(mi,numOfLanes,laneDist,laneDistEnd,fstLane);//memory leak in assignment? (later - not at this line)
 
                 mi->setSecondRadius(radi2sl);
                 mi->setSlotTrackInfo(sti);
             }
-
-            /*
-            if (ang1!=0)
-            {
-
-            }
-            else
-            {
-
-            }*/
-
         }
 
         else if ((!line.isNull() || line.startsWith("[")) && loadMode==1)
         {
-            QString partNo = line; //in.readLine();
+            QString partNo = line;
             partNo = partNo.replace("[","");
             partNo = partNo.replace("]","");
 
@@ -1051,7 +1122,6 @@ Database::Database(QString &lang)
             QString nameCs = in.readLine();
             nameEn=nameEn.remove(0,7);
             nameCs=nameCs.remove(0,7);
-
 
             QString angle1 = in.readLine();
             angle1.remove(0,6);
@@ -1077,24 +1147,18 @@ Database::Database(QString &lang)
 
             QList<QPointF> endPoints;
 
-
-
-            //more endpoints have to be generated with generateQPointFList(n);
-            /*QPointF pt1;
-            QPointF pt2;
-            QPointF pt3;
-            QPointF pt4;*/
             BorderItem * bi = NULL;
 
-            //qreal xLen = 0;
+            if (rad==0)
+            {
+                showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
+                continue;
+            }
+
 
 
             if (ang1>2)
             {
-                //qreal trackGaugeHalf = (*this->productLines->find(*this->currentProductLine))->getScaleEnum()/2.0;
-
-                //xLen = 2*rad*(cos((90-(ang1/2.0))*PI/180));
-                //qreal yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
 
                 int n = ang1/22.5;
                 qreal angle = -ang1/2+22.5/2;
@@ -1108,45 +1172,19 @@ Database::Database(QString &lang)
                     angle+=22.5;
                 }
 
-                /** if (ang1<23)
-                    endPoints.push_back(QPointF());
-                else if (ang1 < 46)
-                {
-                    ///endPoints.push_back(QPointF(-xLen/2,0));
-                    ///endPoints.push_back(QPointF(xLen/2,0));
-                    QPointF pt(0,rad);
-                    rotatePoint(&pt,ang1/2);
-                    pt.setY(yHeight);
-                    endPoints.push_back(pt);
-
-                    pt = QPointF(0,rad);
-                    rotatePoint(&pt,-ang1/2);
-                    pt.setY(yHeight);
-                    endPoints.push_back(pt);
-
-                } */
-                //else
-                //{
-
-                //}
-
-                /*
-                yHeight = (rad-rad*(sin((90-(ang1/2.0))*PI/180)));
-
-                yHeight -= trackGaugeHalf;
-
-                angles.push_back(-ang1/2.0);
-                angles.push_back(ang1/2.0);*/
-
-
                 bi = new BorderItem(partNo,nameEn,nameCs,ang1,rad, endPoints, innerBorder,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                (*this->productLines->find(*this->currentProductLine))->addItem(bi);
+                if ((*this->productLines->find(*this->currentProductLine))->addItem(bi)!=0)
+                {
+                    showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                    delete bi;
+                    continue;
+                }
             }
             else
             {
 
                 qreal stdStraight = (*this->productLines->find(*this->currentProductLine))->getMaxStraight();
-                //int n = stdStraight/(rad)-1;
+
                 ///qreal n = (rad)/stdStraight+1;
                 int n = (rad)/stdStraight+1;
                 qreal xCoord = -abs(((int)n-1)*(stdStraight/2));
@@ -1155,7 +1193,6 @@ Database::Database(QString &lang)
                     endPoints.push_back(QPointF(xCoord,0));
                     xCoord+=stdStraight;
                 }
-                //endPoints.push_back(QPointF(rad,0));
 
                 if (endPoints.empty())
                 {
@@ -1173,7 +1210,12 @@ Database::Database(QString &lang)
                 }
 
                 bi = new BorderItem(partNo,nameEn,nameCs,0,rad,endPoints,endingBorderFlag,*this->productLines->find(*this->currentProductLine));//parentWidget??
-                (*this->productLines->find(*this->currentProductLine))->addItem(bi);
+                if ((*this->productLines->find(*this->currentProductLine))->addItem(bi)!=0)
+                {
+                    showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                    delete bi;
+                    continue;
+                }
             }
 
         }
@@ -1201,10 +1243,17 @@ Database::Database(QString &lang)
             qreal height = heightStr.toDouble();
 
             VegetationItem * item = new VegetationItem(partNo,nameEn,nameCs,season,width,height,*this->productLines->find(*this->currentProductLine));
-            (*this->productLines->find(*this->currentProductLine))->addItem(item);
+            if ((*this->productLines->find(*this->currentProductLine))->addItem(item)!=0)
+            {
+                showDBError(QString("The database already contains part %1. It won't be added for the second time.").arg(partNo),QString("Databáze již obsahuje díl %1. Díl nebude znovu přidán.").arg(partNo),lang);
+                delete item;
+                continue;
+            }
 
         }
     }
+
+    logFile << "whole file was read"  << endl;
 
     //generate 2D and 3D models
     QMap<QString,ProductLine*>::Iterator iter1 = this->productLines->begin();
@@ -1244,8 +1293,6 @@ Database::Database(QString &lang)
             }
         }
 
-
-        //(*iter1)->generate2DModels();
         iter1++;
     }
 
@@ -1266,32 +1313,25 @@ Database::Database(QString &lang)
         int i = 0;
         while(itemIter!=(*iter)->getItemsList()->end())
         {
-            (*itemIter)->get2DModel()->moveBy(0,currentMovement);
-            //(*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
+            (*itemIter)->get2DModel()->moveBy(0,currentMovement);            
             scene->addItem((*itemIter)->get2DModel());
-
-            ///TODO: almost right, needs some tuning - see the values of boundingRect.x() - can it be useful?
             currentMovement+=(*itemIter)->get2DModel()->boundingRect().size().height()+48;
 
             itemIter++;
             i++;
-
-
-
         }
         QList<VegetationItem*>::Iterator itemIterV = (*iter)->getVegetationItemsList()->begin();
         while(itemIterV!=(*iter)->getVegetationItemsList()->end())
         {
-            (*itemIterV)->get2DModel()->moveBy(0,currentMovement);
-            //(*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
-            scene->addItem((*itemIterV)->get2DModel());
-
-            ///TODO: almost right, needs some tuning - see the values of boundingRect.x() - can it be useful?
+            (*itemIterV)->get2DModel()->moveBy(0,currentMovement);            
+            scene->addItem((*itemIterV)->get2DModel());            
             currentMovement+=(*itemIterV)->get2DModel()->boundingRect().size().height()+48;
 
             itemIterV++;
             i++;
         }
+
+        currentMovement+=50;
 
         if (!(*iter)->getType())
         {
@@ -1299,10 +1339,7 @@ Database::Database(QString &lang)
             while(itemIter!=(*iter)->getBorderItemsList()->end())
             {
                 (*itemIter)->get2DModel()->moveBy(0,currentMovement);
-                //(*itemIter)->get2DModel()->moveBy(0,i*(48*(*(*this->productLines->find(*this->currentProductLine))).getScaleEnum())); //WARNING - 64 is the variable sizeOfItem
                 scene->addItem((*itemIter)->get2DModel());
-
-                ///TODO: almost right, needs some tuning - see the values of boundingRect.x() - can it be useful?
                 currentMovement+=(*itemIter)->get2DModel()->boundingRect().size().height()+48;
 
                 itemIter++;
@@ -1314,6 +1351,36 @@ Database::Database(QString &lang)
     }
 
     dbFile->close();
+
+    delete dbFile;
+
+}
+
+Database::~Database()
+{
+    QList<QString> pLKeys = this->productLines->keys();
+    QList<QString> scKeys = this->scenes->keys();
+    for (int i = 0; i < this->productLines->count(); i++)
+    {
+        delete this->productLines->value(pLKeys.at(i));
+
+        QGraphicsScene * sc = this->scenes->value(scKeys.at(i));
+
+        QList<QGraphicsItem*> itList = sc->items();
+        for (int j = 0; j < itList.count(); j++)
+        {
+
+            if (itList[j]->type()>=QGraphicsItem::UserType)
+                sc->removeItem(itList[j]);
+        }
+
+        delete sc;
+    }
+    delete this->productLines;
+    delete this->scenes;
+    delete this->currentItem;
+    //this cant be deleted - it is a pointer to memory freed by ~ProductLine()
+    //delete this->currentProductLine;
 
 }
 
@@ -1335,7 +1402,8 @@ int Database::setCurrentProductLine(QString &name)
     ProductLine * pl=*this->productLines->find(name);
     if (pl==NULL)
     {
-        *this->currentProductLine="";
+        //*this->currentProductLine="";
+        this->currentProductLine=NULL;
         return 2;
     }
     this->currentProductLine=pl->getName();
@@ -1380,19 +1448,6 @@ ModelItem *Database::findModelItemByName(QString &manufactName, QString &partNam
     return NULL;
 }
 
-/*
-ModelItem * Database::findModelItemByName(QString &manufactName, QString &partName) const
-{
-    if (manufactName=="" || partName=="")
-        return NULL;
-    ProductLine * pl = *this->productLines->find(manufactName);
-    pl->getItemsList();
-}
-
-ModelItem * Database::getNextModelItem(QString &manufactName) const
-{}
-*/
-
 int Database::addProductLine(ProductLine * manufact)
 {
     if (manufact==NULL)
@@ -1405,11 +1460,6 @@ int Database::size()
 {
     return this->productLines->size();
 }
-
-/*
-int Database::addModelItem(ModelItem *itemToAdd)
-{}
-*/
 
 
 QGraphicsScene *Database::findSceneByString(QString &scaleAndName) const

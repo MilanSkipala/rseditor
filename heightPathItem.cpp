@@ -37,7 +37,6 @@ HeightPathItem::HeightPathItem(ModelItem *item, QGraphicsItem *parent) : QObject
     this->slotTrackDialog = this->initSlotTrackDialog();
     this->latAngle = new qreal;
     *this->latAngle = 0;
-    //this->setFlag(QGraphicsItem::ItemIsMovable,true);
 
 
 }
@@ -54,7 +53,6 @@ HeightPathItem::HeightPathItem(ModelItem *item, const QPainterPath &path, QGraph
     this->slotTrackDialog = this->initSlotTrackDialog();
     this->latAngle = new qreal;
     *this->latAngle = 0;
-    //this->setFlag(QGraphicsItem::ItemIsMovable,true);
 }
 
 HeightPathItem::HeightPathItem(const HeightPathItem &hpi): QObject(), QGraphicsPathItem()
@@ -66,7 +64,6 @@ HeightPathItem::HeightPathItem(const HeightPathItem &hpi): QObject(), QGraphicsP
     this->lastLongSBValue=hpi.lastLongSBValue;
     this->lastLatSBValue=hpi.lastLatSBValue;
     this->latAngle = hpi.latAngle;
-    //this->setFlag(QGraphicsItem::ItemIsMovable,true);
 }
 
 QDialog * HeightPathItem::initSlotTrackDialog()
@@ -76,7 +73,10 @@ QDialog * HeightPathItem::initSlotTrackDialog()
     if (app!=NULL && this->parentItem->get2DModelNoText()!=NULL && this->slotTrackDialog==NULL)
     {
         pointer = new QDialog(app->getWindow()->getWorkspaceWidget());
-        pointer->setWindowTitle("Adjust height");
+        if (app->getUserPreferences()->getLocale()->startsWith("EN"))
+            pointer->setWindowTitle("Adjust height");
+        else
+            pointer->setWindowTitle("Upravit výšku");
         QFormLayout * layout = new QFormLayout(pointer);
         QGraphicsView * preview = new QGraphicsView(pointer);
         preview->setScene(new QGraphicsScene);
@@ -97,40 +97,44 @@ QDialog * HeightPathItem::initSlotTrackDialog()
         layout->addRow(preview);
 
         QLabel * partNoLabel = new QLabel(*this->parentItem->getPartNo());
-        layout->addRow("Part number",partNoLabel);
+        if (app->getUserPreferences()->getLocale()->startsWith("EN"))
+            layout->addRow("Part number",partNoLabel);
+        else
+            layout->addRow("Číslo dílu",partNoLabel);
 
         this->longSpinBox = new QSpinBox(this->slotTrackDialog);
-        //this->longSpinBox->setValue(this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(1))-this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(0)));
+
         this->longSpinBox->setValue(this->lastLongSBValue);
         this->longSpinBox->setMaximum(512);
         this->longSpinBox->setMinimum(-512);
-        layout->addRow("Longitudinal climb",this->longSpinBox);
+        if (app->getUserPreferences()->getLocale()->startsWith("EN"))
+            layout->addRow("Longitudinal climb",this->longSpinBox);
+        else
+            layout->addRow("Podélné stoupání",this->longSpinBox);
 
         if (this->parentItem->getSlotTrackInfo()->getNumberOfLanes()>1)
         {
             this->latSpinBox = new QSpinBox(this->slotTrackDialog);
-            //this->latSpinBox->setValue(this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(0))-this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(2)));
             this->latSpinBox->setValue(*this->lastLatSBValue);
 
             this->latSpinBox->setMaximum(512);
             this->latSpinBox->setMinimum(-512);
-            layout->addRow("Lateral climb",this->latSpinBox);
+            if (app->getUserPreferences()->getLocale()->startsWith("EN"))
+                layout->addRow("Lateral climb",this->latSpinBox);
+            else
+                layout->addRow("Boční převýšení",this->latSpinBox);
         }
 
         QPushButton * accept = new QPushButton("OK",pointer);
         QPushButton * cancel = new QPushButton("Cancel",pointer);
-
+        if (!app->getUserPreferences()->getLocale()->startsWith("EN"))
+            cancel->setText("Storno");
 
         connect(accept,SIGNAL(clicked()),this,SLOT(adjustHeightOfParentItem()));
         connect(cancel,SIGNAL(clicked()),pointer,SLOT(close()));
 
-        //cout << "this" << endl;
-
-
-
         layout->addRow(accept);
         layout->addRow(cancel);
-
 
         pointer->setLayout(layout);
     }
@@ -157,9 +161,6 @@ void HeightPathItem::setAngle(qreal angle)
     *this->lastLatSBValue=latClimb;
     if (this->parentItem->getSlotTrackInfo()->getNumberOfLanes()>1)
         this->latSpinBox->setValue(latClimb);
-
-    /*cout << (int)this->parentItem << ", PtAddr:" << (int)this << ", lastVal:"<<(int)this->lastLatSBValue<< "||||" << endl;
-    cout << this->parentItem->getType() << endl;*/
 }
 
 qreal HeightPathItem::getAngle() const
@@ -172,10 +173,6 @@ void HeightPathItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
 
     QGraphicsPathItem::mousePressEvent(event);
-    /*
-    if (this->boundingRect().contains(event->pos()))
-        this->slotTrackDialog->exec();
-    */
 }
 
 void HeightPathItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
@@ -187,12 +184,7 @@ void HeightPathItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
 void HeightPathItem::adjustHeightOfParentItem()
 {
-    //logFile << this->parentItem << ", PtAddr:" << (int)this << ", lastVal:"<<(int)this->lastLatSBValue<<endl;
-
-
     //get longitudinal climb
-
-
 
     int longClimb = this->longSpinBox->value()-this->lastLongSBValue;
     ModelItem * mi = this->parentItem;
@@ -204,25 +196,23 @@ void HeightPathItem::adjustHeightOfParentItem()
 
 
         int latClimb = this->latSpinBox->value();///-this->lastLatSBValue;
-        //add if for curved parts
-        QPointF point;//(abs(this->parentItem->getRadius()),0);
+
+        QPointF point;
         QPointF point2(abs(this->parentItem->getRadius())-this->parentItem->getSlotTrackInfo()->getFstLaneDist(),0);
         qreal angle;
-        //qreal previousAngle = 0;
 
 
 
         if ((this->parentItem->getType()==S1 ||
             this->parentItem->getType()==J5 ||
-            //this->parentItem->getType()==X1 ||
+
             this->parentItem->getType()==X2 ||
             this->parentItem->getType()==JM ||
             this->parentItem->getType()==HE ||
             this->parentItem->getType()==HS ||
             this->parentItem->getType()==HC
-             )) //modify X1 and add remaining "straight" parts
+             ))
         {
-            //point.setX(2*point.x());
             point2=QPointF(abs(this->parentItem->getRadius()*2)-this->parentItem->getSlotTrackInfo()->getFstLaneDist(),0);
             angle = 180/PI*asin(latClimb/(2*abs(this->parentItem->getRadius())))-*this->latAngle;
         }
@@ -236,7 +226,6 @@ void HeightPathItem::adjustHeightOfParentItem()
         }
         else
         {
-            //point.setX(point.x()-abs(this->parentItem->getSecondRadius()));
             point2.setX(point2.x()-abs(this->parentItem->getSecondRadius()));
             angle = 180/PI*asin(latClimb/(abs(this->parentItem->getRadius()-this->parentItem->getSecondRadius())))-*this->latAngle;
 
@@ -251,12 +240,8 @@ void HeightPathItem::adjustHeightOfParentItem()
             angle = *this->latAngle;
         }
 
-        if (((int)angle-(int)*this->latAngle)!=0)//this->latSpinBox->value()-this->lastLatSBValue!=0)
+        if (((int)angle-(int)*this->latAngle)!=0)
             *this->latAngle=angle+*this->latAngle;
-
-
-
-
 
         if (!this->slotTrackDialog->isVisible() || (this->latSpinBox->value()-*this->lastLatSBValue!=0))//(((int)angle-(int)*this->latAngle)!=0)//
         {
@@ -268,8 +253,6 @@ void HeightPathItem::adjustHeightOfParentItem()
                 //used on the left side when item is HE
                 QPointF pointShortDistance(point2.x()-this->parentItem->getSlotTrackInfo()->getLanesGaugeEnd(),point2.y());
 
-                //QPointF pointShortDistance = point2; //(point2.x()-this->parentItem->getSlotTrackInfo()->getFstLaneDist(),point2.y());
-                //QPointF pointShortDistance2 = point2;
                 QPointF pointShortDistance2(point2.x()-this->parentItem->getSlotTrackInfo()->getLanesGaugeEnd(),point2.y());
 
                 if (this->parentItem->getType()==HC)
@@ -294,16 +277,12 @@ void HeightPathItem::adjustHeightOfParentItem()
 
                         if (this->parentItem->getType()==HE)
                         {
-                            //int currZ = this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(i));
                             this->parentItem->adjustHeightProfile((int)pointShortDistance.y()-yOldShortDistance,this->parentItem->getEndPoint(i));
-                            //currZ = this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(i+1));
                             this->parentItem->adjustHeightProfile((int)point.y()-yOld,this->parentItem->getEndPoint(i+1));
                         }
                         else
                         {
-                            //int currZ = this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(i));
                             this->parentItem->adjustHeightProfile((int)point.y()-yOld,this->parentItem->getEndPoint(i));
-                            //currZ = this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(i+1));
                             this->parentItem->adjustHeightProfile((int)pointShortDistance.y()-yOldShortDistance,this->parentItem->getEndPoint(i+1));
                         }
 
@@ -313,16 +292,9 @@ void HeightPathItem::adjustHeightOfParentItem()
                     point2.setX(point2.x()-this->parentItem->getSlotTrackInfo()->getLanesGauge());
                     point=point2;
 
-                    /*if (i==0)
-                    {
-                        pointShortDistance2.setX(pointShortDistance2.x()-this->parentItem->getSlotTrackInfo()->getLanesGaugeEnd()-this->parentItem->getSlotTrackInfo()->getFstLaneDist());
-                        pointShortDistance=pointShortDistance2;
-                    }
-                    else*/
-                    {
-                        pointShortDistance2.setX(pointShortDistance2.x()-this->parentItem->getSlotTrackInfo()->getLanesGaugeEnd());
-                        pointShortDistance=pointShortDistance2;
-                    }
+                    pointShortDistance2.setX(pointShortDistance2.x()-this->parentItem->getSlotTrackInfo()->getLanesGaugeEnd());
+                    pointShortDistance=pointShortDistance2;
+
 
                 }
             }
@@ -352,14 +324,12 @@ void HeightPathItem::adjustHeightOfParentItem()
                         *this->lastLatSBValue=this->latSpinBox->value();
                     }
                     this->parentItem->adjustHeightProfile((int)point.y()-yOld,this->parentItem->getEndPoint(i));
-                    //this->parentItem->adjustHeightProfile((int)point.y()-yOld,this->parentItem->getEndPoint(i+1));
                     this->parentItem->adjustHeightProfile((int)otherSidePoint.y()-yOldOther,this->parentItem->getEndPoint(i+1));
 
 
 
                     point2.setX(point2.x()-this->parentItem->getSlotTrackInfo()->getLanesGauge());
                     point=point2;
-                    //otherSidePoint.setX(otherSidePoint.x()-this->parentItem->getSlotTrackInfo()->getLanesGauge());
                 }
             }
             else
@@ -387,7 +357,7 @@ void HeightPathItem::adjustHeightOfParentItem()
             {
                 point2 = QPointF(abs(this->parentItem->getSlotTrackInfo()->getLanesGauge()*(this->parentItem->getSlotTrackInfo()->getNumberOfLanes()-1))
                                  +this->parentItem->getSlotTrackInfo()->getFstLaneDist()*3,0);
-                //point = point2;
+
 
                 for (unsigned int i = this->parentItem->getSlotTrackInfo()->getNumberOfLanes()*2; i < this->parentItem->getSlotTrackInfo()->getNumberOfLanes()*4; i++)
                 {
@@ -403,7 +373,6 @@ void HeightPathItem::adjustHeightOfParentItem()
                         {
                             *this->lastLatSBValue=this->latSpinBox->value();
                         }
-                        //int currZ = this->parentItem->getHeightProfileAt(this->parentItem->getEndPoint(i));
                         this->parentItem->adjustHeightProfile((int)point.y()-yOld,this->parentItem->getEndPoint(i));
                 }
             }
@@ -428,6 +397,7 @@ void HeightPathItem::adjustHeightOfParentItem()
 
     this->lastLongSBValue=this->longSpinBox->value();
     this->slotTrackDialog->close();
+
 }
 
 

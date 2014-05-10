@@ -55,25 +55,6 @@ SideBarWidget::SideBarWidget(QString * lang, Database * db, QMenu * context, QWi
         this->delButton->setText("Odebrat");
     }
 
-    /*
-    this->addButton->setMinimumWidth(25);
-    this->delButton->setMinimumWidth(25);
-    this->addButton->setMaximumWidth(50);
-    this->delButton->setMaximumWidth(50);
-
-    / *
-      -following should result in better looking SBW
-    */
-
-    /**
-    this->prodLineCBox->setMinimumWidth(80);
-    this->prodLineCBox->setMaximumWidth(390);
-    this->layout->setSizeConstraint(QLayout::SetMaximumSize);
-
-    this->graphicsView->setMinimumWidth(130);
-*/
-
-
     QPalette pal = this->palette();
     pal.setColor(QPalette::Window,Qt::white);
     this->setPalette(pal);
@@ -101,11 +82,6 @@ SideBarWidget::SideBarWidget(QString * lang, Database * db, QMenu * context, QWi
         this->addDialog->setWindowTitle("Přidat výrobce");
         this->delDialog->setWindowTitle("Odebrat výrobce");
     }
-
-
-
-
-
 }
 
 void SideBarWidget::contextMenuEvent(QContextMenuEvent *evt)
@@ -147,10 +123,7 @@ void SideBarWidget::paintEvent(QPaintEvent *evt)
         //subtract the width of the scrollbar
         sceneScale = (this->graphicsView->width()-16)/this->currentScene->width();
         tr.scale(sceneScale,sceneScale);
-        //if (tr.m11()>=sceneScale || this->graphicsView->scene()!=sceneBefore)
-        //if (tr.m11()>=sceneScale)
         this->graphicsView->setTransform(tr);
-        //cout << sceneScale << endl;
     }
 
     if (sceneBefore!=this->currentScene)
@@ -334,6 +307,7 @@ void SideBarWidget::resetSideBar()
 #endif
 
     path.append("Inventory.rsi");
+    path.prepend(qApp->applicationDirPath());
 
     QFile input(path);
 
@@ -382,7 +356,8 @@ int SideBarWidget::setInventoryState(QTextStream &input)
                 if (it==NULL)
                 {
                     logFile << "    Item was not found: " << productLine->getName()->toStdString() << " " << str.toStdString() << endl;
-                    return 1;
+                    continue;//return 1;
+
                 }
                 str.remove(0,str2.count()+1);
                 it->setAvailableCount(str.toUInt());
@@ -395,7 +370,7 @@ int SideBarWidget::setInventoryState(QTextStream &input)
                 if (it==NULL)
                 {
                     logFile << "    Item was not found: " << productLine->getName()->toStdString() << " " << str.toStdString() << endl;
-                    return 1;
+                    continue;//return 1;
                 }
                 str.remove(0,str2.count()+1);
                 it->setAvailableCount(str.toUInt());
@@ -408,7 +383,7 @@ int SideBarWidget::setInventoryState(QTextStream &input)
                 if (it==NULL)
                 {
                     logFile << "    Item was not found: " << productLine->getName()->toStdString() << " " << str.toStdString() << endl;
-                    return 1;
+                    continue;//return 1;
                 }
                 str.remove(0,str2.count()+1);
                 it->setAvailableCount(str.toUInt());

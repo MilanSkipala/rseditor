@@ -26,11 +26,9 @@
 
 
 
-class WorkspaceWidget : public QGraphicsView ///public QScrollArea ///IMPLEMENTATION INCOMPLETE
+class WorkspaceWidget : public QGraphicsView
 {
     Q_OBJECT
-    //void * app_ptr;
-    //QFrame * frameWidget;
     QGraphicsView * graphicsView;
     GraphicsScene * graphicsScene;
     QGraphicsItem * activeEndPointGraphic;
@@ -80,6 +78,7 @@ class WorkspaceWidget : public QGraphicsView ///public QScrollArea ///IMPLEMENTA
 
 public:
     WorkspaceWidget(QMenu* context, QWidget * parent = 0);
+    ~WorkspaceWidget();
 
     /**
      * @brief commandExecution method parses QString command, "finds" its arguments (model items etc.) and calls appropriate method

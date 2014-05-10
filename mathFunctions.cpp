@@ -57,7 +57,6 @@ void toCartesian(qreal r, qreal phi, qreal &x, qreal &y)
 
 bool pointsAreCloseEnough(QPointF *pt1, QPointF *pt2, const qreal toleranceHalf)
 {
-    //return QRectF(pt1->x()-TOLERANCE_HALF,pt1->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF).contains(*pt2);
     return QRectF(pt1->x()-toleranceHalf,pt1->y()-toleranceHalf,2*toleranceHalf,2*toleranceHalf).contains(*pt2);
 }
 

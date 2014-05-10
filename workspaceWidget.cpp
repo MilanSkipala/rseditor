@@ -38,12 +38,10 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     this->selectTwoPointsBend=false;
     this->selectTwoPointsComplete=false;
 
-    //this->scale=1;
     this->selection= (new QList<ModelItem*>());
     this->selectionVegetation= new QList <VegetationItem*>();
     this->copiedItems = new QList<QString>();
     this->contextMenu = context;
-    //context->setParent(this);
 
     this->modelFragments = (new QList<ModelFragment*>());
     this->vegetationItems = new QList<VegetationItem*>();
@@ -68,7 +66,8 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     this->unsavedChanges=false;
 
     this->activeEndPointGraphic=NULL;
-    this->setActiveEndPoint(new QPointF(0,0));
+    QPointF pt;
+    this->setActiveEndPoint(&pt);
 
     this->doNotPrintSetEndPoint=false;
 
@@ -77,18 +76,6 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
     //pal.setColor(QPalette::Window,Qt::white);
     this->setPalette(pal);
     this->setAutoFillBackground(true);
-
-    QPolygonF poly;
-    poly << QPointF(10,10);
-    poly << QPointF(30,10);
-    poly << QPointF(30,45);
-    poly << QPointF(10,30);
-
-
-    QPainterPath * pp1 = new QPainterPath();
-    pp1->addPolygon(poly);
-    pp1->setFillRule(Qt::OddEvenFill);
-
 
     QBrush b;
     b.setColor(Qt::white);
@@ -107,6 +94,18 @@ WorkspaceWidget::WorkspaceWidget(QMenu * context, QWidget * parent) : QGraphicsV
 
 
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+}
+
+WorkspaceWidget::~WorkspaceWidget()
+{
+    delete this->activeEndPoint;
+    delete this->activeEndPointPrev;
+    delete this->lastEventPos;
+    delete this->modelFragments;
+    delete this->vegetationItems;
+    delete this->selection;
+    delete this->selectionVegetation;
+    delete this->copiedItems;
 }
 
 int WorkspaceWidget::commandExecution(QString command)
@@ -269,16 +268,13 @@ int WorkspaceWidget::commandExecution(QString command)
             if (item==NULL)
             {
                 delete newPoint;
-                return 1;
+                return -1;
             }
 
             this->makeItem(item,newPoint,left);
 
             if (id!=-54321 && !command.contains(" "))
                 this->activeFragment->setID(id);
-
-
-
 
         }
         //make border partNo prodLineName I x.x y.y
@@ -346,7 +342,8 @@ int WorkspaceWidget::commandExecution(QString command)
 
             }
 
-
+            if (item==NULL)
+                return -1;
 
             this->selectItem(modelItem);
             this->setActiveFragment(modelItem->getParentFragment());
@@ -377,6 +374,8 @@ int WorkspaceWidget::commandExecution(QString command)
             QPointF * newPoint = new QPointF(x,y);
 
             VegetationItem * item = app->getAppData()->getDatabase()->findVegetationItemByName(prodLineName,partNo);
+            if (item==NULL)
+                return -1;
             this->setActiveEndPoint(newPoint);
             this->makeVegetation(item);
 
@@ -432,12 +431,6 @@ int WorkspaceWidget::commandExecution(QString command)
             y = command.toDouble();
 
             //QPointF * pos = new QPointF(x,y);
-/*
-            ModelFragment* frag = this->findFragmentByApproxPos(pos);
-            if (frag!=NULL)
-                this->selectItem(frag->findEndPointItem(pos));
-            else
-                delete pos;*/
 
             GraphicsPathItemModelItem * gpi = NULL;
             QList<QGraphicsItem*> gList = this->graphicsScene->items(QRectF(x-TOLERANCE_HALF,y-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF));
@@ -585,35 +578,6 @@ int WorkspaceWidget::commandExecution(QString command)
                 return 1;
             }
 
-            /*
-            QPointF pos (id,y);
-
-
-            GraphicsPathItem *gpi = (GraphicsPathItem*)this->graphicsScene->itemAt(pos,QTransform());
-            QGraphicsItem * qgpi = (QGraphicsItem *)this->graphicsScene->itemAt(pos,QTransform());
-
-            if (qgpi!=NULL)
-            {
-                if (qgpi->type()!=QGraphicsItem::UserType+2)
-                    gpi=NULL;
-            }
-
-            if (gpi==NULL)
-            {
-                cout << "select item null gpi" << endl;
-                return 1;
-            }
-            else
-            {
-                gpi->getParentItem()->getParentFragment()->moveBy(dx,dy);
-            }*/
-
-            /*if (frag!=NULL)
-            {
-                frag->moveBy(dx,dy);
-            }
-            else
-                return 1;*/
         }
         else
         {
@@ -913,7 +877,7 @@ int WorkspaceWidget::commandExecution(QString command)
 
         if (mi==NULL)
         {
-            cout << "height null gpi" << endl;
+            logFile << "height null gpi" << endl;
             return 1;
 
         }
@@ -982,7 +946,7 @@ int WorkspaceWidget::commandExecution(QString command)
             if (type==1)
             {
                 this->removeFragment(f);
-                return 0; //rather return the value of removeFragment()
+                return 0;
 
             }
         }
@@ -1183,75 +1147,6 @@ int WorkspaceWidget::commandExecution(QString command)
         QPointF * posA = new QPointF(xA,yA);
         QPointF * posB = new QPointF(xB,yB);
 
-        /*
-        //items
-        qreal xIA = 0;
-        qreal yIA = 0;
-        qreal xIB = 0;
-        qreal yIB = 0;
-
-        xIA = (command.left(command.indexOf(" "))).toDouble();
-        command = command.remove(0,command.indexOf(" ")).trimmed();
-        yIA = (command.left(command.indexOf(" "))).toDouble();
-        command = command.remove(0,command.indexOf(" ")).trimmed();
-        xIB = (command.left(command.indexOf(" "))).toDouble();
-        command = command.remove(0,command.indexOf(" ")).trimmed();
-        yIB = command.toDouble();
-
-        QPointF * posIA = new QPointF(xIA,yIA);
-        QPointF * posIB = new QPointF(xIB,yIB);
-
-        QRectF rectIA(posIA->x()-30,posIA->y()-30,60,60);
-        QRectF rectIB(posIB->x()-30,posIB->y()-30,60,60);*/
-
-/*        QList <QGraphicsItem*> list = this->graphicsScene->items(rectIA);
-        GraphicsPathItem * gpiA = (GraphicsPathItem *)list.first();
-        cout << "(" << gpiA->scenePos().x() << ", "<< gpiA->scenePos().y() << ")" << endl;
-
-        QList <QGraphicsItem*>list2 = this->graphicsScene->items(rectIB);
-        GraphicsPathItem * gpiB = (GraphicsPathItem *)list2.first();
-        cout << "(" << gpiB->scenePos().x() << ", "<< gpiB->scenePos().y() << ")" << endl;
-
-        ModelItem * mi = this->findItemByApproxPos(posA,NULL);
-        ModelItem * mi2 = this->findItemByApproxPos(posB,mi);
-        GraphicsPathItem * gpiA = mi->get2DModelNoText();
-        GraphicsPathItem * gpiB = mi2->get2DModelNoText();
-
-        this->connectFragments(posA,posB,gpiA->getParentItem()->getParentFragment(),gpiB->getParentItem()->getParentFragment(),gpiA->getParentItem(),gpiB->getParentItem());
-* /
-
-
-        GraphicsPathItem * gpiA = (GraphicsPathItem *)this->graphicsScene->itemAt(*posIA,QTransform());
-        QGraphicsItem * qgpi = (QGraphicsItem *)this->graphicsScene->itemAt(*posIA,QTransform());
-
-        if (qgpi->type()!=QGraphicsItem::UserType+2)
-            gpiA=NULL;
-
-
-        GraphicsPathItem * gpiB = (GraphicsPathItem *)this->graphicsScene->itemAt(*posIB,QTransform());
-        QGraphicsItem * qgpi2 = (QGraphicsItem *)this->graphicsScene->itemAt(*posIB,QTransform());
-
-        if (qgpi2->type()!=QGraphicsItem::UserType+2)
-            gpiB=NULL;
-
-
-        if (gpiA==NULL)
-        {
-            / *ModelItem * mi = this->findItemByApproxPos(posA,NULL);
-            if (mi!=NULL)
-                gpiA=mi->get2DModelNoText();* /
-            return 1;
-        }
-        if (gpiB==NULL)
-        {
-            / *ModelItem * mi = this->findItemByApproxPos(posB,NULL);
-            if (mi!=NULL)
-                gpiB=mi->get2DModelNoText();* /
-            return 1;
-        }
-
-        if (gpiA==NULL || gpiB==NULL)
-            return 1;*/
 
         ModelFragment * fA = this->findFragmentByID(idA);
         ModelFragment * fB = this->findFragmentByID(idB);
@@ -1308,70 +1203,6 @@ int WorkspaceWidget::commandExecution(QString command)
         }
         QPointF pos(x,y);
 
-        /*
-        QPointF * posA = new QPointF(xA,yA);
-        QPointF * posB = new QPointF(xB,yB);
-
-        //items
-        qreal xIA = 0;
-        qreal yIA = 0;
-        qreal xIB = 0;
-        qreal yIB = 0;
-
-        xIA = (command.left(command.indexOf(" "))).toDouble();
-        command = command.remove(0,command.indexOf(" ")).trimmed();
-        yIA = (command.left(command.indexOf(" "))).toDouble();
-        command = command.remove(0,command.indexOf(" ")).trimmed();
-        xIB = (command.left(command.indexOf(" "))).toDouble();
-        command = command.remove(0,command.indexOf(" ")).trimmed();
-        yIB = command.toDouble();
-
-        QPointF * posIA = new QPointF(xIA,yIA);
-        QPointF * posIB = new QPointF(xIB,yIB);
-
-
-        GraphicsPathItem * gpiA = (GraphicsPathItem *)this->graphicsScene->itemAt(*posIA,QTransform());
-        GraphicsPathItem * gpiB = (GraphicsPathItem *)this->graphicsScene->itemAt(*posIB,QTransform());
-        QGraphicsItem * qgpi = (QGraphicsItem *)this->graphicsScene->itemAt(*posIA,QTransform());
-
-        if (qgpi->type()!=QGraphicsItem::UserType+2)
-            gpiA=NULL;
-
-        qgpi = (QGraphicsItem *)this->graphicsScene->itemAt(*posIB,QTransform());
-
-        if (qgpi->type()!=QGraphicsItem::UserType+2)
-            gpiB=NULL;
-*/
-
-        /*if (gpiA==NULL)
-        {
-            ModelItem * mi = this->findItemByApproxPos(posA,NULL);
-            if (mi!=NULL)
-                gpiA=mi->get2DModelNoText();
-        }
-        if (gpiB==NULL)
-        {
-            ModelItem * mi = this->findItemByApproxPos(posB,NULL);
-            if (mi!=NULL)
-                gpiB=mi->get2DModelNoText();
-        }*/
-/*
-        if (gpiA==NULL || gpiB==NULL)
-            return 1;
-
-        if (gpiA!=gpiB)
-            this->disconnectFragments(gpiA->getParentItem()->getParentFragment(),posB,idA, idB);
-        else
-        {
-            QList <QGraphicsItem*>list = this->graphicsScene->items(*posB);
-            for (int i = 0; i < list.count(); i++)
-            {
-                if (gpiA!=list.at(i))
-                    gpiB=(GraphicsPathItem*)list.at(i);
-            }
-            ///this->disconnectFragments(posA,posB,gpiA->getParentItem()->getParentFragment(),gpiB->getParentItem()->getParentFragment(),gpiA->getParentItem(),gpiB->getParentItem());
-
-        }*/
 
         this->disconnectFragment(c,&pos,idA, idB);
     }
@@ -1481,6 +1312,11 @@ int WorkspaceWidget::commandExecution(QString command)
                 }
                 else
                 {
+                    frag->updateEndPointsGraphics();
+                    fragB->updateEndPointsGraphics();
+                }
+                /*else
+                {
                     for (int i = 0; i < fragB->getFragmentItems()->count(); i++)
                     {
                         int j = 0;
@@ -1503,14 +1339,9 @@ int WorkspaceWidget::commandExecution(QString command)
                     fragB->addEndPoint(ptPtr2,true,it2->getTurnAngle(ptPtr2),it2);
                     it1->setNeighbour(NULL,ptPtr1);
                     it2->setNeighbour(NULL,ptPtr2);
-                }
+                }*/
             }
         }
-
-
-
-
-
     }
 
     return 0;
@@ -1685,15 +1516,8 @@ void WorkspaceWidget::removeItems()
                     }
                 }
 
-                //ModelItem * original = this->modelFragments->at(i)->getFragmentItems()->at(j)->getProdLine()->findItemByPartNo(this->modelFragments->at(i)->getFragmentItems()->at(j)->getPartNo());
-
                 this->removeItem(this->modelFragments->at(i)->getFragmentItems()->at(j));
 
-                /*if (app->getRestrictedInventoryMode())
-                {
-                    original->incrAvailableCount();
-                    original->get2DModel()->changeCountPath(original->getAvailableCount());
-                }*/
 
                 i=-1;
                 j=0;
@@ -1833,16 +1657,10 @@ void WorkspaceWidget::modelInfo()
                         }
                     }
                 }
-
-
             }
-
-
 
             if (!details.contains(strDetails))
                 details.append(strDetails);
-
-
 
         }
         //print both maps
@@ -2002,10 +1820,6 @@ int WorkspaceWidget::makeItem(ModelItem *item, QPointF *pt, bool left)
         nullIt = true;
     }
 
-
-
-
-
     //print command for setting of the endPoint which has to be active after item insertion
 
     QString str = (QString("make point %1 %2 ").arg(QString::number(ptOld.x()),QString::number(ptOld.y())));
@@ -2060,9 +1874,6 @@ int WorkspaceWidget::makeItem(ModelItem *item, QPointF *pt, QPointF eventPos)
         makeNewItem(eventPos,item->get2DModel(),item,item,false);
         ///makeNewItem(eventPos,item->get2DModelNoText(),item,item,false);
 
-
-
-
     this->doNotPrintSetEndPoint=false;
 
     bool nullIt = false;
@@ -2072,8 +1883,6 @@ int WorkspaceWidget::makeItem(ModelItem *item, QPointF *pt, QPointF eventPos)
         nullIt = true;
     }
 
-
-
     ModelItem * lastInserted = this->lastInserted;
     /*if (this->activeFragment!=NULL)
         lastInserted = this->activeFragment->getFragmentItems()->last();*/
@@ -2081,7 +1890,6 @@ int WorkspaceWidget::makeItem(ModelItem *item, QPointF *pt, QPointF eventPos)
     int idOfNew = -5;
     if (fragCountBefore!=this->modelFragments->count())
         idOfNew = this->activeFragment->getID();
-
 
     if (eventPos.x()<item->get2DModelNoText()->pos().x()/2)
     {
@@ -2138,8 +1946,6 @@ int WorkspaceWidget::makeItem(ModelItem *item, QPointF *pt, QPointF eventPos)
 
 int WorkspaceWidget::makeBorder(BorderItem *border)
 {
-
-
     ModelFragment * previouslyActiveFragment = this->activeFragment;
     //QPointF ptOld = *this->activeEndPoint;
 
@@ -2152,14 +1958,6 @@ int WorkspaceWidget::makeBorder(BorderItem *border)
 
 
     QPointF * pt = this->activeEndPoint;
-
-///TODO: border variable is located in sbw, you need something else;
-/**    {
-        QString str = QString("make border %1 %2 I %3 %4 %5").arg(*border->getPartNo(),*border->getProdLine()->getName(),QString::number(ptOld.x()),QString::number(ptOld.y()),QString::number(border->getNeighbour(0)->getParentFragment()->getID()));
-        str = QString("make border %1 %2 O %3 %4 %5").arg(*border->getPartNo(),*border->getProdLine()->getName(),QString::number(ptOld.x()),QString::number(ptOld.y()),QString::number(border->getNeighbour(0)->getParentFragment()->getID()));
-        QString negStr = QString("delete border %1 %2 %3").arg(QString::number(border->getNeighbour(0)->getParentFragment()->getID()), QString::number(lastInserted->get2DModelNoText()->scenePos().x()),QString::number(lastInserted->get2DModelNoText()->scenePos().y()));
-        this->pushBackCommand(str,negStr);
-    }*/
 
     {
         QString str = (QString("make point %1 %2 ").arg(QString::number(pt->x()),QString::number(pt->y())));
@@ -2435,15 +2233,6 @@ int WorkspaceWidget::selectItem(VegetationItem *item)
         gpi->setSelected(true);
 
     }
-
-
-
-
-
-
-    //
-
-
     return 0;
 }
 
@@ -2581,14 +2370,6 @@ int WorkspaceWidget::connectFragments(ModelFragment *a, ModelItem * startItem)
 
                 if (area.contains(**bPointIter) && a!=(*fragIter) && !firstFound && *aEPItemIter!=*bEPItemIter)
                 {
-
-/*
-                    //modify neighbour of "a" endItem at this point
-                    (*aEPItemIter)->setNeighbour(*bEPItemIter,*bPointIter);
-
-
-                    //modify Neighbour of (*fragIter) endItem at this point
-                    (*bEPItemIter)->setNeighbour(*aEPItemIter,*bPointIter);*/
                 }
 
                 else if (area.contains(**bPointIter) && a!=(*fragIter) && firstFound)
@@ -2811,7 +2592,7 @@ int WorkspaceWidget::connectFragments(ModelFragment *a, ModelItem * startItem)
                     bPointIter++;
                     bEPAngleIter++;
                     bIndex++;
-                } while (*bPointIter==NULL);
+                } while (*bPointIter==NULL && bPointIter!=(*fragIter)->getEndPoints()->end());
 
 
             }
@@ -2893,16 +2674,6 @@ int WorkspaceWidget::connectFragments(QPointF *posA, QPointF *posB, ModelFragmen
     ModelFragment * bFirstFound = NULL;
     //int bFirstFoundCountOfItems = 0;
 
-    /*
-    bool aEPILeft = false;//info just about EPItem
-    bool bEPILeft = false;
-    bool aEPI180diff = false;
-    bool bEPI180diff = false;
-    bool aLeft = false;//info about whole fragment
-    bool bLeft = false;*/
-
-
-    //bool loop = true;
 
 
     ModelFragment * currentActive = this->activeFragment;
@@ -2922,26 +2693,7 @@ int WorkspaceWidget::connectFragments(QPointF *posA, QPointF *posB, ModelFragmen
             break;
         bI++;
     }
-    /*bEPILeft = !(bool)(bI%2);
-    if (bI%2==0)
-        bEPI180diff = (bItem)->leftRightDifference180(bI,bI+1);
-    else
-        bEPI180diff = (bItem)->leftRightDifference180(bI-1,bI);
-*/
 
-    /*ModelItem * firstItemWith180Diff = NULL;
-    ModelItem * uselessPointer = NULL;*/
-    //get info about l-r side of A
-    //aLeft = a->leftSide(aItem, firstItemWith180Diff);
-    /*if (aItem==firstItemWith180Diff && aI%2==0)
-        aLeft=true;
-*/
-
-    //get info about l-r side of B
-    //bLeft = b->leftSide(bItem, uselessPointer);
-    /*if (bItem==uselessPointer && bI%2==0)
-        bLeft=true;
-*/
     int x = 0;
     int y = 0;
     while (x < b->getEndPoints()->count() && !pointsAreCloseEnough(b->getEndPoints()->at(x),posB,b->getProductLines()->first()->getScaleEnum()/4.0))
@@ -2953,8 +2705,6 @@ int WorkspaceWidget::connectFragments(QPointF *posA, QPointF *posB, ModelFragmen
 
     logFile << "    Fragments will be connected" << endl;
     logFile << "        A: " << a << "\n        B: " << b << endl;
-    /*logFile << "        A: " << aEPI180diff << aLeft << aEPILeft << endl;
-    logFile << "        B: " << bEPI180diff << bLeft << bEPILeft << endl;*/
 
 
     dAlpha+=180;
@@ -3079,20 +2829,6 @@ int WorkspaceWidget::connectFragments(QPointF *posA, QPointF *posB, ModelFragmen
     this->pushBackCommand(str,negStr);
 
 
-    //now check which points have been deleted:
-    //loop NxN bListOf... and b.endPoints
-    //if there is some point in bList.. which is missing in b.EPs, set it to NULL (no delete *!!!)
-    //...then check null pointers when incrementing the iterator at the end of the loop
-    /*QList<QPointF*>::Iterator iter = bListOfPoints.begin();
-    for (int i = 0; i < bListOfPoints.count(); i++,iter++)
-    {
-        if (!b->getEndPoints()->contains(bListOfPoints.at(i)))
-            *iter=NULL;
-
-    }*/
-
-
-
     this->doNotPrintSetEndPoint=false;
 
     if (!firstFound)
@@ -3154,34 +2890,7 @@ int WorkspaceWidget::disconnectFragment(ModelFragment *c, QPointF *disconnectAt,
         }
         else
             continue;
-
-        /*
-        //GraphicsPathItem * gpi = NULL;
-        QPointF sPos(gList.at(i)->scenePos());
-        this->graphicsScene->addEllipse(sPos.x(),sPos.y(),5,5);
-        QPointF pos2(*disconnectAt);
-        if (pointsAreCloseEnough(&sPos,&pos2))
-        {
-            QGraphicsItem * qgpi = gList.at(i);
-
-            if (qgpi!=NULL)
-            {
-                if (qgpi->type()!=QGraphicsItem::UserType+2)
-                {
-                    continue;
-                }
-            }
-            else
-                continue;
-
-
-            gpi = (GraphicsPathItem*)qgpi;
-
-        }*/
     }
-
-    /*if (qgpi->type()!=QGraphicsItem::UserType+2)
-        gpi=NULL;*/
 
     if (gpi==NULL)
     {
@@ -3278,7 +2987,6 @@ int WorkspaceWidget::disconnectFragment(ModelFragment *c, QPointF *disconnectAt,
             {
                 if (!mi2->leftRightDifference180(0,1))
                     mi2->setEndPointAngle(0,180+mi2->getTurnAngle(0));
-
             }
 
         }
@@ -3361,9 +3069,7 @@ int WorkspaceWidget::disconnectFragment(ModelFragment *c, QPointF *disconnectAt,
             {
                 if (!mi->leftRightDifference180(0,1))
                     mi->setEndPointAngle(0,180+mi->getTurnAngle(0));
-
             }
-
         }
         else if (t==J3)
         {
@@ -3438,7 +3144,8 @@ int WorkspaceWidget::addFragment(ModelFragment * frag, int fragID)
 
     while (iter!=frag->getFragmentItems()->end())
     {
-        this->graphicsScene->addItem((*iter)->get2DModelNoText());
+        if ((**iter).get2DModelNoText()->scene()!=this->graphicsScene)
+            this->graphicsScene->addItem((*iter)->get2DModelNoText());
 
         iter++;
     }
@@ -3482,9 +3189,6 @@ int WorkspaceWidget::removeItem(ModelItem *item, QList<int> *idList)
     //QString negStr = str;
     QString str;
     str = QString("delete item %1 %2 %3 ").arg(QString::number(item->getParentFragment()->getID()),QString::number(pos.x()),QString::number(pos.y()));
-
-    //QString negStr = QString("make item %1 %2 R %3 %4").arg(*item->getPartNo(),*item->getProdLine()->getName(),QString::number(item->getEndPoint(0)->x()),QString::number(item->getEndPoint(0)->y()));
-
 
     QString negStr;
     if (item->getParentFragment()->getFragmentItems()->count()==1)
@@ -3597,10 +3301,6 @@ int WorkspaceWidget::removeItem(ModelItem *item, QList<int> *idList)
 
     }
 
-
-
-
-
     //int ret = this->modelFragments->at(i)->deleteFragmentItem(this->modelFragments->at(i)->getFragmentItems()->at(j));
     if (ret==-1)
     {
@@ -3617,14 +3317,12 @@ int WorkspaceWidget::removeVegetation(VegetationItem *item)
     if (item==NULL)
         return -1;
 
-
     QString negStr(QString("make vegetation %1 %2 %3 %4 ").arg(*item->getProdLine()->getName(),*item->getPartNo(),QString::number(item->get2DModelNoText()->scenePos().x()),QString::number(item->get2DModelNoText()->scenePos().y())));
     QString str(QString("delete vegetation %1 %2 ").arg(QString::number(item->get2DModelNoText()->scenePos().x()),QString::number(item->get2DModelNoText()->scenePos().y())));
     this->pushBackCommand(str,negStr);
 
     this->vegetationItems->removeOne(item);
     delete item;
-
 
     return 0;
 }
@@ -3706,16 +3404,7 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
     bool close = true;
     bool yMajor = false;
 
-    ///qreal originalA1 = angle1;
-    ///qreal originalA2 = angle2;
 
-
-/*
-    if ((angle1<0 && angle2>0) || item1->leftRightDifference180(index1,index1+1))
-        angle1+=180;
-    if ((angle1>0 && angle2<0) || item2->leftRightDifference180(index2,index2+1))
-        angle2+=180;
-*/
     QPointF point1 = *pt1;
     QPointF point2 = *pt2;
 
@@ -3762,16 +3451,6 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
 
     qreal flexNeeded = abs(dAlpha-len)/1.0;
 
-    /*
-    qreal trackLength = angle*((PI*this->radius)/180);
-    if (angle==0)
-        trackLength=this->radius;
-
-    this->maxFlex=abs(trackLength)/50;
-    if (this->slotTrackInfo!=NULL)
-        this->maxFlex*=0.85;
-*/
-
     logFile << "Bending fragment with ID " << frag->getID() << " at point ";
     logFile << pt1->x() << " " << pt1->y() << " and " << pt2->x() << " " << pt2->y() << endl;
 
@@ -3783,7 +3462,7 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
     qreal lenConstraint = item1->getProdLine()->getScaleEnum();
     if (item1->getSlotTrackInfo()==NULL)
         lenConstraint *=3;
-    if (maxFlex<flexNeeded || dAlpha>=10 || len>=lenConstraint)
+    if (maxFlex<flexNeeded || len>=lenConstraint || (dAlpha>=10 && dAlpha <=170) || (dAlpha >= 190 && dAlpha <= 350))
     {
         logFile << "    Flex needed: " << flexNeeded << ", maximal flex: " << maxFlex << endl;
         if (*pt1==*pt2)
@@ -3835,17 +3514,6 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
         toVisit.push_back(frag->findEndPointItem(pt1));
     }
 
-
-
-
-
-
-
-    /*
-     *it should
-      PATHFINDING MAY NOT WORK WELL FOR SLOT TRACK
-      -possible solution: items with more than one lane are considered to be turnouts
-    */
 
 
     /*
@@ -3949,7 +3617,8 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
         }
         if (!somethingWasAdded && current->getEndPoint(i)==NULL)
         {
-            toVisit.push_front(turnoutsList.first());
+            if (!turnoutsList.empty())
+                toVisit.push_front(turnoutsList.first());
 
 
         }
@@ -3989,7 +3658,7 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
 
     int countOfItemsToRotate = 0;
 
-    cout << "dAlpha=" << dAlpha << endl;
+    logFile << "dAlpha=" << dAlpha << endl;
 
     //toVisit.push_back(frag->findEndPointItem(&ptTemp));
     while (!toVisit.empty())
@@ -4020,7 +3689,9 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
             }
             if (current->getEndPoint(i)!=NULL)
                 break;
-            toVisit.push_front(current->getNeighbour(turnoutsIndices[turnoutsList.indexOf(current)]));
+            ModelItem * itemToVisit = current->getNeighbour(turnoutsIndices[turnoutsList.indexOf(current)]);
+            if (itemToVisit!=NULL)
+                toVisit.push_front(itemToVisit);
             //currentIsATurnout=true;
             i = turnoutsIndices[turnoutsList.indexOf(current)];
             //somethingWasAdded=true;
@@ -4037,19 +3708,24 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
                     //somethingWasAdded=true;
                     break;
                 }
-
-
                 i++;
             }
         }
 
         {
-
             qreal currentdAlpha = abs(current->getTurnAngle(0)-current->getTurnAngle(1));
             if (current->leftRightDifference180(0,1))
                 currentdAlpha-=180;
             currentdAlpha = abs(currentdAlpha);
-
+            if (currentdAlpha==0)
+            {
+                if (current->getSlotTrackInfo()==NULL && (typeOfCurrent==J1 || typeOfCurrent==J2 || typeOfCurrent==J3))
+                {
+                    currentdAlpha = abs(current->getTurnAngle(2)-current->getTurnAngle(0));
+                    if (current->leftRightDifference180(0,2))
+                        currentdAlpha-=180;
+                }
+            }
 
             //CW rotation => +=
             //CCW rotation => -=
@@ -4141,14 +3817,6 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
     toVisit.push_back(item->getNeighbour((index)));
 
 
-    /*toVisit.push_back(frag->findEndPointItem(&ptTemp2));
-    index=toVisit.first()->getEndPointIndex(&ptTemp2);
-
-    ///////////////
-    index=(index+1)%2;
-    ///////////////
-*/
-
     int removeFrom = 0;
     while (visited.at(removeFrom)!=item)
         removeFrom++;
@@ -4227,8 +3895,6 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
         if (minIndex>=2)
             rotationFix/=2;
 
-
-
         //rotatePoint(&pointOfRotation180, rotationFix, &center);
         //rotatePoint(&pointOfRotation270, rotationFix, &center);
         rotatePoint(&ptTemp,rotationFix, &center);
@@ -4248,9 +3914,6 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
         visitedRot.append(visited);
 
         visitedRot.push_back(item);
-        /*if (item->getNeighbour((index+1)%2)==NULL)
-            break;
-        toVisitRot.push_back(item->getNeighbour((index+1)%2));*/
         toVisitRot.push_back(item);
 
         while (!toVisitRot.empty())
@@ -4292,9 +3955,17 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
             }
             if (item->getEndPoint(i)!=NULL)
                 break;
-            toVisit.push_front(item->getNeighbour(turnoutsIndices[turnoutsList.indexOf(item)]));
-            i = turnoutsIndices[turnoutsList.indexOf(item)];
-            toVisitIndices.push_front(i);
+
+
+
+
+            ModelItem * itemToVisit = item->getNeighbour(turnoutsIndices[turnoutsList.indexOf(item)]);
+            if (itemToVisit!=NULL)
+            {
+                toVisit.push_front(itemToVisit);
+                i = turnoutsIndices[turnoutsList.indexOf(item)];
+                toVisitIndices.push_front(i);
+            }
         }
         else
         {
@@ -4493,17 +4164,22 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
     int i = 0;
     while (i < frag->getEndPoints()->count() && (fragIndex1==-1 || fragIndex2==-1))
     {
-        if (pointsAreCloseEnough(pt1,frag->getEndPoints()->at(i),frag->getProductLines()->first()->getScaleEnum()/4.0))
+        if (fragIndex1==-1 && pointsAreCloseEnough(pt1,frag->getEndPoints()->at(i),frag->getProductLines()->first()->getScaleEnum()/4.0))
+        {
             fragIndex1=i;
-        if (pointsAreCloseEnough(pt2,frag->getEndPoints()->at(i),frag->getProductLines()->first()->getScaleEnum()/4.0))
-            fragIndex2=i;
+        }
+        if (fragIndex2==-1 && pointsAreCloseEnough(pt2,frag->getEndPoints()->at(i),frag->getProductLines()->first()->getScaleEnum()/4.0))
+        {
+            if (fragIndex1!=i)
+                fragIndex2=i;
+        }
         i++;
     }
 
     frag->getEndPointsGraphics()->at(fragIndex1)->setPos(pt1->x(),pt1->y());
     frag->getEndPointsGraphics()->at(fragIndex2)->setPos(pt2->x(),pt2->y());
 
-
+    frag->updateEndPointsGraphics();
 
 
 
@@ -4513,6 +4189,8 @@ int WorkspaceWidget::bendAndClose(ModelFragment *frag, QPointF * pt1, QPointF * 
         fragIndex2--;
 
     frag->removeEndPoint((*frag->getEndPoints())[fragIndex2]);
+
+
 
 
 
@@ -4604,7 +4282,7 @@ int WorkspaceWidget::bendAndClose(ModelFragment *fragA, ModelFragment *fragB, QP
 
     if (dAlpha>=160 && dAlpha<=205)
         dAlpha -=180;
-    else if (dAlpha<=10)
+    else if (dAlpha<=20)
         dAlpha +=180;
 
     dAlpha = abs(dAlpha);
@@ -4687,10 +4365,15 @@ int WorkspaceWidget::bendAndClose(ModelFragment *fragA, ModelFragment *fragB, QP
 
     }
 
+    logFile << "    Flex needed: " << neededFlex << ", maximal flex: " << maxFlex << endl;
     //compare maxFlex and neededFlex
-    if (maxFlex<neededFlex)
-    {
-        logFile << "    Flex needed: " << neededFlex << ", maximal flex: " << maxFlex << endl;
+    //if (maxFlex<neededFlex)
+
+    qreal lenConstraint = firstA->getProdLine()->getScaleEnum();
+    if (firstB->getSlotTrackInfo()==NULL)
+        lenConstraint *=3;
+    if (maxFlex<neededFlex || len>=lenConstraint || (dAlpha>=10 && dAlpha <=170) || (dAlpha >= 190 && dAlpha <= 350) || (firstA->getProdLine()->getScaleEnum()!=firstB->getProdLine()->getScaleEnum()))
+    {        
         app->getAppData()->setMessageDialogText("The points you have selected are too far. Fragments will not be connected.","Vámi vybrané body jsou příliš vzdálené. Tratové segmenty nebudou spojeny.");
         app->getAppData()->getMessageDialog()->exec();
         return 2;
@@ -4852,7 +4535,7 @@ int WorkspaceWidget::bendAndClose(ModelFragment *fragA, ModelFragment *fragB, QP
             for (int j = 0; j < 13; j++)
             {
                 d = dist(&ptsA[i],&ptsB[j]);
-                logFile << "i: " << i << " j: " << j << " d: " << d << endl;
+                //logFile << "i: " << i << " j: " << j << " d: " << d << endl;
                 if (minDist>d)
                 {
                     minDist=d;
@@ -5261,9 +4944,14 @@ int WorkspaceWidget::bendAndClose(ModelFragment *fragA, ModelFragment *fragB, QP
     *pt2=ptTemp2;
 
 
+    fragA->updateEndPointsGraphics();
+    fragB->updateEndPointsGraphics();
+
 
     //call connect fragments
     this->connectFragments(pt1,pt2,fragA,fragB,item1,item2);
+
+
 
 
 
@@ -5281,27 +4969,6 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
     }
 
     /*
-
-      / *FUNCTION: pointOnBezierCubic(pt1,pt12,pt22,pt2,u);
-       * http://www.cs.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/Bezier/de-casteljau.html
-       *
-        First, all given control points are arranged into a column, which is the left-most one in the figure. For each pair of adjacent control points, draw a south-east bound arrow and a north-east bound arrow, and write down a new point at the intersection of the two adjacent arrows. For example, if the two adjacent points are ij and i(j+1), the new point is (i+1)j. The south-east (resp., north-east) bound arrow means multiplying 1 - u (resp., u) to the point at its tail, ij (resp., i(j+1)), and the new point is the sum.
-        Thus, from the initial column, column 0, we compute column 1; from column 1 we obtain column 2 and so on. Eventually, after n applications we shall arrive at a single point n0 and this is the point on the curve. The following algorithm summarizes what we have discussed. It takes an array P of n+1 points and a u in the range of 0 and 1, and returns a point on the Bézier curve C(u).
-
-        Input: array P[0:n] of n+1 points and real number u in [0,1]
-        Output: point on curve, C(u)
-        Working: point array Q[0:n]
-
-        for i := 0 to n do
-            Q[i] := P[i]; // save input
-        for k := 1 to n do
-            for i := 0 to n - k do
-                Q[i] := (1 - u)Q[i] + u Q[i + 1]; return Q[0];
-
-
-
-        array P[0:n] is an array of control points, u changes during the algorithm -> code above HAS to be separated into function(method?)
-      * /
 
 //BASIC VERSION OF ALGORITHM
       //STEP 1: get control points of Bezier curve
@@ -5364,6 +5031,9 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
 
     activePt=*pt1;
 
+    bool mayExceedSceneSize=false;
+    bool sceneExceededForTheFirstTime = true;
+
 
     //test different sizes
     QRectF rect(pt2->x()-150,pt2->y()-150,300,300);
@@ -5383,9 +5053,9 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
     qreal bestMatchDistAccumulated = 0;
 
     //while(!pointsAreCloseEnough(&activePt,pt2) && !smallRect.contains(activePt) && !frag->getEndPoints()->empty())
-    while(!smallRect.contains(activePt) && !frag->getEndPoints()->empty())
+    while(!(smallRect.contains(activePt) && !infiniteCounter>3) && !frag->getEndPoints()->empty())
     {
-        if (rect.contains(activePt))
+        if (rect.contains(activePt) && infiniteCounter>3)
             checkLargeRect=true;
 
         /*//STEP 1
@@ -5435,7 +5105,10 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
             while (angle2C>360)
                 angle2C-=360;
             //dAlpha12=abs(angle1-angle2)+180;
-            dAlpha12=abs((angle1-angle2)-180);
+            if (fragA!=fragB)
+                dAlpha12=abs((angle1-angle2));
+            else
+                dAlpha12=abs((angle1-angle2)-180);
 
 
             QPointF line1pt1 = activePt;
@@ -5444,8 +5117,8 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
             QPointF line2pt2 = *pt2;
             line1pt2.setX(line1pt2.x()+50);
             line2pt2.setX(line2pt2.x()+50);
-            rotatePoint(&line1pt2,angle1,&line1pt1);
-            rotatePoint(&line2pt2,angle2,&line2pt1);
+            rotatePoint(&line1pt2,angle1C,&line1pt1);
+            rotatePoint(&line2pt2,angle2C,&line2pt1);
 
             qreal dx1 = line1pt1.x()-line1pt2.x();
             qreal dx2 = line2pt1.x()-line2pt2.x();
@@ -5456,8 +5129,6 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
              *SOURCE deCasteljau:
              http://www.cs.rutgers.edu/~venugopa/parallel_summer2012/ge.html
             */
-
-
 
             /**
              Ax+By=C
@@ -5566,9 +5237,9 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
             QPen p = qgpi->pen();
             p.setColor(QColor(infiniteCounter,127,127));
             qgpi->setPen(p);
-            ///this->graphicsScene->addItem(qgpi);
-            ///this->graphicsScene->addEllipse(cp2.x(),cp2.y(),2,2);
-            ///this->graphicsScene->addEllipse(cp3.x(),cp3.y(),2,2);
+            //this->graphicsScene->addItem(qgpi);
+            //this->graphicsScene->addEllipse(cp2.x(),cp2.y(),2,2);
+            //this->graphicsScene->addEllipse(cp3.x(),cp3.y(),2,2);
 
             u=0;
             bestMatchDistAccumulated=0;
@@ -5609,7 +5280,9 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
 
         /*this->graphicsScene->addEllipse(ptA.x(),ptA.y(),2,2);
         this->graphicsScene->addEllipse(ptB.x(),ptB.y(),2,2);
-        this->graphicsScene->addEllipse(ptC.x(),ptC.y(),2,2);*/
+        this->graphicsScene->addEllipse(ptC.x(),ptC.y(),2,2);
+        this->graphicsScene->addEllipse(ptD.x(),ptD.y(),2,2);
+        this->graphicsScene->addEllipse(ptE.x(),ptE.y(),2,2);*/
 
 
         //u+=0.33;///??
@@ -5721,6 +5394,7 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
                     || (itemList->at(i)->getType()>=T1 && itemList->at(i)->getType()<=T10)
                     || (itemInListIsStraight && !straightItem && fragA==fragB)
                     || (!itemInListIsStraight && straightItem && fragA==fragB)
+                    || item->getType()==CB
                     )
                 continue;
 
@@ -5729,13 +5403,8 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
 
             double intpart = 0;
 
-            /** if (!oppositeAngles && (modf(item->getItemWidth()/distance12,&intpart)<0.1 || modf(distance12/item->getItemWidth(),&intpart)<0.1))
-                scoreCurrent+=2;
-*/
-
-
-
-            if (straightItem)
+            //if (straightItem && itemInListIsStraight)
+            if (itemInListIsStraight)
             {
                 qreal modFResult = modf(idealLength/item->getItemWidth(),&intpart);
                 qreal modFResult2 = modf(idealLength2/item->getItemWidth(),&intpart);
@@ -5753,6 +5422,18 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
                     scoreCurrent2+=2;
                 else if (modFResult2<0.3 || modFResult2>0.7)
                     scoreCurrent2+=1;
+
+                if ((bestMatch->getType()==C1 || bestMatch->getType()==C2 || bestMatch->getType()==CB
+                        || bestMatch->getType()==J1 || bestMatch->getType()==J2 || bestMatch->getType()==J3 || bestMatch->getType()==HC
+                        ))
+                    scoreCurrent+=2;
+                if ((alternativeItem->getType()==C1 || alternativeItem->getType()==C2 || alternativeItem->getType()==CB
+                        || alternativeItem->getType()==J1 || alternativeItem->getType()==J2 || alternativeItem->getType()==J3 || alternativeItem->getType()==HC
+                        ))
+                    scoreCurrent2+=2;
+
+                if (!straightItem)
+                    scoreCurrent/=2;
 
             }
             else
@@ -6246,7 +5927,7 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
 
 
             }
-                cout << "use the combo" << endl;
+
 
 
 
@@ -6321,14 +6002,52 @@ int WorkspaceWidget::completeFragment(ModelFragment *frag, QPointF *pt1, QPointF
         if (infiniteCounter>255)
             break;
 
+        if (!this->graphicsScene->sceneRect().contains(*this->activeEndPoint))
+        {
+            if (sceneExceededForTheFirstTime)
+            {
+                sceneExceededForTheFirstTime=false;
+                QMessageBox * mb = new QMessageBox(this->window());
+                mb->setIcon(QMessageBox::Information);
+
+                if (app->getUserPreferences()->getLocale()->startsWith("EN"))
+                {
+                    mb->setText("The model has exceeded the workspace bounds. May the model building continue?");
+                    mb->addButton("Continue",QMessageBox::AcceptRole);
+                    mb->addButton("End computation",QMessageBox::RejectRole);
+                }
+                else
+                {
+                    mb->setText("Model překročil hranice pracovní plochy. Jak má program reagovat?");
+                    mb->addButton("Pokračovat",QMessageBox::AcceptRole);
+                    mb->addButton("Ukončit stavbu",QMessageBox::RejectRole);
+                }
+
+                int r = mb->exec();
+                if (r==0)
+                    mayExceedSceneSize=true;
+                else
+                    mayExceedSceneSize=false;
+            }
+            if (!mayExceedSceneSize)
+                break;
+        }
+
 
     }//endloop
 
-    /**
-    //FINAL STEP
-    bendFragment?
-
-    */
+    //the model exceeded scene bounds
+    if (mayExceedSceneSize && !sceneExceededForTheFirstTime)
+    {
+        QRectF rScene = this->graphicsScene->sceneRect();
+        QRectF rItems = this->graphicsScene->itemsBoundingRect();
+        QRectF rNew = rScene.united(rItems);
+        //QRectF rNew2(rScene.x(),rScene.y(),rNew.width(),rNew.height());
+        //cout << rScene.x() << rItems.x() << rNew2.x() << endl;
+        this->graphicsScene->setSceneRect(rNew);
+        this->setSceneRect(rNew);
+        this->centerOn(this->mapToScene(this->viewport()->rect()).boundingRect().center());
+    }
 
     this->selectTwoPointsComplete=false;
     return 0;
@@ -6388,6 +6107,8 @@ ModelFragment *WorkspaceWidget::findFragmentByApproxPos(QPointF *point)
 
 ModelItem *WorkspaceWidget::findItemByApproxPos(QPointF *point, ModelItem * dontWantThisItem)
 {
+    if (point==NULL)
+        return NULL;
     ModelItem * pointer = NULL;
     QRectF rect(point->x()-TOLERANCE_HALF,point->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF);
     QList<ModelFragment*>::Iterator fragIter = this->modelFragments->begin();
@@ -6517,10 +6238,10 @@ int WorkspaceWidget::setActiveEndPoint(QPointF *pt)
         this->graphicsScene->removeItem(this->activeEndPointGraphic);
         this->activeEndPointGraphic=NULL;
     }
-    QPainterPath * pp = new QPainterPath();
-    pp->addEllipse(-7.5,-7.5,15,15);
+    QPainterPath pp = QPainterPath();
+    pp.addEllipse(-7.5,-7.5,15,15);
 
-    QGraphicsPathItem * qgpi = new QGraphicsPathItem(*pp);
+    QGraphicsPathItem * qgpi = new QGraphicsPathItem(pp);
     QPen p = qgpi->pen();
     p.setWidth(0);
     QBrush b = qgpi->brush();
@@ -6601,7 +6322,7 @@ bool WorkspaceWidget::canInsert(ModelItem *item) const
         if (this->activeFragment!=NULL)
         {
             pLFirst = this->activeFragment->getProductLines()->first();
-            if (pLFirst->getScaleEnum()==item->getProdLine()->getScaleEnum()/4.0)
+            if (pLFirst->getScaleEnum()==item->getProdLine()->getScaleEnum())
                 enabled =  true;
             else
             {
@@ -6691,15 +6412,12 @@ bool WorkspaceWidget::canInsert(BorderItem *item) const
     {
         if (fstSelected->leftRightDifference180(0,1))
         {
-            cout << fstSelected->getTurnAngle(1)-fstSelected->getTurnAngle(0) << endl;
+            //cout << fstSelected->getTurnAngle(1)-fstSelected->getTurnAngle(0) << endl;
             if (abs(modf((fstSelected->getTurnAngle(1)-fstSelected->getTurnAngle(0)+180)/item->getAngle(),&useless))>=0.01)
                 enabled=false;
         }
         else
         {
-
-            //if ((fstSelected->getTurnAngle(0)+item->getAngle()-fstSelected->getTurnAngle(1))!=0)
-///DIVIDE BY ZERO FOR ALL STRAIGHT BORDER ITEMS
             if (abs(modf((fstSelected->getTurnAngle(1)-fstSelected->getTurnAngle(0))/item->getAngle(),&useless))>=0.01)
                 enabled=false;
         }
@@ -6708,9 +6426,6 @@ bool WorkspaceWidget::canInsert(BorderItem *item) const
     {
         if (fstSelected->leftRightDifference180(0,1))
         {
-///TODO: + or - 180??
-            //if ((fstSelected->getTurnAngle(1)+item->getAngle()-fstSelected->getTurnAngle(0)-180)!=0)
-            //    enabled=false;
             if (abs(modf((fstSelected->getTurnAngle(1)-fstSelected->getTurnAngle(0)+180)/item->getAngle(),&useless))>=0.01)
                 enabled=false;
         }
@@ -6783,7 +6498,8 @@ bool WorkspaceWidget::canInsert(BorderItem *item) const
     //if neighbour at index-(count of "border"'s endpoints) is not null
         //cant insert
     //else if (this->selection->first()->getSlotTrackInfo()->getBorders()->at(connectionIndex+item->getEndPointsCount())!=NULL)
-    else if (fstSelected->getSlotTrackInfo()->getBorders()->at(connectionIndex+item->getEndPointsCount()-1)!=NULL)
+   if (fstSelected->getSlotTrackInfo()->getBorders()->at(connectionIndex+item->getEndPointsCount()-1)!=NULL)
+    // else if (fstSelected->getSlotTrackInfo()->getBorders()->at(connectionIndex+item->getEndPointsCount()-1)!=NULL)
         enabled = false;
 
 
@@ -6872,35 +6588,7 @@ int WorkspaceWidget::exportCurrentState(QTextStream &file)
 
             file << "make item " << *it->getPartNo() << " " << *it->getProdLine()->getName() << (it->getRadius()<0 ? " L " : " R ") << it->getEndPoint(0)->x() << " " << it->getEndPoint(0)->y() << endl;
 
-            //get the dAlpha of current item
-            //get the angle at "previous item's" endpoint
-            //ptBended=current[1] (if possible -> E1!!)
-            //ptNoBend=current[0]
-            //ptNoBend.x+=dist(curr[0],curr[1])
-            //rotate(ptNoBend,angle+dAlpha)
-            //vec1(curr[0],ptNoBend);
-            //vec2(curr[0],curr[1]);
-            //rotation to save = angle(vec1,vec2);
-/** V2            if (it->getType()!=E1)
-            {
-                qreal currentDAlpha = abs(it->getTurnAngle(1)-it->getTurnAngle(0));
-                qreal previousAlpha = it->getNeighbour(0)->getTurnAngle(it->getEndPoint(0));
-                qreal len = dist(it->getEndPoint(0),it->getEndPoint(1));
 
-                QPointF ptNoBend(it->getEndPoint(0)->x()+len,it->getEndPoint(0)->y());
-                rotatePoint(&ptNoBend,currentDAlpha/2+previousAlpha,it->getEndPoint(0));
-                QVector2D vector1(ptNoBend-*it->getEndPoint(0));
-                QVector2D vector2(*it->getEndPoint(1)-*it->getEndPoint(0));
-
-                //qreal angle = atan2(vector2.y(), vector2.x()) - atan2(vector1.y(), vector1.x())*180/PI;
-
-                qreal vector1Mag = dist(&ptNoBend,it->getEndPoint(0));
-                qreal vector2Mag = len;//dist(it->getEndPoint(1),it->getEndPoint(0));
-
-                qreal angle = acos(vector1.dotProduct(vector1,vector2)/(vector1Mag*vector2Mag))*180/PI;
-
-                file << "rotate item " << it->get2DModelNoText()->scenePos().x() << " " << it->get2DModelNoText()->scenePos().y() << " " << it->getEndPoint(0)->x() << " " << it->getEndPoint(0)->y() << " " << angle << endl;
-            }*/
 //original version
             qreal dAlpha = 0;
             {
@@ -6914,6 +6602,12 @@ int WorkspaceWidget::exportCurrentState(QTextStream &file)
                 }
                 //dAlpha = it->getTurnAngle(0)-neighbour->getTurnAngle(k);
                 dAlpha = neighbour->getTurnAngle(k)-it->getTurnAngle(0);
+                while (dAlpha<0)
+                    dAlpha+=360;
+                while (dAlpha>360)
+                    dAlpha-=360;
+                if (dAlpha>15)
+                    dAlpha=0;
             }
 
 
@@ -7023,19 +6717,24 @@ int WorkspaceWidget::setCurrentState(QTextStream &file)
     this->centerOn(xC,yC);
 
 
+    int retValue = 0;
     while(!file.atEnd())
     {
         str = file.readLine();
         if (str.startsWith("INVENTORY"))
             break;
-        if (this->commandExecution((str))!=0)
+        //if (this->commandExecution((str))!=0)
+        int val = this->commandExecution(str);
+        if (val<0)
             return -1;
+        else if (val>0)
+            retValue = val;
 
     }
     this->actionListRedo.clear();
     this->actionListUndo.clear();
     this->indexUndoRedo=-1;
-    return 0;
+    return retValue;
 }
 
 void WorkspaceWidget::resetWorkspace()
@@ -7047,6 +6746,7 @@ void WorkspaceWidget::resetWorkspace()
             this->deselectItem(this->selection->at(i));
         }
     }
+
 
 
     this->actionListRedo.clear();
@@ -7062,6 +6762,8 @@ void WorkspaceWidget::resetWorkspace()
     this->lastInserted=NULL;
     this->copiedItems->clear();
 
+
+
     if (!this->modelFragments->empty())
     {
         for (int i = this->modelFragments->count()-1; i >= 0; i--)
@@ -7070,6 +6772,8 @@ void WorkspaceWidget::resetWorkspace()
         }
         this->modelFragments->clear();
     }
+
+    logFile << "model fragments deleted succesfully" << endl;
 
     if (!this->vegetationItems->empty())
     {
@@ -7127,13 +6831,7 @@ void WorkspaceWidget::toggleHeightProfileMode()
         this->heightProfileMode=true;
         this->setActiveEndPoint(new QPointF(0,0));
         this->setActiveFragment(NULL);
-        /*if (this->activeEndPoint!=NULL)
-        {
-            this->graphicsScene->removeItem(this->activeEndPointGraphic);
-            delete this->activeEndPoint;
-        }
-        this->activeEndPointGraphic=NULL;
-        this->activeEndPoint=NULL;*/
+
     }
     QList<ModelFragment*>::Iterator fragIter = this->modelFragments->begin();
     while(fragIter!=this->modelFragments->end())
@@ -7287,6 +6985,8 @@ void WorkspaceWidget::undo()
         nextStep = true;
 
 
+    logFile << "UNDO ";
+
     this->eraseFollowing=false;
     if (this->indexUndoRedo>0)
     {
@@ -7301,48 +7001,13 @@ void WorkspaceWidget::undo()
         if (this->actionListUndo.at(this->indexUndoRedo).startsWith("make item"))
         {
             int originalId = -98765;
-            /*ModelFragment * f = NULL;
-            if (this->activeFragment!=NULL)
-            {
-                originalId = this->activeFragment->getID();
-                f = this->activeFragment;
-            }
-            else
-            {
-                originalId = this->activeFragmentPrev->getID();
-                f = this->activeFragmentPrev;
-            }
-            int cBefore = this->modelFragments->count();
-            this->connectFragments(f);
-
-            if (this->modelFragments->count()!=cBefore)
-            {
-                ///WHICH LINE??
-                this->activeFragment;
-                this->modelFragments->last()->setID(originalId);
-            }*/
 
             ModelItem * zeroItem = NULL;//this->lastInserted->getParentFragment()->getFragmentItems()->at(0);
             ModelFragment * zeroFragment = NULL;
 
             originalId = -5;//this->lastInserted->getParentFragment()->getID();
             int cBefore = this->modelFragments->count();
-/**
-  what is the problem?
-  delete item == make item and then connect, BUT:
-  -after deletion fragment is rebuilt/2 fragments are made and built, which usually causes the change of directions
-  -when you execute "make item", the item is inserted into the fragment, which is no the same as before
-  -zero item will most probably be the neighbour of the inserted item, but it CANT be the zero item of the original
-  fragment -> it is in the other fragment
 
-  what is the solution?
-  -you need to be absolutely sure, which item is the zero item so that you can get exactly the same fragment
-  as in the past
-
-  -use this:
-  make item ........ zeroItemXScenePos idX, where zeroItemXScenePos is the original fragment's zeroItem position
-
-*/
             {
                 QString command = this->actionListUndo.at(this->indexUndoRedo);
                 QString temp = command.mid(command.lastIndexOf(" "));
@@ -7383,8 +7048,6 @@ void WorkspaceWidget::undo()
             if (zeroFragment==NULL || zeroItem==NULL)
                 return;
 
-            ///this->connectFragments(this->lastInserted->getParentFragment(),zeroItem);
-            ///
 
             int i = 0;
             while (zeroItem->getEndPoint(i)!=NULL)
@@ -7490,19 +7153,31 @@ void WorkspaceWidget::redo()
             ||
             (this->actionListRedo.at(this->indexUndoRedo).startsWith("move vegetation")
                 && this->actionListRedo.at(this->indexUndoRedo+1).startsWith("move vegetation"))
+             || this->actionListRedo.at(this->indexUndoRedo).startsWith("bend close")
             ))
 
         nextStep = true;
 
 
+    logFile << "REDO ";
     this->eraseFollowing=false;
+
+
+
+    while (this->actionListRedo.at(this->indexUndoRedo).startsWith("rotate item") && this->indexUndoRedo<this->actionListRedo.count())
+        this->indexUndoRedo++;
+
     if (this->indexUndoRedo<(this->actionListRedo.count()-1))
     {
-        this->undoRedoCalled = true;
-        this->indexUndoRedo++;
-        if (0!=this->commandExecution(this->actionListRedo.at(this->indexUndoRedo)))
-            nextStep = true;
-        this->undoRedoCalled = false;
+
+            this->undoRedoCalled = true;
+            this->indexUndoRedo++;
+            if (0!=this->commandExecution(this->actionListRedo.at(this->indexUndoRedo)))
+                nextStep = true;
+            this->undoRedoCalled = false;
+
+
+
     }
 
     this->eraseFollowing=true;
@@ -7666,11 +7341,18 @@ void WorkspaceWidget::selectFragmentToClose()
     if (this->selectTwoPointsBend)
     {
         this->selectTwoPointsBend=false;
+
         return;
     }
     if (this->selectTwoPointsComplete)
     {
         this->selectTwoPointsComplete=false;
+        QList<QAction*> actions = app->getWindow()->getMainToolBar()->actions();
+        for (int i = 0; i < actions.count(); i++)
+        {
+            if (actions[i]->text().startsWith("Complete") || actions[i]->text().startsWith("Dokončit"))
+                actions[i]->setChecked(false);
+        }
     }
 
     if (app->getUserPreferences()->getLocale()->startsWith("EN"))
@@ -7701,6 +7383,12 @@ void WorkspaceWidget::selectFragmentToComplete()
     if (this->selectTwoPointsBend)
     {
         this->selectTwoPointsBend=false;
+        QList<QAction*> actions = app->getWindow()->getMainToolBar()->actions();
+        for (int i = 0; i < actions.count(); i++)
+        {
+            if (actions[i]->text().startsWith("Bend") || actions[i]->text().startsWith("Ohnout"))
+                actions[i]->setChecked(false);
+        }
     }
 
     if (app->getUserPreferences()->getLocale()->startsWith("EN"))

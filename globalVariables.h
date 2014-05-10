@@ -23,22 +23,13 @@
 #include <QString>
 #include "application.h"
 
-
+//this value is only when no info about item's scale is available (i.e. searching for items in graphicsScene etc.)
 #define TOLERANCE_HALF 5 //10 points (=> milimeters)
-#define TOLERANCE_ANGLE 5.0 //5 deg.
-#define SEARCH_TOLERANCE_HALF 2.5
 
-/**
-  CHANGE!!
-*/
-extern QString folderPathLinux;/// = "/media/sf_Shared_Virtual/RSEditor/";//"/etc/";
-extern QString folderPathWin;/// = "C:\\";
+extern QString folderPathLinux;
+extern QString folderPathWin;
 
 extern Application * app;
-
-/*DELETE IN RELEASE MODE*/
-extern int adjustCallCount;
-extern int updateCallCount;
 
 extern fstream logFile;
 

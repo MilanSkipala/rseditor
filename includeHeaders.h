@@ -40,20 +40,12 @@
 #include <QMenuBar>
 #include <QPixmap>
 #include <QPushButton>
-#include <QScrollArea>
 #include <QScrollBar>
 #include <QSplitter>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QWidget>
 
-/*
-#include "partsRelated.h"
-#include "database.h"
-#include "workspaceWidget.h"
-#include "sideBarWidget.h"
-#include "application.h"
-*/
 using namespace std;
 
 #endif // INCLUDEHEADERS_H

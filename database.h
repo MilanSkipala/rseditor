@@ -33,6 +33,7 @@ class Database
     QString *currentItem;
 public:
     Database(QString &lang);
+    ~Database();
 
     ProductLine * findProductLineByName(QString &name) const;
 
@@ -53,10 +54,7 @@ public:
 
     int addProductLine(ProductLine * manufact);
     int size();
-    //int addModelItem(QString manufactName, ModelItem * itemToAdd);//ProductLine's name
-    //int addModelItem(ModelItem *itemToAdd);
-
-
 };
+
 
 #endif // DATABASE_H

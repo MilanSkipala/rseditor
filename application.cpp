@@ -18,6 +18,7 @@
 
 */
 
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QSignalMapper>
@@ -30,26 +31,18 @@
 
 Application::Application(int argc, char ** argv) : QApplication(argc, argv)
 {
-    //check if the .conf files in directory /etc/RSEditor/ or .\\data\\ exist - if not, exit app
-
-    ///TODO: change the path
-    QString * userPref = new QString(argv[0]); // load data from userpref.conf
+    logFile << "Application constructor" << endl;
+    QString * userPref = new QString(qApp->applicationDirPath()); // load data from userpref.conf
 
 #ifdef Q_OS_LINUX
-    int index = userPref->lastIndexOf("/");
-    userPref->remove(index,userPref->length()-index);
     userPref->append("/RSEditor/user.pref");
 #endif
 #ifdef Q_OS_WIN
-    int index = userPref->lastIndexOf("\\");
-    userPref->remove(index,userPref->length()-index);
     userPref->append("\\RSEditor\\user.pref");
 #endif
 
-    this->userPreferences = new Preferences(userPref); //new QString(userPref);
+    this->userPreferences = new Preferences(userPref);
     this->preferencesDialog = NULL;
-
-    //check if the /etc/RSEditor/icons or \\data\\icons\\ exist - if not, exit app
 
     this->appData = new AppData(*this->userPreferences->getLocale());
     this->restrictedInventoryMode=false;
@@ -59,17 +52,24 @@ Application::Application(int argc, char ** argv) : QApplication(argc, argv)
     this->projectName=QString("Untitled");    
     this->setupUI();
     this->getWindow()->getSideBarWidget()->resetSideBar();
+    delete userPref;
 
 }
 
 Application::~Application()
 {
     logFile << "~Application";
-    logFile.close();
-    app=NULL;
-    delete this->appData;
+
+
+
+    this->window->getWorkspaceWidget()->resetWorkspace();
     delete this->window;
+    this->window=NULL;
     delete this->userPreferences;
+    this->userPreferences=NULL;
+    delete this->appData;
+    app=NULL;
+    logFile.close();
 }
 
 Window * Application::getWindow()
@@ -93,7 +93,6 @@ bool Application::getAllowMixedProductLines()
     return this->allowMixedProductLines;
 }
 
-
 bool Application::setAppData(AppData * d)
 {
     if (d==NULL)
@@ -101,7 +100,6 @@ bool Application::setAppData(AppData * d)
 
     this->appData = d;
     return true;
-
 }
 
 void Application::showModelInfo()
@@ -116,7 +114,6 @@ QTreeView *Application::getTreeView()
 bool Application::setRestrictedInventoryMode(bool mode)
 {
     this->restrictedInventoryMode=mode;
-    //this->window->getSideBarWidget()->update();
     if (this->window->getSideBarWidget()->getCurrentScene()!=NULL)
         this->window->getSideBarWidget()->getCurrentScene()->update(this->window->getSideBarWidget()->getCurrentScene()->sceneRect());
     return true;
@@ -152,9 +149,6 @@ void Application::save()
             qpath.append(".rse");
     }
 
-    //string path("outputFile.txt");
-
-    //outputFile.open(qpath.toStdString().c_str());
     if (qpath=="" || qpath==".rse")
         return;
 
@@ -169,15 +163,8 @@ void Application::save()
         return;
     }
 
-    /*if (!this->window->windowTitle().endsWith("Untitled"))
-    {
-        if (this->window->windowTitle().endsWith("*"))
-            this->window->setWindowTitle(this->window->windowTitle().remove(this->window->windowTitle().length()-1,1));
-    }
-    else
-    {*/
-        this->window->setWindowTitle(qpath.mid(qpath.lastIndexOf("/")+1,qpath.length()-qpath.lastIndexOf("/")).remove(".rse").prepend("Rail & Slot Editor - "));
-    //}
+    this->window->setWindowTitle(qpath.mid(qpath.lastIndexOf("/")+1,qpath.length()-qpath.lastIndexOf("/")).remove(".rse").prepend("Rail & Slot Editor - "));
+
 
     outputFile << "PROJECT DATA" << endl;
     outputFile << "Project name: " << qpath << endl;
@@ -217,8 +204,6 @@ void Application::saveAs()
 void Application::open()
 {
 
-    //QFileDialog::setDefaultSuffix("rte");
-
     QString qpath;
     if (this->getUserPreferences()->getLocale()->startsWith("EN"))
         qpath = QFileDialog::getOpenFileName(this->window, tr("Open File"),
@@ -239,13 +224,9 @@ void Application::open()
     input.open(QFile::ReadOnly);
 
     QTextStream inputFile(&input);
-    //string path("outputFile.txt");
-    //inputFile.open(path.c_str());
-    //inputFile.open(qpath.toStdString().c_str());
 
     if (!input.isOpen())
     {
-        //this->appData->getMessageDialog()->setText(QString("File %1 could not be opened.").arg(path.c_str()));
         this->appData->setMessageDialogText(QString("The file \"%1\" could not be opened").arg(qpath),QString("Nepodařilo se otevřít soubor \"%1\".").arg(qpath));
         this->appData->getMessageDialog()->exec();
         return;
@@ -277,9 +258,6 @@ void Application::open()
 
 
     QString activeProdLine;
-    /*string str;
-    getline(inputFile,str);
-    QString qstr = QString().fromStdString(str);*/
     QString qstr;
     qstr = inputFile.readLine();
     if (!qstr.startsWith("PROJECT DATA"))
@@ -299,14 +277,10 @@ void Application::open()
         {
             readProdLines = true;
             qstr = inputFile.readLine();
-            /*getline(inputFile,str);
-            qstr = QString().fromStdString(str);*/
         }
         else if (qstr.startsWith("Active manufacturer"))
         {
             readProdLines = false;
-            /*getline(inputFile,str);
-            activeProdLine.fromStdString(str);*/
             qstr = inputFile.readLine();
             activeProdLine=qstr;
         }
@@ -322,15 +296,13 @@ void Application::open()
                 this->window->getSideBarWidget()->getProductLines()->addItem(qstr);
         }
 
-
-        //getline(inputFile,str);
-        //qstr = QString().fromStdString(str);
         qstr = inputFile.readLine();
     }
     this->window->getSideBarWidget()->getProductLines()->setCurrentText(activeProdLine);
 
     this->userPreferences->addProject(&qpath);
-    if (this->window->getWorkspaceWidget()->setCurrentState(inputFile)!=0)
+    int retVal = this->window->getWorkspaceWidget()->setCurrentState(inputFile);
+    if (retVal<0)
     {
         this->appData->setMessageDialogText(QString("The file \"%1\" could not be loaded. Some items are missing in your database.").arg(qpath),QString("Nepodařilo se načíst soubor \"%1\". Některé díly chybí ve vaší databázi.").arg(qpath));
         this->appData->getMessageDialog()->exec();
@@ -344,13 +316,21 @@ void Application::open()
 
         return;
     }
+    else if (retVal > 0)
+    {
+        this->appData->setMessageDialogText(QString("Error occured during loading of the file \"%1\".").arg(qpath),QString("Při načítání souboru \"%1\" došlo k chybě.").arg(qpath));
+        this->appData->getMessageDialog()->exec();
 
+        if (this->getUserPreferences()->getLocale()->startsWith("EN"))
+            this->window->statusBar()->showMessage("File was not loaded in the correct way.");
+        else
+            this->window->statusBar()->showMessage("Nepodařilo se správně načíst soubor.");
+        logFile << "ERROR: retVal=" << retVal << endl;
+    }
     this->window->getSideBarWidget()->setInventoryState(inputFile);
 
     this->projectName=qpath;
     this->window->setWindowTitle(qpath.mid(qpath.lastIndexOf("/")+1).prepend("Rail & Slot Editor - "));
-
-    //this->window->setWindowTitle(qpath.mid(qpath.lastIndexOf("/")+1).prepend("Editor - "));
 
     input.close();
 
@@ -421,14 +401,10 @@ void Application::openLast(int index)
         {
             readProdLines = true;
             qstr = inputFile.readLine();
-            /*getline(inputFile,str);
-            qstr = QString().fromStdString(str);*/
         }
         else if (qstr.startsWith("Active manufacturer"))
         {
             readProdLines = false;
-            /*getline(inputFile,str);
-            activeProdLine.fromStdString(str);*/
             qstr = inputFile.readLine();
             activeProdLine=qstr;
         }
@@ -444,14 +420,12 @@ void Application::openLast(int index)
                 this->window->getSideBarWidget()->getProductLines()->addItem(qstr);
         }
 
-
-        //getline(inputFile,str);
-        //qstr = QString().fromStdString(str);
         qstr = inputFile.readLine();
     }
     this->window->getSideBarWidget()->getProductLines()->setCurrentText(activeProdLine);
     this->userPreferences->addProject(&qpath);
-    if (this->window->getWorkspaceWidget()->setCurrentState(inputFile)!=0)
+    int retVal = this->window->getWorkspaceWidget()->setCurrentState(inputFile);
+    if (retVal<0)
     {
         this->appData->setMessageDialogText(QString("The file \"%1\" could not be loaded. Some items are missing in your database.").arg(qpath),QString("Nepodařilo se načíst soubor \"%1\". Některé díly chybí ve vaší databázi.").arg(qpath));
         this->appData->getMessageDialog()->exec();
@@ -464,6 +438,17 @@ void Application::openLast(int index)
         this->window->getWorkspaceWidget()->resetWorkspace();
 
         return;
+    }
+    else if (retVal > 0)
+    {
+        this->appData->setMessageDialogText(QString("Error occured during loading of the file \"%1\".").arg(qpath),QString("Při načítání souboru \"%1\" došlo k chybě.").arg(qpath));
+        this->appData->getMessageDialog()->exec();
+
+        if (this->getUserPreferences()->getLocale()->startsWith("EN"))
+            this->window->statusBar()->showMessage("File was not loaded in the correct way.");
+        else
+            this->window->statusBar()->showMessage("Nepodařilo se správně načíst soubor.");
+        logFile << "ERROR: retVal=" << retVal << endl;
     }
     this->projectName=qpath;
     this->window->getSideBarWidget()->setInventoryState(inputFile);
@@ -495,18 +480,18 @@ void Application::newFile()
         else if (clicked==cancelB)
             return;
     }
-
+    logFile << "newFile will be created" << endl;
     this->getWindow()->getSideBarWidget()->resetSideBar();
+    logFile << "sideBar has been succesfully reset" << endl;
     this->getWindow()->getWorkspaceWidget()->resetWorkspace();
+    logFile << "workspace has been succesfully reset" << endl;
     this->projectName=QString("Untitled");
 
     QDialog * sceneSizeDialog = new QDialog(this->window);
     sceneSizeDialog->setWindowTitle("Set workspace dimensions");
     QFormLayout * sceneSizeLayout = new QFormLayout(sceneSizeDialog);
     QPushButton * confirm = new QPushButton("Confirm",sceneSizeDialog);
-    //QPushButton * discard = new QPushButton("Discard",sceneSizeDialog);
     connect(confirm,SIGNAL(released()),sceneSizeDialog,SLOT(accept()));
-    //connect(discard,SIGNAL(released()),sceneSizeDialog,SLOT(reject()));
 
     QLineEdit * wTextField = new QLineEdit("4000");
     QLineEdit * hTextField = new QLineEdit("3000");
@@ -556,9 +541,6 @@ void Application::saveModelInfo()
     if (!qpath.endsWith(".htm"))
         qpath.append(".htm");
 
-    //string path("outputFile.txt");
-
-    //outputFile.open;//.toStdString().c_str());
     if (qpath=="")
         return;
 
@@ -574,11 +556,18 @@ void Application::saveModelInfo()
         return;
     }
 
-    outputFile << QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n<html>\n<head>\n<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n<meta name=\"generator\" content=\"Rail & Slot Editor\">\n");
+
     if (this->getUserPreferences()->getLocale()->startsWith("EN"))
+    {
+        outputFile << QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n<html>\n<head>\n<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n<meta name=\"generator\" content=\"Rail & Slot Editor\">\n");
         outputFile << QString("<title>Rail & Slot Editor - Parts list</title>\n</head>\n<body>\n<table border=\"1\">\n");
+    }
     else
+    {
+        outputFile << QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n<html>\n<head>\n<meta http-equiv=\"content-type\" content=\"text/html; charset=windows-1250\">\n<meta name=\"generator\" content=\"Rail & Slot Editor\">\n");
         outputFile << QString("<title>Rail & Slot Editor - Seznam dílů</title>\n</head>\n<body>\n<table border=\"1\">\n");
+    }
+
 
     QAbstractItemModel * model = this->treeView->model();
 
@@ -627,13 +616,10 @@ void Application::savePreferences()
     for (int i = 0; i < 8;i++)
     {
         ptrs.push_back(((QFormLayout*)this->preferencesDialog->layout())->itemAt(i)->widget());
-        cout << ((QFormLayout*)this->preferencesDialog->layout())->itemAt(i)->widget()->metaObject()->className() << endl;
+        //cout << ((QFormLayout*)this->preferencesDialog->layout())->itemAt(i)->widget()->metaObject()->className() << endl;
     }
-    //QComboBox * ptr = ((QComboBox*)((QFormLayout*)this->preferencesDialog->layout())->itemAt(1));
-
     QString langStr = ((QComboBox*)this->preferencesDialog->layout()->itemAt(1)->widget())->currentText();
 
-    //bool chBChecked = ((QCheckBox*)((QFormLayout*)this->preferencesDialog->layout())->itemAt(1,QFormLayout::FieldRole))->isChecked();
     bool savePos = ((QCheckBox*)this->preferencesDialog->layout()->itemAt(3)->widget())->isChecked();
     bool largeIcons = ((QCheckBox*)this->preferencesDialog->layout()->itemAt(5)->widget())->isChecked();
 
@@ -686,10 +672,17 @@ void Application::saveInventory()
 
 }
 
+void Application::displayHelp()
+{
+    if (this->userPreferences->getLocale()->startsWith("EN"))
+        QDesktopServices::openUrl(this->applicationDirPath().append("/Rail & Slot Editor - Quick start.pdf"));
+    else
+        QDesktopServices::openUrl(this->applicationDirPath().append("/Rail & Slot Editor - Začínáme.pdf"));
+}
+
 int Application::setupUI()
 {
-    //bool result = false;
-    //result = this->window->setMainMenuBar(new QMenuBar(this->window));
+
     this->window->setMainMenuBar(new QMenuBar(this->window));
     this->window->setMenuBar(this->window->getMainMenuBar());
     this->window->setWindowTitle(QString("Rail & Slot Editor - %1").arg(this->projectName));
@@ -702,12 +695,9 @@ int Application::setupUI()
     QMenu * modelMenu = new QMenu("Model",this->window->getMainMenuBar());
     QMenu * aboutMenu = new QMenu("About", this->window->getMainMenuBar());
 
-
-
     QAction * newFileAction = new QAction(*this->appData->getNewFilePixmap(),"New Project",fileMenu);
     newFileAction->setShortcut(QKeySequence("Ctrl+N"));
     QAction * openFileAction = new QAction(*this->appData->getOpenFilePixmap(),"Open Project",fileMenu);
-    //openFileAction->setShortcut(QKeySequence(Qt::Key_Control + Qt::Key_O));
     openFileAction->setShortcut(QKeySequence("Ctrl+O"));
 
     QAction * saveFileAction = new QAction(*this->appData->getSaveFilePixmap(),"Save Project",fileMenu);
@@ -736,9 +726,6 @@ int Application::setupUI()
     signalMapper->setMapping(recent5,4);
     connect(signalMapper,SIGNAL(mapped(int)),this,SLOT(openLast(int)));
 
-
-    //QAction * closeFileAction = new QAction("Close project 'Filename'",fileMenu);
-    //closeFileAction->setShortcut(QKeySequence("Ctrl+W"));
     QAction * exportAction = new QAction("Export 2D graphic",fileMenu);
     QAction * saveInventoryAction = new QAction("Save inventory",fileMenu);
 
@@ -754,26 +741,23 @@ int Application::setupUI()
 
     redoAction->setShortcuts(l);
 
-///change pixmap getters!!!!!!!!!!!!!!!!!
-    QAction * repeatAction = new QAction(*this->getAppData()->getUndoPixmap(),"Insert last item again",editMenu);
+    QAction * repeatAction = new QAction(*this->getAppData()->getRepeatPixmap(),"Insert last item again",editMenu);
     repeatAction->setShortcut(QKeySequence("Space"));
 
-    QAction * copyAction = new QAction(*this->getAppData()->getUndoPixmap(),"Copy",editMenu);
+    QAction * copyAction = new QAction(*this->getAppData()->getCopyPixmap(),"Copy",editMenu);
     copyAction->setShortcut(QKeySequence("Ctrl+C"));
-    QAction * pasteAction = new QAction(*this->getAppData()->getUndoPixmap(),"Paste",editMenu);
+    QAction * pasteAction = new QAction(*this->getAppData()->getPastePixmap(),"Paste",editMenu);
     pasteAction->setShortcut(QKeySequence("Ctrl+V"));
-    QAction * cutAction = new QAction(*this->getAppData()->getUndoPixmap(),"Cut",editMenu);
+    QAction * cutAction = new QAction(*this->getAppData()->getCutPixmap(),"Cut",editMenu);
     cutAction->setShortcut(QKeySequence("Ctrl+X"));
-    QAction * deleteAction = new QAction(*this->getAppData()->getUndoPixmap(),"Delete",editMenu);
+    QAction * deleteAction = new QAction(*this->getAppData()->getDeletePixmap(),"Delete",editMenu);
     deleteAction->setShortcut(QKeySequence("Delete"));
-    QAction * preferencesAction = new QAction(*this->getAppData()->getUndoPixmap(),"Preferences",editMenu);
+    QAction * preferencesAction = new QAction(*this->getAppData()->getPreferencesPixmap(),"Preferences",editMenu);
 
 
     QAction * restrictedAction = new QAction("Restricted mode",modelMenu);
     QAction * manufactAction = new QAction("Mix manufacturers",modelMenu);
-    //QAction * addManuAction = new QAction(*this->getAppData()->getUndoPixmap(),"Add manufacturer",modelMenu);
-    //QAction * removeManuAction = new QAction(*this->getAppData()->getUndoPixmap(),"Remove manufacturer",modelMenu);
-    QAction * modelOverviewAction = new QAction(*this->getAppData()->getUndoPixmap(),"Model overview",modelMenu);
+    QAction * modelOverviewAction = new QAction(*this->getAppData()->getModelOverviewPixmap(),"Model overview",modelMenu);
     //QAction * glViewAction = new QAction(*this->getAppData()->getUndoPixmap(),"3D View",modelMenu);
     restrictedAction->setCheckable(true);
     manufactAction->setCheckable(true);
@@ -784,11 +768,8 @@ int Application::setupUI()
 
 
 
-    QAction * aboutAction = new QAction(*this->getAppData()->getUndoPixmap(),"About", aboutMenu);
-    QAction * helpAction = new QAction(*this->getAppData()->getUndoPixmap(),"Help", aboutMenu);
-
-    /*QAction * endPointToggleAction = new QAction(*this->getAppData()->getNewPointPixmap(),"Create end point",NULL);
-    endPointToggleAction->setCheckable(true);*/
+    QAction * aboutAction = new QAction(*this->getAppData()->getAboutPixmap(),"About", aboutMenu);
+    QAction * helpAction = new QAction(*this->getAppData()->getHelpPixmap(),"Help", aboutMenu);
 
     QAction * rotationToggleAction = new QAction(*this->getAppData()->getRotateToolPixmap(),"Rotation mode",NULL);
     rotationToggleAction->setCheckable(true);
@@ -807,20 +788,7 @@ int Application::setupUI()
 
     completeAction->setCheckable(true);
 
-    if (!this->userPreferences->getSmallIconsFlag())
-    {
-        undoAction->setIcon(QIcon(*this->getAppData()->getUndoPixmapL()));//->setIcon();
-        redoAction->setIcon(QIcon(*this->getAppData()->getRedoPixmapL()));
-        rotationToggleAction->setIcon(QIcon(*this->getAppData()->getRotateToolPixmapL()));
-        heightProfileDownAction->setIcon(QIcon(*this->getAppData()->getHeightProfileDownPixmapL()));
-        heightProfileToggleAction->setIcon(QIcon(*this->getAppData()->getHeightProfilePixmapL()));
-        heightProfileUpAction->setIcon(QIcon(*this->getAppData()->getHeightProfileUpPixmapL()));
-        bendAction->setIcon(QIcon(*this->getAppData()->getBendPixmapL()));
-        completeAction->setIcon(QIcon(*this->getAppData()->getCompletePixmapL()));
-    }
 
-
-    //this->window->setWindowTitle("Rail & Slot Editor");
 
 //other QActions
 
@@ -836,7 +804,6 @@ int Application::setupUI()
     fileMenu->addAction(saveAsAction);
     fileMenu->addMenu(recentFiles);
     fileMenu->addSeparator();
-    //fileMenu->addAction(closeFileAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exportAction);
     fileMenu->addAction(saveInventoryAction);
@@ -857,17 +824,12 @@ int Application::setupUI()
     modelMenu->addAction(restrictedAction);
     modelMenu->addAction(manufactAction);
     modelMenu->addSeparator();
-    //modelMenu->addAction(addManuAction);
-    //odelMenu->addAction(removeManuAction);
     modelMenu->addSeparator();
     modelMenu->addAction(modelOverviewAction);
     modelMenu->addSeparator();
-    //modelMenu->addAction(glViewAction);
 
     aboutMenu->addAction(aboutAction);
     aboutMenu->addAction(helpAction);
-
-
 
     this->window->getMainMenuBar()->addMenu(fileMenu);
     this->window->getMainMenuBar()->addMenu(editMenu);
@@ -939,10 +901,16 @@ int Application::setupUI()
     this->window->setMainToolBar(new QToolBar(this->window));
     this->window->addToolBar(this->window->getMainToolBar());
 
+    rotationToggleAction->setParent(this->window->getMainToolBar());
+    heightProfileToggleAction->setParent(this->window->getMainToolBar());
+    heightProfileUpAction->setParent(this->window->getMainToolBar());
+    heightProfileDownAction->setParent(this->window->getMainToolBar());
+    bendAction->setParent(this->window->getMainToolBar());
+    completeAction->setParent(this->window->getMainToolBar());
+
     this->window->getMainToolBar()->addAction(undoAction);
     this->window->getMainToolBar()->addAction(redoAction);
     this->window->getMainToolBar()->addSeparator();
-    //this->window->getMainToolBar()->addAction(endPointToggleAction);
     this->window->getMainToolBar()->addAction(rotationToggleAction);
     this->window->getMainToolBar()->addSeparator();
     this->window->getMainToolBar()->addAction(heightProfileToggleAction);
@@ -956,21 +924,15 @@ int Application::setupUI()
     this->window->setStatusBar(this->window->getMainStatusBar());
     this->window->getMainStatusBar()->showMessage("Welcome! Start by pressing \"Add\" button to import parts library.");
 
+    if (!this->userPreferences->getSmallIconsFlag())
+        this->window->getMainToolBar()->setIconSize(QSize(64,64));
 
     this->window->resize(700,500);
 
-    //this->window->setWorkspaceWidget(new WorkspaceWidget(this->window));
-
-
-    ///
-    ///
-    ///QFrame * central = new QFrame(this->window);
-    ///
-    ///
     QSplitter * central = new QSplitter(Qt::Horizontal,this->window);
 
     this->window->setCentralWidget(central);
-    ///QGridLayout * layout = new QGridLayout(central);
+
 
     QMenu * sideBarContextMenu = new QMenu(this->window);
     sideBarContextMenu->addAction(restrictedAction);
@@ -1013,6 +975,9 @@ int Application::setupUI()
     connect(openFileAction,SIGNAL(triggered()),this,SLOT(open()));
     connect(newFileAction,SIGNAL(triggered()),this,SLOT(newFile()));
 
+
+
+    connect(helpAction,SIGNAL(triggered()),this,SLOT(displayHelp()));
 
     QDialog * overviewDialog = new QDialog(this->window);
     QGridLayout * gridLayout = new QGridLayout(overviewDialog);
@@ -1228,7 +1193,16 @@ int Application::setupUI()
 
 
     }
+
+
+
+#ifdef Q_OS_LINUX
     this->window->setGeometry(0,0,this->userPreferences->getLastSize()->width(),this->userPreferences->getLastSize()->height());
+#endif
+#ifdef Q_OS_WIN
+    this->window->setGeometry(0,30,this->userPreferences->getLastSize()->width(),this->userPreferences->getLastSize()->height());
+#endif
+
 
     this->aboutDialog = new QDialog (this->window);
 
@@ -1255,6 +1229,7 @@ int Application::setupUI()
 
 Window::Window() : QMainWindow()
 {
+    logFile << "window constructor" << endl;
     this->mainContextMenu=NULL;
     this->mainMenuBar=NULL;
     this->mainStatusBar=NULL;
@@ -1395,6 +1370,7 @@ void Window::keyReleaseEvent(QKeyEvent *evt)
 
 AppData::AppData(QString &lang)
 {
+    logFile << "AppData constructor" << endl;
     this->database =new Database(lang);
 
 #ifdef Q_OS_LINUX
@@ -1412,31 +1388,32 @@ AppData::AppData(QString &lang)
 
 
     this->newFilePixmap = new QPixmap(QString("%1NewFile.png").arg(path));
-
     this->openFilePixmap = new QPixmap(QString("%1OpenFile.png").arg(path));
     this->saveFilePixmap = new QPixmap(QString("%1SaveFile.png").arg(path));
 
     this->undoPixmap = new QPixmap(QString("%1Undo.png").arg(path));
     this->redoPixmap = new QPixmap(QString("%1Redo.png").arg(path));
-    this->undoPixmapL = new QPixmap(QString("%1UndoL.png").arg(path));
-    this->redoPixmapL = new QPixmap(QString("%1RedoL.png").arg(path));
 
-    //this->newPointPixmap = new QPixmap(QString("%1NewPoint.png").arg(path));
     this->rotateToolPixmap = new QPixmap(QString("%1RotateTool.png").arg(path));
-    this->rotateToolPixmapL = new QPixmap(QString("%1RotateToolL.png").arg(path));
-
     this->heightProfilePixmap = new QPixmap(QString("%1HeightProfile.png").arg(path));
     this->heightProfileUpPixmap = new QPixmap(QString("%1HeightProfileUp.png").arg(path));
     this->heightProfileDownPixmap = new QPixmap(QString("%1HeightProfileDown.png").arg(path));
 
-    this->heightProfilePixmapL = new QPixmap(QString("%1HeightProfileL.png").arg(path));
-    this->heightProfileUpPixmapL = new QPixmap(QString("%1HeightProfileUpL.png").arg(path));
-    this->heightProfileDownPixmapL = new QPixmap(QString("%1HeightProfileDownL.png").arg(path));
-
     this->bendPixmap = new QPixmap(QString("%1Bend.png").arg(path));
     this->completePixmap =  new QPixmap(QString("%1Complete.png").arg(path));
-    this->bendPixmapL = new QPixmap(QString("%1BendL.png").arg(path));
-    this->completePixmapL = new QPixmap(QString("%1CompleteL.png").arg(path));
+
+    this->repeatPixmap =  new QPixmap(QString("%1Repeat.png").arg(path));
+
+    this->copyPixmap =  new QPixmap(QString("%1Copy.png").arg(path));
+    this->pastePixmap =  new QPixmap(QString("%1Paste.png").arg(path));
+    this->cutPixmap =  new QPixmap(QString("%1Cut.png").arg(path));
+    this->deletePixmap =  new QPixmap(QString("%1Delete.png").arg(path));
+
+    this->preferencesPixmap =  new QPixmap(QString("%1Preferences.png").arg(path));
+    this->modelOverviewPixmap =  new QPixmap(QString("%1ModelInfo.png").arg(path));
+
+    this->helpPixmap =  new QPixmap(QString("%1Help.png").arg(path));
+    this->aboutPixmap =  new QPixmap(QString("%1About.png").arg(path));
 
     logFile << "icons were loaded" << endl;
 
@@ -1449,95 +1426,53 @@ AppData::AppData(QString &lang)
     this->bendAndCloseMessage = new QErrorMessage();
 }
 
+AppData::~AppData()
+{
+    logFile << "~AppData " << this << endl;
+    delete this->database;
+}
+
 QPixmap * AppData::getNewFilePixmap() const
-{
-    return this->newFilePixmap;
-}
+{return this->newFilePixmap;}
 QPixmap * AppData::getOpenFilePixmap() const
-{
-    return this->openFilePixmap;
-}
+{return this->openFilePixmap;}
 QPixmap * AppData::getSaveFilePixmap() const
-{
-    return this->saveFilePixmap;
-}
+{return this->saveFilePixmap;}
 QPixmap * AppData::getUndoPixmap() const
-{
-    return this->undoPixmap;
-}
+{return this->undoPixmap;}
 QPixmap * AppData::getRedoPixmap() const
-{
-    return this->redoPixmap;
-}
-
-
+{return this->redoPixmap;}
 QPixmap *AppData::getRotateToolPixmap() const
-{
-    return this->rotateToolPixmap;
-}
-
+{return this->rotateToolPixmap;}
 QPixmap *AppData::getHeightProfilePixmap() const
-{
-    return this->heightProfilePixmap;
-}
-
+{return this->heightProfilePixmap;}
 QPixmap *AppData::getHeightProfileUpPixmap() const
-{
-    return this->heightProfileUpPixmap;
-}
-
+{return this->heightProfileUpPixmap;}
 QPixmap *AppData::getHeightProfileDownPixmap() const
-{
-    return this->heightProfileDownPixmap;
-}
-
+{return this->heightProfileDownPixmap;}
 QPixmap *AppData::getBendPixmap() const
-{
-    return this->bendPixmap;
-}
-
+{return this->bendPixmap;}
 QPixmap *AppData::getCompletePixmap() const
-{
-    return this->completePixmap;
-}
+{return this->completePixmap;}
+QPixmap * AppData::getRepeatPixmap() const
+{return this->repeatPixmap;}
 
-QPixmap * AppData::getUndoPixmapL() const
-{
-    return this->undoPixmapL;
-}
-QPixmap * AppData::getRedoPixmapL() const
-{
-    return this->redoPixmapL;
-}
-QPixmap *AppData::getRotateToolPixmapL() const
-{
-    return this->rotateToolPixmapL;
-}
-
-QPixmap *AppData::getHeightProfilePixmapL() const
-{
-    return this->heightProfilePixmapL;
-}
-
-QPixmap *AppData::getHeightProfileUpPixmapL() const
-{
-    return this->heightProfileUpPixmapL;
-}
-
-QPixmap *AppData::getHeightProfileDownPixmapL() const
-{
-    return this->heightProfileDownPixmapL;
-}
-
-QPixmap *AppData::getBendPixmapL() const
-{
-    return this->bendPixmapL;
-}
-
-QPixmap *AppData::getCompletePixmapL() const
-{
-    return this->completePixmapL;
-}
+QPixmap * AppData::getCopyPixmap() const
+{return this->copyPixmap;}
+QPixmap * AppData::getPastePixmap() const
+{return this->pastePixmap;}
+QPixmap * AppData::getCutPixmap() const
+{return this->cutPixmap;}
+QPixmap * AppData::getDeletePixmap() const
+{return this->deletePixmap;}
+QPixmap * AppData::getPreferencesPixmap() const
+{return this->preferencesPixmap;}
+QPixmap * AppData::getModelOverviewPixmap() const
+{return this->modelOverviewPixmap;}
+QPixmap * AppData::getHelpPixmap() const
+{return this->helpPixmap;}
+QPixmap * AppData::getAboutPixmap() const
+{return this->aboutPixmap;}
 
 Database * AppData::getDatabase()
 {
@@ -1551,29 +1486,62 @@ void AppData::setMessageDialogText(QString textEn, QString textCs)
     else
         this->messageDialog->setText(textCs);
 }
+QMessageBox *AppData::getMessageDialog()
+{
+    return this->messageDialog;
+}
+
+QErrorMessage *AppData::getErrorMessage()
+{
+    return this->bendAndCloseMessage;
+}
 
 Preferences::Preferences(QString *path)
 {
+    logFile << "Preferences constructor" << endl;
     this->actions=new QAction*[5];
 
     QFile file(*path);
     file.open(QFile::ReadOnly);
     this->preferencesPath=new QString(*path);
-    QTextStream fileStream(&file);
+    QString example("Lang=EN\nLastWindowSize=500x400\nDisplayHelpBendClose=1\nSmallIcons=1\nSaveScenePos=1\n");
+    example.append("LastFile1=\nLastFile2=\nLastFile3=\nLastFile4=\nLastFile5=\n");
+
+
+
     /*example preferences file
      *
-    Lang=EN
-    LastWindowSize=500x400
-    DisplayHelpBendClose=1
-    SmallIcons=1
-    SaveScenePos=1
-    LastFile1=
-    LastFile2=
-    LastFile3=
-    LastFile4=
-    LastFile5=
-
+    Lang=EN\n
+    LastWindowSize=500x400\n
+    DisplayHelpBendClose=1\n
+    SmallIcons=1\n
+    SaveScenePos=1\n
+    LastFile1=\n
+    LastFile2=\n
+    LastFile3=\n
+    LastFile4=\n
+    LastFile5=\n
     */
+
+    QTextStream fileStream(&file);
+    if (!file.isOpen())
+    {
+        logFile << "userPreferences couldn't be opened" << endl;
+
+        this->locale = new QString("EN");
+        this->lastWindowSize = new QSize(500,300);
+        this->displayHelpForBendAndClose=true;
+        this->smallIcons=true;
+        this->saveScenePos=true;
+        this->lastProjects=new QString*[5];
+        this->lastProjects[0]=new QString();
+        this->lastProjects[1]=new QString();
+        this->lastProjects[2]=new QString();
+        this->lastProjects[3]=new QString();
+        this->lastProjects[4]=new QString();
+
+    }
+
     QString str;
     int lastFilePos = 0;
     while (!fileStream.atEnd())
@@ -1629,10 +1597,6 @@ Preferences::Preferences(QString *path)
 
     }
 
-    ///...
-
-    ///...
-    //this->displayHelpForBendAndClose=true;
     file.close();
 
 }
@@ -1657,14 +1621,17 @@ Preferences::~Preferences()
     fileStream << "LastFile5="<< *this->lastProjects[4] << endl;
     file.close();
 
-    delete this->lastProjects[0];
-    delete this->lastProjects[1];
-    delete this->lastProjects[2];
-    delete this->lastProjects[3];
+    //delete this->lastProjects[0];
     delete this->lastProjects[4];
-    delete this->lastProjects;
+    delete this->lastProjects[3];
+    delete this->lastProjects[2];
+    delete this->lastProjects[1];
+    delete this->lastProjects[0];
     delete this->locale;
     delete this->lastWindowSize;
+    delete this->preferencesPath;
+    delete[] this->lastProjects;
+    delete[] this->actions;
 
 }
 
@@ -1709,15 +1676,7 @@ void Preferences::setSaveScenePosFlag(bool flag)
 }
 
 
-QMessageBox *AppData::getMessageDialog()
-{
-    return this->messageDialog;
-}
 
-QErrorMessage *AppData::getErrorMessage()
-{
-    return this->bendAndCloseMessage;
-}
 
 
 bool Preferences::getDisplayHelpBendAndClose() const

@@ -27,4 +27,5 @@ SOURCES += \
 
 QMAKE_CXXFLAGS += -Wextra -Wall -Werror
 
+
 QT += gui widgets

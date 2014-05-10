@@ -34,7 +34,7 @@ class GenericModelItem;
 class GraphicsPathItem : public QObject, public QGraphicsPathItem
 {
     Q_OBJECT
-    GraphicsPathItem * restrictedCountPath;
+    QGraphicsPathItem * restrictedCountPath;
     GenericModelItem * parentItem;
     QMenu * contextMenuSBW;
     QMenu * contextMenuWSW;
@@ -46,7 +46,7 @@ class GraphicsPathItem : public QObject, public QGraphicsPathItem
 public:
     GraphicsPathItem(GenericModelItem * item, QGraphicsItem * parent = 0);
     GraphicsPathItem(GenericModelItem * item, const QPainterPath & path, QGraphicsItem * parent = 0);
-    //~GraphicsPathItem();
+    ~GraphicsPathItem();
     bool contains( const QPointF & point ) const;
     QRectF boundingRect() const;
     QPainterPath shape() const;
@@ -77,7 +77,7 @@ protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
-    GraphicsPathItem * getRestrictedCountPath() const;
+    QGraphicsPathItem * getRestrictedCountPath() const;
 
 private slots:
     void updateItem();
@@ -130,8 +130,6 @@ public:
 /*
   GPI class contains graphic representation of the item and some additional information
 */
-
-//class GraphicsPathItemModelItem : public QObject, public QGraphicsPathItem
 class GraphicsPathItemModelItem : public GraphicsPathItem
 {
     Q_OBJECT
@@ -144,10 +142,7 @@ public:
     GraphicsPathItemModelItem(ModelItem * item, QGraphicsItem * parent = 0);
     GraphicsPathItemModelItem(ModelItem * item, const QPainterPath & path, QGraphicsItem * parent = 0);
     ~GraphicsPathItemModelItem();
-    /* bool contains( const QPointF & point ) const;
-    QRectF boundingRect() const;
-    QPainterPath shape() const;
-*/
+
     ModelItem * getParentItem();
     int type() const;
 
@@ -176,25 +171,14 @@ signals:
 class GraphicsPathItemBorderItem : public GraphicsPathItem //public QObject, public QGraphicsPathItem
 {
     Q_OBJECT
-/*    GraphicsPathItemBorderItem * restrictedCountPath;
-    BorderItem * parentItem;
-
-    QMenu * contextMenuSBW;
-    QMenu * contextMenuWSW;
-    QDialog * dialog;
-    QDialog * infoDialog;
-*/
     bool mousePressed;
 
     enum { Type = UserType + 3 };
 
 public:
     GraphicsPathItemBorderItem(BorderItem * item, QGraphicsItem * parent = 0);
-    //GraphicsPathItemBorderItem(BorderItem * item, const QPainterPath & path, QGraphicsItem * parent = 0);
     ~GraphicsPathItemBorderItem();
-    /*bool contains( const QPointF & point ) const;
-    QRectF boundingRect() const;
-    QPainterPath shape() const;*/
+
 
     BorderItem * getParentItem();
 
@@ -222,35 +206,19 @@ class VegetationItem;
 class GraphicsPathItemVegetationItem : public GraphicsPathItem// public QObject, public QGraphicsPathItem
 {
     Q_OBJECT
-    /*GraphicsPathItemVegetationItem * restrictedCountPath;
-    VegetationItem * parentItem;
-
-    QMenu * contextMenuSBW;
-    QMenu * contextMenuWSW;
-    QDialog * dialog;
-    QDialog * infoDialog;
-*/
     bool mousePressed;
 
     enum { Type = UserType + 4 };
 public:
     GraphicsPathItemVegetationItem(VegetationItem * item, QGraphicsItem * parent = 0);
-    //GraphicsPathItemVegetationItem(VegetationItem * item, const QPainterPath & path, QGraphicsItem * parent = 0);
-    /*bool contains( const QPointF & point ) const;
-    QRectF boundingRect() const;
-    QPainterPath shape() const;
-*/
+    ~GraphicsPathItemVegetationItem();
     VegetationItem *getParentItem();
-    /*void changeCountPath(unsigned int count);
-    int initDialog();
-    int initMenus();*/
     int type() const;
 protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    //void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 };
 
@@ -258,32 +226,20 @@ class ModelFragment;
 
 class BorderItem : public GenericModelItem
 {
-    /*QString * partNo;
-    QString * nameEn;
-    QString * nameCs;*/
     qreal dAlpha;
     qreal radius;
     QList <QPointF*> *endPoints;
     QList <ModelItem*> *neighbours;
 
-    //int availableCount;
-    //This flag is used as "innerBorderFlag" for curves and as "endingBorderFlag" for straights
+    ///This flag is used as "innerBorderFlag" for curves and as "endingBorderFlag" for straights
     bool innerBorder;
     bool deleteFlag;
 
-    /*GraphicsPathItemBorderItem * model2D;
-    GraphicsPathItemBorderItem * model2DNoText;
-
-    QWidget * parentWidget;
-    ProductLine * prodLine;*/
 
 public:
     BorderItem(QString &partNo, QString &nameEn, QString &nameCs, qreal dAlpha, qreal radius, QList<QPointF> &endPoints, bool innerBorder, ProductLine *prodLine, QWidget *parentWidg = 0);
     ~BorderItem();
 
-    /*QString * getPartNo() const;
-    QString * getNameEn() const;
-    QString * getNameCs() const;*/
     QPointF * getEndPoint(int index) const;
     int getEndPointsCount() const;
     qreal getAngle() const;
@@ -298,13 +254,6 @@ public:
 
     int generate2DModel(bool text);
 
-    /*unsigned int getAvailableCount() const;
-    void setAvailableCount(unsigned int count);
-    void incrAvailableCount();
-    void decrAvailableCount();
-
-    QWidget * getParentWidget() const;
-    ProductLine * getProdLine() const;*/
 
     ModelItem * getNeighbour(int index);
     ModelItem * getNeighbour(QPointF * pos);
@@ -322,15 +271,15 @@ public:
 
 class SlotTrackInfo
 {
-    /*
+    /**
      *slot track ModelItem logic:
      *-ModelItem.radius stores outer radius of model piece (including "road")
      *-ModelItem.radius2 stores inner radius of model piece (including "road")
      *-ModelItem.t stores type of part - curve/straight/curved crossing/straight crossing/straight chicane/some other special types (see ITEMTYPEENUMS_H)
-     *-SlotTrackInfo stores numberOfLanes (1/2/4/6/8/whatever number should work with large enough radius)
+     *-SlotTrackInfo stores numberOfLanes (1/2/4/6/8/any number should work with large enough radius)
      *-SlotTrackInfo.lanesGauge stores the distance between every two lanes, doesn't affect anything if numberOfLanes==1
      *-SlotTrackInfo.lanesGaugeEnd stores:
-     *      -if ModelItem.t==HE || HS then gauge of lanes at the end of the track piece
+     *      -if ModelItem.t==HE || HS || HC then gauge of lanes at the end of the track piece
      *      -if ModelItem.t==JM then gap distance
      *      -otherwise - stores the same number as lanesGauge attribute
      *-SlotTrackInfo.fstLaneDist stores the distance of the first "outer-most" lane
@@ -339,7 +288,7 @@ class SlotTrackInfo
     ModelItem * parentItem;
     unsigned int numberOfLanes;
     qreal lanesGauge;
-    qreal lanesGaugeEnd; //is used only for HS/HE parts - hairpin start-end straight item
+    qreal lanesGaugeEnd; ///is used only for HS/HE parts - hairpin start-end straight item
     qreal fstLaneDist;
     QList <BorderItem*> * borders;
     QList <QPointF*> * borderEndPoints;
@@ -369,24 +318,6 @@ public:
 
 class ModelItem : public GenericModelItem
 {
-/*
-    QString * partNo;
-    QString * nameEn;
-    QString * nameCs;
-    ////QPointF * startPoint;
-
-    unsigned int availableCount;
-
-    GraphicsPathItemModelItem * contourModel; //2D model displayed in sideBarWidget - text can't be child of model with no text, because then the label is selectable on its own
-    GraphicsPathItemModelItem * contourModelNoText;//and makes the clickable area much smaller
-
-    QGLWidget * glModel;///?????????????????
-
-    QWidget * parentWidget;//workspaceWidget or NULL - value is used for determining whether 2D Model is movable or not
-    ModelFragment * parentFragment; //parent fragment is used when items are clicked and dragged -> whole fragment "moves" (=calls move() of all items)
-    ProductLine * prodLine;//parent product line - each item should know prod. line which it belongs to - the "mixed manufacturers or not" mode is based on this pointer
-*/
-
     ModelFragment * parentFragment;
 
     ItemType t;
@@ -412,17 +343,6 @@ class ModelItem : public GenericModelItem
 
 
 public:
-    //use this constructor only if QWidget isn't inherited
-    //ModelItem(QString * partNumber, QString * partNameEn, QString * partNameCs,
-    //        QPointF * start, QPointF * end ,qreal degree, qreal turnRadius,
-    //        void * appPointer, QWidget * parentWidg = 0 ,QGraphicsItem * contourParent = 0);
-
-
-    ////modify constructor - no start & end points, but ref to QList
-    ModelItem(QString & partNumber, QString & partNameEn, QString & partNameCs,
-              QPointF & start, QPointF & end ,qreal degree,
-              qreal turnRadius, qreal width, qreal height, ProductLine * prodLine, QWidget * parentWidg = 0);
-
     ModelItem(QString & partNumber, QString & partNameEn, QString & partNameCs,
               QList<QPointF> & endPoints ,QList<qreal> angles, qreal turnRadius,
               qreal width, qreal height, ItemType type, ProductLine * prodLine, QWidget * parentWidg = 0);
@@ -432,10 +352,6 @@ public:
     bool getDeleteFlag() const;
     void setDeleteFlag();
 
-    /*QString * getPartNo() const;
-    QString * getNameEn() const;
-    QString * getNameCs() const;*/
-    ////QPointF * getStartPoint() const;
     QPointF * getEndPoint(int index = 1) const;
     QPointF * getEndPoint(ModelItem * neighbour) const;
     qreal getTurnAngle(int index = 1) const;
@@ -449,41 +365,38 @@ public:
     GraphicsPathItemModelItem * get2DModelNoText() const;
     int set2DModelNoText(GraphicsPathItemModelItem * model);
 
+    /**
+     * @brief generate2DModel - generates vector model of the item
+     * @param text - specifies whether the value of "partNo" attribute will be rendered
+     * @return
+     */
     int generate2DModel(bool text);
-
-    /*unsigned int getAvailableCount() const;
-    void setAvailableCount(unsigned int count);
-    void incrAvailableCount();
-    void decrAvailableCount();*/
 
     ItemType getType() const;
 
-    /*QWidget * getParentWidget() const;
-    ProductLine * getProdLine() const;*/
     ModelFragment * getParentFragment() const;
     int setParentFragment(ModelFragment * frag);
 
     void rotate (qreal angle);
     void rotate (qreal angle,QPointF * center, bool printCommand = false);
 
-
     void moveBy(qreal dx, qreal dy);
     qreal getSecondRadius() const;
-    /**
-      change name to rad2
-    */
+
     void setSecondRadius (qreal radi2);
 
+    /**
+     * @brief adjustHeightProfile - normal behaviour is that it sets the height of this item and of its neighbour(s)
+     * @param dz
+     * @param point
+     * @param printCommand
+     * @param adjustOnlyThis - if true, adjusts only one point of this item - neither other points (i.e. for turnout parts) nor neighbours are affected
+     * @return
+     */
     int adjustHeightProfile(int dz, QPointF * point, bool printCommand = true, bool adjustOnlyThis = false);//, bool ignoreRecursionStopper = false);
     void updateEndPointsHeightGraphics(bool forceUpdate = false);
     int getHeightProfileAt(QPointF * point);
     void setLateralAngle(qreal angle);
-
-
-
-    //check if it is necessary
-    //void moveLabel(QPointF * point);
-
 
     int getEndPointIndex(QPointF * pt);
 
@@ -496,6 +409,12 @@ public:
     ModelItem * getNeighbour(int index);
     ModelItem * getNeighbour(QPointF * pos);
 
+    /**
+     * @brief setNeighbour sets the neighbour of this item, neighbour is NOT set if its delete flag == true
+     * @param neighbour
+     * @param index
+     * @return
+     */
     int setNeighbour(ModelItem * neighbour, int index);
     int setNeighbour(ModelItem * neighbour, QPointF * pos);
 
@@ -514,34 +433,20 @@ public:
 
     qreal getMaxFlex() const;
 
-protected:
-
-    //void mousePressEvent(QMouseEvent *);
 };
 class VegetationItem : public GenericModelItem
 {
-    /*QString * partNo;
-    QString * nameEn;
-    QString * nameCs;*/
     QString * season;
-    /*int availableCount;
-    GraphicsPathItemVegetationItem * model2D;
-    GraphicsPathItemVegetationItem * model2DNoText;
-*/
 
     qreal itemWidth;
     qreal itemHeight;
 
     qreal currentRotation;
 
-    /*QWidget * parentWidget;
-    ProductLine * prodLine;*/
 public:
     VegetationItem(QString& partNo, QString& nameEn, QString& nameCs, QString& season, qreal width, qreal height, ProductLine * prodLine, QWidget * parentWidget = 0);
     ~VegetationItem();
-    /*QString * getPartNo() const;
-    QString * getNameEn() const;
-    QString * getNameCs() const;*/
+
     qreal getItemWidth() const;
     qreal getItemHeight() const;
     qreal getRotation() const;
@@ -554,14 +459,6 @@ public:
     int set2DModelNoText(GraphicsPathItemVegetationItem *model);
 
     int generate2DModel(bool text);
-
-    /*unsigned int getAvailableCount() const;
-    void setAvailableCount(unsigned int count);
-    void incrAvailableCount();
-    void decrAvailableCount();
-
-    QWidget * getParentWidget() const;
-    ProductLine * getProdLine() const;*/
 
     void rotate (qreal angle);
     void rotate (qreal angle,QPointF * center, bool printCommand= true);
@@ -590,9 +487,9 @@ class ProductLine
     //it will keep time complexity near O(1) when the inventory is being saved
 
 public:
-    //ProductLine(QString * pLName, QString * pLScale, bool type, QString * filePath);
     ProductLine(QString &name,QString &scale, ScaleEnum s, QString &gauge, bool type, QList<ModelItem*> &items);
     ProductLine(QString &name,QString &scale, ScaleEnum s, QString &gauge, bool type);
+    ~ProductLine();
     QString * getName() const;
     QString * getScale() const;
     ScaleEnum getScaleEnum() const;
@@ -615,15 +512,9 @@ public:
 
     qreal getMaxStraight() const;
 
-    //int generate2DModels();
-    //int generate3DModels();
-
 };
 
-class ModelFragment// : public QWidget //inherits from QWidget, because QWidget is used as a parent of QGrItem-s
-                                           //thus when QGrItem is clicked and dragged this QWidg. is being moved
-                        //doesnt inherit anything - has "move" method which can be called by any part of fragment on its click
-        //: public QGraphicsView///...Scene?  /// QWidget ///QPainter??
+class ModelFragment
 {
     QList <ModelItem*> * fragmentItems;
     QList<ProductLine*> * lines;
@@ -638,20 +529,19 @@ class ModelFragment// : public QWidget //inherits from QWidget, because QWidget 
 
     int fragmentID;
 
-    //friend WorkspaceWidget;
-
 public:
-    ////add new constructor without startPt
-    ModelFragment();
-    //ModelFragmentWidget(ModelItem* item, ProductLine* line, QPointF * startPt,QList<QPointF *> *endPts,QList<qreal> * endPtAngles);
     ModelFragment(ModelItem* item);
-    //ModelFragmentWidget(ModelFragmentWidget * mfw);
 
     ~ModelFragment();
 
-    void setID(int id); //this method may be called ONLY in WorkspaceWidget::addFragment()
+    void setID(int id);
     int getID() const;
 
+    /**
+     * @brief findEndPointItem - try to find the item which is the endPointItem of this track section
+     * @param approxPos - is set to exact position if the item is found
+     * @return - found item or NULL
+     */
     ModelItem * findEndPointItem(QPointF * approxPos);
 
     QList <ModelItem*> * getFragmentItems() const;
@@ -661,36 +551,67 @@ public:
     QList<qreal> * getEndPointsAngles() const;
     QList<ModelItem*> * getEndPointsItems() const;
 
-    int addFragmentItems(QList <ModelItem*> * listToAppend);
+    /**
+     * @brief addFragmentItem - insert item into this fragment. Item is connected by its endpoint at [0] and it is connected
+     *                          at "point" parameter. Method moves and rotates the item, sets the neighbours and the height
+     * @param item
+     * @param point
+     * @param insertionIndex
+     * @return
+     */
     int addFragmentItem(ModelItem* item, QPointF * point, int insertionIndex = 0);
 
-    //return-value -1 means that item is the only item of fragment and whole fragment should be deleted by workspacewidget
-    int deleteFragmentItem(ModelItem * item, QList<int>* idList = NULL);
-    /* pseudocode:
-     * ModelItem * toDelete = item;
-     * List * pointsOfDeleted = item.endPoints
-     * for i < this.fragmentItems.count do
-     *      for j < this.fragmentItems.at[i].endPoints.count() do
-     *          for k < pointsOfDeleted.count() do
-     *              if (*pointsOfDeleted[k] circa equals to *this.fragmentItems.at[i].endPoints[j])
-     *                  continuity isn't preserved by deleting => split fragment into pointsOfDeleted.count() fragments
-    */
 
-    int setStartPoint(QPointF * pt);
-    //int addEndPoints (QList<QPointF *> * listToAppend);
+    /**
+     * @brief deleteFragmentItem - separate item from the rest of the track, then call rebuildFragment()
+     *                              to build one or two new fragments
+     * @param item
+     * @param idList - is used in undo/redo functions - undo-redo-undo-redo... sequence wouldn't work
+     *                  because there wouldnt be the same ids anymore - see WorkspaceWidget::commandExecution() for details
+     * @return
+     */
+    int deleteFragmentItem(ModelItem * item, QList<int>* idList = NULL);
+
+    /**
+     * @brief addEndPoint - add endpoint into this modelFragment
+     * @param pt
+     * @param additionalInfo - if it is false, just coordinate is added
+     * @param rotation
+     * @param endPointItem
+     * @return
+     */
     int addEndPoint (QPointF* pt, bool additionalInfo = false, qreal rotation = 0, ModelItem * endPointItem = NULL);
     int removeEndPoint (QPointF *&pt);
-    //int removeEndPoint (int index);
+
     int setEndPointAngle(QPointF * pt, qreal angle);
     int setEndPointAngle(int index, qreal angle);
 
+    /**
+     * @brief showInfoDialog - shows dialog containing information about this track section
+     * @return
+     */
     int showInfoDialog();
     int initInfoDialog();
 
+    /**
+     * @brief moveBy - move all fragment items
+     * @param dx
+     * @param dy
+     */
     void moveBy(qreal dx, qreal dy);
+
+    /**
+     * @brief rotate - rotate all fragment items
+     * @param angle
+     * @param center
+     */
     void rotate(qreal angle, QPointF * center);
 
-    bool leftSide(ModelItem *item, ModelItem *&firstItemWith180Diff);
+    /**
+     * @brief updateEndPointsGraphics - position of endPointsGraphics' items is updated
+     *
+     */
+    void updateEndPointsGraphics();
 
 };
 /**
@@ -705,7 +626,6 @@ public:
 void makeNewItem(QPointF eventPos, GraphicsPathItemModelItem * gpi, ModelItem * parentItem, ModelItem * toMake, bool key);
 void makeNewBorder(BorderItem *item);
 VegetationItem * makeNewVegetation(VegetationItem * item);
-void recursivelyAdd(ModelItem * item, ModelFragment * fragment, QPointF *pt);
 void rebuildFragment(ModelItem * startItem, ModelFragment * fragment);
 
 

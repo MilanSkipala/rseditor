@@ -26,9 +26,12 @@
 #include <QSpinBox>
 #include "partsRelated.h"
 
-//is it ok that HPI inherits QObject && QGPI?
 class HeightPathItem : public QObject, public QGraphicsPathItem
 {
+    /*
+     *This class is used only in slot track ModelItem's
+     *It enables user to adjust height of the item in more advanced way - longitudinal and lateral climb can be set
+     */
     Q_OBJECT
     ModelItem * parentItem;
     QDialog * slotTrackDialog;

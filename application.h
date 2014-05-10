@@ -30,19 +30,12 @@
 
 class Database;
 /*
- * unified system of classes' and attributes' names - myTitle____, where ____ equals to Qclass name without 'Q'
- * all classes have atributes of pointer types (or list of pointers)ž
+ * system of classes' and attributes' names - myTitle____, where ____ equals to Qclass name without 'Q'
+ * all classes have atributes of pointer types (or list of pointers)
  */
 
 
-/*
- *WorkspaceWidget inherits from QScrollArea
- *contains
- *-QGraphicsView
- *-list of QGraphicsScenes - modelFragments; each fragment consisting of QPainterPaths Items
- */
-
-class AppData /// ����-NOT ENOUGH PIXMAPS-����
+class AppData
 {
     QPixmap * newFilePixmap;
     QPixmap * openFilePixmap;
@@ -55,19 +48,18 @@ class AppData /// ����-NOT ENOUGH PIXMAPS-����
     QPixmap * heightProfileDownPixmap;
     QPixmap * bendPixmap;
     QPixmap * completePixmap;
+    QPixmap * repeatPixmap;
 
-    QPixmap * undoPixmapL;
-    QPixmap * redoPixmapL;
-    QPixmap * rotateToolPixmapL;
-    QPixmap * heightProfilePixmapL;
-    QPixmap * heightProfileUpPixmapL;
-    QPixmap * heightProfileDownPixmapL;
-    QPixmap * bendPixmapL;
-    QPixmap * completePixmapL;
+    QPixmap * copyPixmap;
+    QPixmap * pastePixmap;
+    QPixmap * cutPixmap;
+    QPixmap * deletePixmap;
 
+    QPixmap * preferencesPixmap;
+    QPixmap * modelOverviewPixmap;
 
-
-    /// ...
+    QPixmap * helpPixmap;
+    QPixmap * aboutPixmap;
 
 
     Database * database;
@@ -76,10 +68,9 @@ class AppData /// ����-NOT ENOUGH PIXMAPS-����
 
     QErrorMessage * bendAndCloseMessage;
 
-    //QString * lastProjects[5];
-
 public:
     AppData(QString &lang);
+    ~AppData();
     QPixmap * getNewFilePixmap() const;
     QPixmap * getOpenFilePixmap() const;
     QPixmap * getSaveFilePixmap() const;
@@ -91,16 +82,18 @@ public:
     QPixmap * getHeightProfileDownPixmap() const;
     QPixmap * getBendPixmap() const;
     QPixmap * getCompletePixmap() const;
-    QPixmap * getUndoPixmapL() const;
-    QPixmap * getRedoPixmapL() const;
-    QPixmap * getRotateToolPixmapL() const;
-    QPixmap * getHeightProfilePixmapL() const;
-    QPixmap * getHeightProfileUpPixmapL() const;
-    QPixmap * getHeightProfileDownPixmapL() const;
-    QPixmap * getBendPixmapL() const;
-    QPixmap * getCompletePixmapL() const;
-    /// ...
+    QPixmap * getRepeatPixmap() const;
 
+    QPixmap * getCopyPixmap() const;
+    QPixmap * getPastePixmap() const;
+    QPixmap * getCutPixmap() const;
+    QPixmap * getDeletePixmap() const;
+
+    QPixmap * getPreferencesPixmap() const;
+    QPixmap * getModelOverviewPixmap() const;
+
+    QPixmap * getHelpPixmap() const;
+    QPixmap * getAboutPixmap() const;
 
     Database * getDatabase();
 
@@ -108,9 +101,6 @@ public:
     QMessageBox * getMessageDialog();
 
     QErrorMessage * getErrorMessage();
-
-    //QString ** getLastProjects();
-    //void addProject(QString * projName);
 
 };
 
@@ -126,7 +116,6 @@ class Window : public QMainWindow
 
 public:
     Window();
-    //~Window();
     QMenu * getMainContextMenu()  ;
     QMenuBar * getMainMenuBar()  ;
     QStatusBar * getMainStatusBar()  ;
@@ -160,8 +149,7 @@ class Preferences
     bool displayHelpForBendAndClose;
     bool smallIcons;
     bool saveScenePos;
-    ///...
-    ///...
+
 public:
     Preferences(QString * path);
     ~Preferences();
@@ -186,18 +174,12 @@ public:
     void setDisplayHelpBendAndClose(bool val);
 };
 
-//probably should exist as a global variable (then you can remove some db and other pointers)
-/* APPLICATION REQUIRES:
- * -Qt5 installed
- * -/etc/RSEditor/userpref.conf
- * or ./data/... on Windows
- */
-class Application : public QApplication //IMPLEMENTATION COMPLETE
+class Application : public QApplication
 {
     Q_OBJECT
-    Window * window; //dealloc?
-    Preferences * userPreferences;//dealloc!
-    AppData * appData;//dealloc!
+    Window * window;
+    Preferences * userPreferences;
+    AppData * appData;
     bool restrictedInventoryMode;
     bool allowMixedProductLines;
     QString projectName;
@@ -210,7 +192,6 @@ class Application : public QApplication //IMPLEMENTATION COMPLETE
     QDialog * aboutDialog;
 
 public:
-    //Application(Window * wind,String * userPref, AppData * appDt, bool invMode);
     /*
       Application constructor - doesn't need any arguments, all paths are known.
       Application starts with full database but empty combobox of "active manufacturers"
@@ -243,6 +224,7 @@ public slots:
     void saveModelInfo();
     void savePreferences();
     void saveInventory();
+    void displayHelp();
 
 };
 
