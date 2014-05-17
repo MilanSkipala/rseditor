@@ -24,9 +24,7 @@
 
 
 
-Bezier::Bezier()
-{
-}
+Bezier::Bezier() {}
 
 Bezier::Bezier(const QPointF &pt1, const QPointF &pt2, const QPointF &pt3, const QPointF &pt4)
 {

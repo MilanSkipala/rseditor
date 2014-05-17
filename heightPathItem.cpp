@@ -195,7 +195,7 @@ void HeightPathItem::adjustHeightOfParentItem()
     {
 
 
-        int latClimb = this->latSpinBox->value();///-this->lastLatSBValue;
+        int latClimb = this->latSpinBox->value();
 
         QPointF point;
         QPointF point2(abs(this->parentItem->getRadius())-this->parentItem->getSlotTrackInfo()->getFstLaneDist(),0);

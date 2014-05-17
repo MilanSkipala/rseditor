@@ -29,7 +29,9 @@ class WorkspaceWidget;
 class ProductLine;
 class ModelItem;
 class BorderItem;
+class VegetationItem;
 class GenericModelItem;
+class ModelFragment;
 
 class GraphicsPathItem : public QObject, public QGraphicsPathItem
 {
@@ -56,7 +58,6 @@ public:
     /**
       method changeCountPath deletes old QGraphicsPathItem representing count of available parts
       and creates new QGPI.
-      Parameter radius is used for computation of QGPI's position
     */
     void changeCountPath(unsigned int count);
 
@@ -84,7 +85,6 @@ private slots:
 
 };
 
-
 class GenericModelItem
 {
     QString * partNo;
@@ -109,8 +109,14 @@ public:
     GraphicsPathItem * get2DModelNoText() const;
     int set2DModelNoText(GraphicsPathItem * model);
 
+    /**
+     * @brief generate2DModel - creates vector model of the item. The look of the model is determined from the item characteristic data (-> loaded from the database)
+     * @param text - render partNo or not
+     * @return
+     */
     virtual int generate2DModel(bool text) = 0;
 
+    /** following four methods are needed for correct function of "restricted inventory mode" */
     unsigned int getAvailableCount() const;
     void setAvailableCount(unsigned int count);
     void incrAvailableCount();
@@ -122,14 +128,9 @@ public:
     virtual void rotate (qreal angle) = 0;
     virtual void rotate (qreal angle,QPointF * center, bool printCommand = false) = 0;
 
-
     virtual void moveBy(qreal dx, qreal dy) = 0;
 };
 
-
-/*
-  GPI class contains graphic representation of the item and some additional information
-*/
 class GraphicsPathItemModelItem : public GraphicsPathItem
 {
     Q_OBJECT
@@ -168,7 +169,7 @@ signals:
     void hpiDialogExec(QGraphicsSceneMouseEvent*evt);
 };
 
-class GraphicsPathItemBorderItem : public GraphicsPathItem //public QObject, public QGraphicsPathItem
+class GraphicsPathItemBorderItem : public GraphicsPathItem
 {
     Q_OBJECT
     bool mousePressed;
@@ -198,12 +199,12 @@ protected:
     */
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+
 
 };
 
-class VegetationItem;
-
-class GraphicsPathItemVegetationItem : public GraphicsPathItem// public QObject, public QGraphicsPathItem
+class GraphicsPathItemVegetationItem : public GraphicsPathItem
 {
     Q_OBJECT
     bool mousePressed;
@@ -221,8 +222,6 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 };
-
-class ModelFragment;
 
 class BorderItem : public GenericModelItem
 {
@@ -434,6 +433,7 @@ public:
     qreal getMaxFlex() const;
 
 };
+
 class VegetationItem : public GenericModelItem
 {
     QString * season;
@@ -467,7 +467,6 @@ public:
     void moveBy(qreal dx, qreal dy, bool printCommand);
 
 };
-
 
 class ProductLine
 {
@@ -614,6 +613,7 @@ public:
     void updateEndPointsGraphics();
 
 };
+
 /**
  * @brief makeNewItem creates new instance of ModelItem based on the parameters and either creates new fragment or inserts the new instance
  * into the current active fragment

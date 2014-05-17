@@ -18,6 +18,7 @@
 
 */
 
+#include <QFormLayout>
 #include <QScrollBar>
 #include "sideBarWidget.h"
 #include "globalVariables.h"
@@ -136,10 +137,10 @@ void SideBarWidget::paintEvent(QPaintEvent *evt)
 }
 
 void SideBarWidget::showAddDialog()
-{this->addDialog->exec();}
+{this->listWidget->clearSelection();this->addDialog->exec();}
 
 void SideBarWidget::showDelDialog()
-{this->delDialog->exec();}
+{this->listWidgetD->clearSelection();this->delDialog->exec();}
 
 void SideBarWidget::closeAddDialog()
 {this->addDialog->close();}
@@ -205,7 +206,7 @@ QDialog * SideBarWidget::initAddDialog()
 {
     QDialog * d = new QDialog(this);
     d->setWindowTitle("Add manufacturer");
-    QVBoxLayout * l = new QVBoxLayout(d);
+    QFormLayout * l = new QFormLayout(d);
 
     this->listWidget = new QListWidget(d);
 
@@ -221,11 +222,10 @@ QDialog * SideBarWidget::initAddDialog()
         this->listWidget->addItem(item);
         iter++;
     }
-    l->addWidget(this->listWidget);
+    l->addRow(this->listWidget);
 
     QPushButton * pb = new QPushButton("Add selected");
     QPushButton * pb2 = new QPushButton("Close");
-    //if (!app->getUserPreferences()->getLocale()->startsWith("EN"))
     if (this->addButton->statusTip().startsWith("Přidat"))
     {
         pb->setText("Přidat vybrané");
@@ -234,8 +234,7 @@ QDialog * SideBarWidget::initAddDialog()
     connect(pb2,SIGNAL(clicked()),this,SLOT(closeAddDialog()));
     connect(pb,SIGNAL(clicked()),this,SLOT(importSelection()));
 
-    l->addWidget(pb);
-    l->addWidget(pb2);
+    l->addRow(pb2,pb);
     d->setLayout(l);
     return d;
 }
@@ -246,7 +245,7 @@ QDialog * SideBarWidget::initDelDialog()
 {
     QDialog * d = new QDialog(this);
     d->setWindowTitle("Remove manufacturer");
-    QVBoxLayout * l = new QVBoxLayout(d);
+    QFormLayout * l = new QFormLayout(d);
 
     this->listWidgetD = new QListWidget(d);
 
@@ -262,7 +261,7 @@ QDialog * SideBarWidget::initDelDialog()
         this->listWidgetD->addItem(item);
         iter++;
     }
-    l->addWidget(this->listWidgetD);
+    l->addRow(this->listWidgetD);
 
     QPushButton * pb = new QPushButton("Remove selected");
     QPushButton * pb2 = new QPushButton("Close");
@@ -274,8 +273,7 @@ QDialog * SideBarWidget::initDelDialog()
     connect(pb2,SIGNAL(clicked()),this,SLOT(closeDelDialog()));
     connect(pb,SIGNAL(clicked()),this,SLOT(deleteSelection()));
 
-    l->addWidget(pb);
-    l->addWidget(pb2);
+    l->addRow(pb2,pb);
     d->setLayout(l);
     return d;
     return NULL;

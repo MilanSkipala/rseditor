@@ -32,7 +32,7 @@
 Application::Application(int argc, char ** argv) : QApplication(argc, argv)
 {
     logFile << "Application constructor" << endl;
-    QString * userPref = new QString(qApp->applicationDirPath()); // load data from userpref.conf
+    QString * userPref = new QString(qApp->applicationDirPath()); // load data from user.pref
 
 #ifdef Q_OS_LINUX
     userPref->append("/RSEditor/user.pref");
@@ -73,25 +73,15 @@ Application::~Application()
 }
 
 Window * Application::getWindow()
-{
-    return this->window;
-}
+{return this->window;}
 Preferences * Application::getUserPreferences()
-{
-    return this->userPreferences;
-}
+{return this->userPreferences;}
 AppData * Application::getAppData()
-{
-    return this->appData;
-}
+{return this->appData;}
 bool Application::getRestrictedInventoryMode()
-{
-    return this->restrictedInventoryMode;
-}
+{return this->restrictedInventoryMode;}
 bool Application::getAllowMixedProductLines()
-{
-    return this->allowMixedProductLines;
-}
+{return this->allowMixedProductLines;}
 
 bool Application::setAppData(AppData * d)
 {
@@ -103,14 +93,10 @@ bool Application::setAppData(AppData * d)
 }
 
 void Application::showModelInfo()
-{
-    this->modelInfoDialog->show();
-}
-
+{this->modelInfoDialog->show();}
 QTreeView *Application::getTreeView()
-{
-    return this->treeView;
-}
+{return this->treeView;}
+
 bool Application::setRestrictedInventoryMode(bool mode)
 {
     this->restrictedInventoryMode=mode;
@@ -675,9 +661,10 @@ void Application::saveInventory()
 void Application::displayHelp()
 {
     if (this->userPreferences->getLocale()->startsWith("EN"))
-        QDesktopServices::openUrl(this->applicationDirPath().append("/Rail & Slot Editor - Quick start.pdf"));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(this->applicationDirPath().append("/Rail & Slot Editor - Quick start.pdf")));
     else
-        QDesktopServices::openUrl(this->applicationDirPath().append("/Rail & Slot Editor - Začínáme.pdf"));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(this->applicationDirPath().append("/Rail & Slot Editor - Začínáme.pdf")));
+    logFile << "displayHelp()" << endl;
 }
 
 int Application::setupUI()
@@ -1160,9 +1147,14 @@ int Application::setupUI()
         langCombo->addItem("EN - English");
         langCombo->addItem("CS - Czech");
         if (this->userPreferences->getLocale()->contains("EN"))
+        {
             prefLayout->addRow("Select language", langCombo);
+        }
         else
+        {
             prefLayout->addRow("Vyberte jazyk", langCombo);
+
+        }
 
         QCheckBox * chbSave = new QCheckBox(prefDialog);
         chbSave->setChecked(this->userPreferences->getSaveScenePosFlag());
@@ -1179,6 +1171,9 @@ int Application::setupUI()
             prefLayout->addRow("Display small icons in menu",chbIcons);
         else
             prefLayout->addRow("Zobraz menší ikony v menu",chbIcons);
+
+        prefLayout->addRow(new QLabel("UPOZORNĚNÍ: Aby se projevily změny jazykového nastavení, je nutné restartovat aplikaci"));
+        prefLayout->addRow(new QLabel("NOTE: You have to restart the application to apply language settings"));
 
         prefLayout->addRow(discard,saveChanges);
 
@@ -1310,9 +1305,6 @@ bool Window::setSideBarWidget(SideBarWidget * sb)
 }
 void Window::contextMenuEvent(QContextMenuEvent * evt)
 {
-    //QMainWindow::contextMenuEvent(evt);
-    ///^^-causes problems - why?
-
     this->getMainContextMenu()->popup(evt->globalPos());
 }
 void Window::keyPressEvent(QKeyEvent * evt)
@@ -1360,13 +1352,6 @@ void Window::resizeEvent(QResizeEvent * evt)
     if (app!=NULL)
         app->getUserPreferences()->setLastSize(&evt->size());
 }
-
-/*
-void Window::keyReleaseEvent(QKeyEvent *evt)
-{
-    app->postEvent(this->workspace,evt);
-}
-*/
 
 AppData::AppData(QString &lang)
 {
@@ -1456,7 +1441,6 @@ QPixmap *AppData::getCompletePixmap() const
 {return this->completePixmap;}
 QPixmap * AppData::getRepeatPixmap() const
 {return this->repeatPixmap;}
-
 QPixmap * AppData::getCopyPixmap() const
 {return this->copyPixmap;}
 QPixmap * AppData::getPastePixmap() const
@@ -1473,11 +1457,8 @@ QPixmap * AppData::getHelpPixmap() const
 {return this->helpPixmap;}
 QPixmap * AppData::getAboutPixmap() const
 {return this->aboutPixmap;}
-
 Database * AppData::getDatabase()
-{
-    return this->database;
-}
+{return this->database;}
 
 void AppData::setMessageDialogText(QString textEn, QString textCs)
 {
@@ -1487,14 +1468,9 @@ void AppData::setMessageDialogText(QString textEn, QString textCs)
         this->messageDialog->setText(textCs);
 }
 QMessageBox *AppData::getMessageDialog()
-{
-    return this->messageDialog;
-}
-
+{return this->messageDialog;}
 QErrorMessage *AppData::getErrorMessage()
-{
-    return this->bendAndCloseMessage;
-}
+{return this->bendAndCloseMessage;}
 
 Preferences::Preferences(QString *path)
 {
@@ -1539,6 +1515,7 @@ Preferences::Preferences(QString *path)
         this->lastProjects[2]=new QString();
         this->lastProjects[3]=new QString();
         this->lastProjects[4]=new QString();
+
 
     }
 
@@ -1636,64 +1613,29 @@ Preferences::~Preferences()
 }
 
 QString *Preferences::getLocale()
-{
-    return this->locale;
-}
-
+{return this->locale;}
 void Preferences::setLocale(QString *lang)
-{
-    *this->locale=*lang;
-}
-
+{*this->locale=*lang;}
 QSize *Preferences::getLastSize()
-{
-    return this->lastWindowSize;
-}
-
+{return this->lastWindowSize;}
 void Preferences::setLastSize(const QSize *winSize)
-{
-    *this->lastWindowSize=*winSize;
-}
-
+{*this->lastWindowSize=*winSize;}
 bool Preferences::getSmallIconsFlag()
-{
-    return this->smallIcons;
-}
-
+{return this->smallIcons;}
 void Preferences::setSmallIconsFlag(bool flag)
-{
-    this->smallIcons=flag;
-}
-
+{this->smallIcons=flag;}
 bool Preferences::getSaveScenePosFlag()
-{
-    return this->saveScenePos;
-}
-
+{return this->saveScenePos;}
 void Preferences::setSaveScenePosFlag(bool flag)
-{
-    this->saveScenePos=flag;
-}
-
-
-
-
-
+{this->saveScenePos=flag;}
 bool Preferences::getDisplayHelpBendAndClose() const
-{
-    return this->displayHelpForBendAndClose;
-}
-
+{return this->displayHelpForBendAndClose;}
 void Preferences::setDisplayHelpBendAndClose(bool val)
-{
-    this->displayHelpForBendAndClose=val;
-}
+{this->displayHelpForBendAndClose=val;}
 
 
 QString **Preferences::getLastProjects()
-{
-    return this->lastProjects;
-}
+{return this->lastProjects;}
 
 void Preferences::addProject(QString *projName)
 {

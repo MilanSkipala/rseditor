@@ -231,7 +231,7 @@ public:
     int completeFragment(ModelFragment *fragA, ModelFragment * fragB, QPointF *ptA, QPointF *ptB);
 
     /**
-     * @brief updateFragment removes and then adds again the "frag" items from/to graphicsScene
+     * @brief updateFragment will add new items of "frag" to graphicsScene
      * @param frag
      * @return
      */

@@ -408,7 +408,6 @@ Database::Database(QString &lang)
                     }
                     break;
                 case S1:
-                //case SC:
                 case E1:
 
                     pt1 = QPointF(-rad,0);
@@ -757,6 +756,11 @@ Database::Database(QString &lang)
             }
             else
             {
+                if (t==J3 || (t>=T1 && t <= T10) || t==E1 || t==J4)
+                {
+                    showDBError(QString("Item type %1 is not supported.").arg(typeStr),QString("Typ dílu %1 není podporován").arg(typeStr), lang);
+                    continue;
+                }
 
                 trackGaugeHalf = abs(rad-radi2)/2.0;
 
@@ -793,7 +797,7 @@ Database::Database(QString &lang)
                 qreal fstLane = fstLaneStr.toDouble();
                 qreal laneDist = laneDistStr.toDouble();
                 qreal laneDistEnd = laneDistEndStr.toDouble();
-                qreal numOfLanes = numOfLanesStr.toDouble();
+                unsigned int numOfLanes = numOfLanesStr.toInt();
 
                 qreal lateralAngle = latAngleStr.toDouble();
 
@@ -826,11 +830,13 @@ Database::Database(QString &lang)
                     continue;
                 }
 
-                if (rad==0 || radi2sl==0 || laneDist==0 || numOfLanes==0)
+
+                if (rad==0 || radi2sl==0 || laneDist==0 || numOfLanes==0 || ((t==J5 || t==C2 || t==X2) && numOfLanes%2==1))
                 {
                     showDBError(QString("PartNo %1 is specified in the wrong way. Part will not be added in the database").arg(partNo),QString("Díl %1 je specifikován špatným způsobem. Díl nebude přidán do databáze.").arg(partNo),lang);
                     continue;
                 }
+
 
 
                 if (t==C1 || t==C2 || t==CB)
@@ -959,7 +965,6 @@ Database::Database(QString &lang)
                 }
                 else if (t==X1)
                 {
-                    ///
                     qreal itemRadius = rad;
                     xLen = 2*radi2sl;
                     yHeight = rad;
@@ -1185,7 +1190,6 @@ Database::Database(QString &lang)
 
                 qreal stdStraight = (*this->productLines->find(*this->currentProductLine))->getMaxStraight();
 
-                ///qreal n = (rad)/stdStraight+1;
                 int n = (rad)/stdStraight+1;
                 qreal xCoord = -abs(((int)n-1)*(stdStraight/2));
                 for (int i = 0; i < n; i++)

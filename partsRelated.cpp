@@ -36,10 +36,8 @@ GenericModelItem::GenericModelItem(QString &partNo, QString &nameEn, QString &na
     this->partNo = new QString(partNo);
     this->nameEn = new QString(nameEn);
     this->nameCs = new QString(nameCs);
-
     this->availableCount=10;
     this->prodLine=productLine;
-
     this->parentWidget = parentWidget;
     this->model2D=NULL;
     this->model2DNoText=NULL;
@@ -191,7 +189,6 @@ ModelItem::ModelItem(QString &partNumber, QString &partNameEn, QString &partName
 
     this->t=type;
 
-
     //stores the angle which will keep the track both "rideable" and flexible
     this->maxFlex=0;
     /*
@@ -213,8 +210,6 @@ ModelItem::ModelItem(QString &partNumber, QString &partNameEn, QString &partName
     this->maxFlex=min(3.0,this->maxFlex);
 
     logFile << "        partNumber: " << partNumber.toStdString() << " maxFlex: " << this->maxFlex << endl;
-
-
 }
 
 ModelItem::~ModelItem()
@@ -222,28 +217,18 @@ ModelItem::~ModelItem()
     logFile << "        ~ModelItem at address " << this << ", deleteFlag: " << this->deleteFlag << endl;// << this->partNo->toStdString() << " position of point [0] is:" << this->getEndPoint(0) << endl;
 
     this->deleteFlag=true;
-
     int c = this->endPoints->count();
-    //for (int i = 0; i < c; i++)
-
-
     for (int i = c-1; i >= 0; i--)
     {
         if (this->neighbours->at(i)!=NULL)
         {
             this->neighbours->at(i)->setNeighbour(NULL,this->getEndPoint(i));
         }
-
-
         delete this->endPoints->at(i);
-        //delete this->neighbours->at(i);
         if (this->endPointsHeightGraphics->at(i)!=NULL && this->endPointsHeightGraphics->at(i)->scene()!=NULL)
             app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->removeItem(this->endPointsHeightGraphics->at(i));
         delete this->endPointsHeightGraphics->at(i);
-
     }
-
-    //this->endPointsHeightGraphics=NULL;
     delete this->neighbours;
     this->neighbours=NULL;
     delete this->endPoints;
@@ -273,11 +258,8 @@ void ModelItem::setDeleteFlag()
     this->deleteFlag=true;
 }
 
-
 QPointF * ModelItem::getEndPoint(int index) const
 {
-    /*if (this->deleteFlag)
-        return NULL;*/
     if (index < this->endPoints->count())
     {
         QPointF * pt = this->endPoints->at(index);
@@ -312,13 +294,12 @@ qreal ModelItem::getTurnAngle(QPointF *pt) const
     int index = 0;
     while (index < this->endPoints->count())
     {
-
         if (pointsAreCloseEnough(pt,this->endPoints->at(index),this->getProdLine()->getScaleEnum()/4.0))
             break;
         index++;
     }
 
-    if (index>=this->endPoints->count()) //??
+    if (index>=this->endPoints->count())
         return -9.87654321;
 
     return this->getTurnAngle(index);
@@ -397,12 +378,9 @@ int ModelItem::generate2DModel(bool text)
         rectInner = QRectF(-this->radius2,-this->radius2+0*gauge/1.0,this->radius2*2-0*gauge,this->radius2*2-0*gauge);
     }
 
-
-
     QPainterPath itemPath;
 
     qreal startAngle = 90-(this->getTurnAngle());
-
 
     QFont font;
     font.setPixelSize(20);
@@ -418,8 +396,6 @@ int ModelItem::generate2DModel(bool text)
     label.append("° ");
     s.setNum(abs(this->radius));
     label.append(s);
-
-
 
     if (text)
     {
@@ -440,9 +416,7 @@ int ModelItem::generate2DModel(bool text)
     {
         itemPath.arcMoveTo(rectOuter,startAngle);
         itemPath.arcTo(rectOuter,startAngle,2*this->getTurnAngle());
-
         itemPath.arcTo(rectInner,startAngle,2*this->getTurnAngle());
-
 
         itemPath.closeSubpath();
 
@@ -452,7 +426,6 @@ int ModelItem::generate2DModel(bool text)
     }
     else if (this->t==E1 || this->t==S1 || this->t==HS || this->t==HE || this->t==HC || this->t==SC || ((this->t==X2 || this->t==J5 || this->t==J1 || this->t==J2) && this->slotTrackInfo!=NULL))
     {
-
         QPolygonF line;
         QPolygonF line2;
         if (this->slotTrackInfo!=NULL)
@@ -481,14 +454,11 @@ int ModelItem::generate2DModel(bool text)
                 line3 << QPointF(d1,-this->radius);
                 line3 << QPointF(-d1,-this->radius);
 
-
-
                 line3 << QPointF(-d1+d1/4,-this->radius-d1/4);
                 line3 << QPointF(-d1+d1/4,-this->radius-d1+d1/4);
                 line3 << QPointF(d1-d1/4,-this->radius-d1+d1/4);
                 line3 << QPointF(d1-d1/4,-this->radius-d1/4);
                 line3 << QPointF(-d1+d1/4,-this->radius-d1/4);
-
 
                 itemPath.addPolygon(line3);
             }
@@ -496,16 +466,12 @@ int ModelItem::generate2DModel(bool text)
         }
         else if (this->radius>0)
         {
-                line << QPointF(-this->radius,-this->radius-gauge/1.0);
-                line << QPointF(this->radius,-this->radius-gauge/1.0);
-                line << QPointF(this->radius,-this->radius+gauge/1.0);
-
-                line2 << QPointF(-this->radius,-this->radius-gauge/1.0);
-                line2 << QPointF(-this->radius,-this->radius+gauge/1.0);
-                line2 << QPointF(this->radius,-this->radius+gauge/1.0);
-
-
-
+            line << QPointF(-this->radius,-this->radius-gauge/1.0);
+            line << QPointF(this->radius,-this->radius-gauge/1.0);
+            line << QPointF(this->radius,-this->radius+gauge/1.0);
+            line2 << QPointF(-this->radius,-this->radius-gauge/1.0);
+            line2 << QPointF(-this->radius,-this->radius+gauge/1.0);
+            line2 << QPointF(this->radius,-this->radius+gauge/1.0);
 
             itemPath.addPolygon(line);
             itemPath.addPolygon(line2);
@@ -527,7 +493,6 @@ int ModelItem::generate2DModel(bool text)
         }
         if (this->t==E1)
         {
-
             QPolygonF line;
             if (this->radius>0)
             {
@@ -577,9 +542,7 @@ int ModelItem::generate2DModel(bool text)
             turnoutLane << QPointF(this->radius2,-this->radius);
             turnoutLane << QPointF(-this->radius2,-this->radius);
             itemPath.addPolygon(turnoutLane);
-
         }
-
     }
     else if (this->t==J1 || this->t==J2)
     {
@@ -598,9 +561,6 @@ int ModelItem::generate2DModel(bool text)
             0===___
               _____---_____
              2_____---_____ 1
-
-
-
         */
 
         startAngle=90-(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(2)))/2.0;
@@ -609,22 +569,17 @@ int ModelItem::generate2DModel(bool text)
         itemPath.arcTo(rectOuter,startAngle,abs(this->getTurnAngle(0))+abs(this->getTurnAngle(2)));
         itemPath.arcTo(rectInner,startAngle,abs(this->getTurnAngle(0))+abs(this->getTurnAngle(2)));
 
-
         itemPath.closeSubpath();
         if (this->getParentWidget()!=NULL)
             itemPath.translate(0,-this->itemHeight+gauge);
         else
             itemPath.translate(0,-this->itemHeight);
 
-
-
-
         if (this->radius>0 )
         {
             int diff = abs((this->endPointsAngles->at(2)+this->endPointsAngles->at(1)));
             if (diff==0 || diff==180)
             {
-
                 QPolygonF line;
                 QPolygonF line2;
 
@@ -633,8 +588,6 @@ int ModelItem::generate2DModel(bool text)
                     line << QPointF(this->endPoints->at(0)->x(),-radius+this->endPoints->at(0)->y()-gauge);
                     line << QPointF(this->endPoints->at(1)->x(),-radius+this->endPoints->at(1)->y()-gauge);
                     line << QPointF(this->endPoints->at(1)->x(),-radius+this->endPoints->at(1)->y()+gauge);
-
-
                     line2 << QPointF(this->endPoints->at(0)->x(),-radius+this->endPoints->at(0)->y()+gauge);
                     line2 << QPointF(this->endPoints->at(1)->x(),-radius+this->endPoints->at(1)->y()+gauge);
                 }
@@ -643,19 +596,12 @@ int ModelItem::generate2DModel(bool text)
                     line << QPointF(this->endPoints->at(2)->x(),-radius+this->endPoints->at(2)->y()-gauge);
                     line << QPointF(this->endPoints->at(1)->x(),-radius+this->endPoints->at(1)->y()-gauge);
                     line << QPointF(this->endPoints->at(1)->x(),-radius+this->endPoints->at(1)->y()+gauge);
-
-
                     line2 << QPointF(this->endPoints->at(2)->x(),-radius+this->endPoints->at(2)->y()+gauge);
                     line2 << QPointF(this->endPoints->at(1)->x(),-radius+this->endPoints->at(1)->y()+gauge);
                 }
-
-
-
                 itemPath.addPolygon(line);
                 itemPath.addPolygon(line2);
-
                 itemPath.translate(0,(this->itemHeight-gauge));
-
             }
             else
             {
@@ -663,9 +609,6 @@ int ModelItem::generate2DModel(bool text)
                     itemPath.translate(0,this->itemHeight-gauge);
                 else
                     itemPath.translate(0,this->itemHeight);
-
-
-
 
                 QRectF rectOuter2;
                 QRectF rectInner2;
@@ -675,8 +618,6 @@ int ModelItem::generate2DModel(bool text)
                     QMatrix mat1;
                     mat1.rotate(abs(this->getTurnAngle(0)));
                     itemPath = mat1.map(itemPath);
-
-
                     itemPath.translate(0,-abs(this->radius2-this->radius));
 
                     rectOuter2 = QRectF(this->radius2+gauge/1.0,-this->radius2-gauge/1.0,-this->radius2*2-2*gauge,this->radius2*2+2*gauge);
@@ -688,8 +629,6 @@ int ModelItem::generate2DModel(bool text)
                     startAngle = 90-(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(1)));
 
                     itemPath.arcTo(rectInner2,startAngle,(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(1))));
-                    //itemPath.closeSubpath();
-
                     itemPath.translate(0,abs(this->radius2-this->radius));
 
                     QMatrix mat2;
@@ -701,8 +640,6 @@ int ModelItem::generate2DModel(bool text)
                     QMatrix mat1;
                     mat1.rotate(-abs(this->getTurnAngle(0)));
                     itemPath = mat1.map(itemPath);
-
-
                     itemPath.translate(0,-abs(this->radius2-this->radius));
 
                     rectOuter2 = QRectF(-this->radius2-gauge/1.0,-this->radius2-gauge/1.0,this->radius2*2+2*gauge,this->radius2*2+2*gauge);
@@ -714,19 +651,13 @@ int ModelItem::generate2DModel(bool text)
                     startAngle = 90-(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(1)));
 
                     itemPath.arcTo(rectInner2,startAngle,(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(1))));
-                    //itemPath.closeSubpath();
-
                     itemPath.translate(0,abs(this->radius2-this->radius));
 
                     QMatrix mat2;
                     mat2.rotate(abs(this->getTurnAngle(0)));
                     itemPath = mat2.map(itemPath);
                 }
-
-
-
             }
-
         }
         else
         {
@@ -739,8 +670,6 @@ int ModelItem::generate2DModel(bool text)
                 (*(++this->endPointsAngles->begin()))-=180;
                 (*(++this->endPointsAngles->begin()))*=-1;
 
-
-
                 QPolygonF line;
                 QPolygonF line2;
 
@@ -749,7 +678,6 @@ int ModelItem::generate2DModel(bool text)
                     line << QPointF(this->endPoints->at(2)->x(),-this->radius+this->endPoints->at(2)->y()-this->itemHeight-(this->itemHeight-gauge));
                     line << QPointF(this->endPoints->at(1)->x(),-this->radius+this->endPoints->at(1)->y()-this->itemHeight-(this->itemHeight-gauge));
                     line << QPointF(this->endPoints->at(1)->x(),-this->radius+this->endPoints->at(1)->y()-this->itemHeight-(this->itemHeight-gauge)+2*gauge);
-
                     line2 << QPointF(this->endPoints->at(2)->x(),-this->radius+this->endPoints->at(2)->y()-this->itemHeight-(this->itemHeight-gauge)+2*gauge);
                     line2 << QPointF(this->endPoints->at(1)->x(),-this->radius+this->endPoints->at(1)->y()-this->itemHeight-(this->itemHeight-gauge)+2*gauge);
                 }
@@ -758,15 +686,11 @@ int ModelItem::generate2DModel(bool text)
                     line << QPointF(this->endPoints->at(0)->x(),-this->radius+this->endPoints->at(0)->y()-this->itemHeight-(this->itemHeight-gauge));
                     line << QPointF(this->endPoints->at(1)->x(),-this->radius+this->endPoints->at(1)->y()-this->itemHeight-(this->itemHeight-gauge));
                     line << QPointF(this->endPoints->at(1)->x(),-this->radius+this->endPoints->at(1)->y()-this->itemHeight-(this->itemHeight-gauge)+2*gauge);
-
                     line2 << QPointF(this->endPoints->at(0)->x(),-this->radius+this->endPoints->at(0)->y()-this->itemHeight-(this->itemHeight-gauge)+2*gauge);
                     line2 << QPointF(this->endPoints->at(1)->x(),-this->radius+this->endPoints->at(1)->y()-this->itemHeight-(this->itemHeight-gauge)+2*gauge);
                 }
-
-                //itemPath.translate(0,-(this->itemHeight-gauge));
                 itemPath.addPolygon(line);
                 itemPath.addPolygon(line2);
-                //itemPath.translate(0,(this->itemHeight-gauge));
                 itemPath.translate(0,(this->itemHeight-gauge));
             }
             else
@@ -776,10 +700,6 @@ int ModelItem::generate2DModel(bool text)
                 else
                     itemPath.translate(0,this->itemHeight);
 
-
-
-
-
                 QRectF rectOuter2;
                 QRectF rectInner2;
 
@@ -788,8 +708,6 @@ int ModelItem::generate2DModel(bool text)
                     QMatrix mat1;
                     mat1.rotate(abs(this->getTurnAngle(0)));
                     itemPath = mat1.map(itemPath);
-
-
                     itemPath.translate(0,abs(this->radius2-this->radius));
 
                     rectOuter2 = QRectF(this->radius2+gauge/1.0,this->radius2+gauge/1.0,-this->radius2*2-2*gauge,-this->radius2*2-2*gauge);
@@ -799,9 +717,7 @@ int ModelItem::generate2DModel(bool text)
                     itemPath.arcMoveTo(rectOuter2,startAngle);
                     itemPath.arcTo(rectOuter2,startAngle,-(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(1))));
                     startAngle = 270+(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(1)));
-
                     itemPath.arcTo(rectInner2,startAngle,-(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(1))));
-                    //itemPath.closeSubpath();
 
                     itemPath.translate(0,-abs(this->radius2-this->radius));
 
@@ -814,8 +730,6 @@ int ModelItem::generate2DModel(bool text)
                     QMatrix mat1;
                     mat1.rotate(-abs(this->getTurnAngle(0)));
                     itemPath = mat1.map(itemPath);
-
-
                     itemPath.translate(0,abs(this->radius2-this->radius));
 
                     rectOuter2 = QRectF(-this->radius2+gauge/1.0,-this->radius2+gauge/1.0,this->radius2*2-2*gauge,this->radius2*2-2*gauge);
@@ -827,9 +741,6 @@ int ModelItem::generate2DModel(bool text)
                     startAngle = 90-(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(1)));
 
                     itemPath.arcTo(rectInner2,startAngle,+(abs(this->getTurnAngle(0))+abs(this->getTurnAngle(1))));
-                    //itemPath.closeSubpath();
-
-                    ///itemPath.translate(0,abs(this->radius2-this->radius));
                     itemPath.translate(0,-abs(this->radius2-this->radius));
 
                     QMatrix mat2;
@@ -837,20 +748,13 @@ int ModelItem::generate2DModel(bool text)
                     itemPath = mat2.map(itemPath);
                 }
 
-
                 (this->endPoints->at(1))->setX((-1)*(this->endPoints->at(1)->x()));
                 (this->endPoints->at(1))->setY((-1)*(this->endPoints->at(1)->y()));
 
                 (*(++this->endPointsAngles->begin()))-=180;
                 (*(++this->endPointsAngles->begin()))*=-1;
-
-
-
             }
         }
-
-
-
     }
     else if (this->t==J3)
     {
@@ -860,15 +764,10 @@ int ModelItem::generate2DModel(bool text)
          *        \3
          */
 
-
         startAngle = 270;
 
         QRectF rectOuterMinus = QRectF(this->radius-gauge/1.0,-this->radius+gauge/1.0,-this->radius*2+2*gauge,this->radius*2-2*gauge);
         QRectF rectInnerMinus = QRectF(-this->radius-gauge/1.0,-this->radius-gauge/1.0,this->radius*2+2*gauge,this->radius*2+2*gauge);
-
-        //QRectF rectOuterMinus = QRectF(this->radius+gauge/1.0,-this->radius-gauge/1.0,-this->radius*2-2*gauge,this->radius*2+2*gauge);
-        //QRectF rectInnerMinus = QRectF(-this->radius+gauge/1.0,-this->radius+gauge/1.0,this->radius*2-2*gauge,this->radius*2-2*gauge);
-
 
         if (radius > 0)
         {
@@ -877,10 +776,8 @@ int ModelItem::generate2DModel(bool text)
             itemPath.arcTo(rectOuterMinus,startAngle,(this->getTurnAngle(2)));
             itemPath.arcMoveTo(rectInnerMinus,startAngle);
             itemPath.arcTo(rectInnerMinus,startAngle,-(this->getTurnAngle(2)));
-            //itemPath.closeSubpath();
             itemPath.translate(this->getEndPoint(0)->x(),-2*radius);
 
-            //replace radius with itemWidth
             QPolygonF line;
             line << QPointF(this->getEndPoint(0)->x(),-this->radius-gauge/1.0);
             line << QPointF(this->getEndPoint()->x(),-this->radius-gauge/1.0);
@@ -906,8 +803,6 @@ int ModelItem::generate2DModel(bool text)
         }
         else
         {
-            //rotatePoint(this->getEndPoint(0),180);
-            //rotatePoint(this->getEndPoint(1),180);
             rotatePoint(this->getEndPoint(2),180);
             rotatePoint(this->getEndPoint(3),180);
 
@@ -916,7 +811,6 @@ int ModelItem::generate2DModel(bool text)
             itemPath.arcTo(rectOuterMinus,startAngle,-(this->getTurnAngle(2)));
             itemPath.arcMoveTo(rectInnerMinus,startAngle);
             itemPath.arcTo(rectInnerMinus,startAngle,(this->getTurnAngle(2)));
-            //itemPath.closeSubpath();
             itemPath.translate(-this->getEndPoint(0)->x(),-2*radius);
 
             QPolygonF line;
@@ -939,13 +833,11 @@ int ModelItem::generate2DModel(bool text)
             itemPath.arcTo(rectInnerMinus,startAngle,(this->getTurnAngle(3)));
 
             itemPath.translate(-this->getEndPoint(0)->x(),0);
-
             itemPath.translate(0,-gauge+1);
 
             this->setEndPointAngle(2,180-this->getTurnAngle(2));
             this->setEndPointAngle(3,180-this->getTurnAngle(3));
         }
-
     }
     else if (this->t==X1 || this->t==J4)
     {
@@ -966,7 +858,6 @@ int ModelItem::generate2DModel(bool text)
                 line2 << QPointF(this->getEndPoint()->x(),-0+gauge/1.0);
                 itemPath2.addPolygon(line);
                 itemPath2.addPolygon(line2);
-                //itemPath2.translate(0,gauge);
             }
             else
             {
@@ -980,20 +871,14 @@ int ModelItem::generate2DModel(bool text)
                 line2 << QPointF(this->getEndPoint(0)->x(),-0+gauge/1.0);
                 itemPath2.addPolygon(line);
                 itemPath2.addPolygon(line2);
-                //itemPath2.translate(0,-gauge);
             }
-
 
             QMatrix matrix;
             matrix.rotate(-this->endPointsAngles->at(2));
             itemPath2 = matrix.map(itemPath2);
 
-
-
-
             itemPath.addPath(itemPath2);
             itemPath.translate(0,-this->radius);
-
 
             if (this->radius>0)
             {
@@ -1007,7 +892,6 @@ int ModelItem::generate2DModel(bool text)
                 line4 << QPointF(this->getEndPoint()->x(),-this->radius+gauge/1.0);
                 itemPath.addPolygon(line3);
                 itemPath.addPolygon(line4);
-                //itemPath.translate(0,gauge);
             }
             else
             {
@@ -1021,10 +905,8 @@ int ModelItem::generate2DModel(bool text)
                 line4 << QPointF(this->getEndPoint(0)->x(),-this->radius+gauge/1.0);
                 itemPath.addPolygon(line3);
                 itemPath.addPolygon(line4);
-
                 this->getEndPoint(2)->setY(-this->getEndPoint(2)->y());
                 this->getEndPoint(3)->setY(-this->getEndPoint(3)->y());
-
             }
 
 
@@ -1041,16 +923,8 @@ int ModelItem::generate2DModel(bool text)
 
                 QRectF rectOuter;
                 QRectF rectInner;
-                //if (this->radius>0 && this->slotTrackInfo==NULL)
-                //{
-                    rectOuter = QRectF(rJ4+gauge/1.0,-rJ4-gauge/1.0,-rJ4*2-2*gauge,rJ4*2+2*gauge);
-                    rectInner = QRectF(-rJ4+gauge/1.0,-rJ4+gauge/1.0,rJ4*2-2*gauge,rJ4*2-2*gauge);
-                //}
-                /*else if (this->radius<0 && this->slotTrackInfo==NULL)
-                {
-                    rectOuter = QRectF(rJ4-gauge/1.0,-rJ4+gauge/1.0,-rJ4*2+2*gauge,rJ4*2-2*gauge);
-                    rectInner = QRectF(-rJ4-gauge/1.0,-rJ4-gauge/1.0,rJ4*2+2*gauge,rJ4*2+2*gauge);
-                }*/
+                rectOuter = QRectF(rJ4+gauge/1.0,-rJ4-gauge/1.0,-rJ4*2-2*gauge,rJ4*2+2*gauge);
+                rectInner = QRectF(-rJ4+gauge/1.0,-rJ4+gauge/1.0,rJ4*2-2*gauge,rJ4*2-2*gauge);
 
                 startAngle = 90;
                 itemPath.translate(this->getEndPoint(0)->x(),-rJ4+this->radius);
@@ -1075,7 +949,6 @@ int ModelItem::generate2DModel(bool text)
                 itemPath.translate(0,gauge-yMove);
             else
                 itemPath.translate(0,-gauge-yMove);
-
         }
         else
         {
@@ -1087,7 +960,6 @@ int ModelItem::generate2DModel(bool text)
                 d1*=-1;
                 d2*=-1;
             }
-
 
             QPolygonF part;
             part << QPointF(-this->radius,      -this->radius2);
@@ -1104,16 +976,10 @@ int ModelItem::generate2DModel(bool text)
             part << QPointF(-this->radius,      -this->radius2+2*d1+d2);
             part << QPointF(-this->radius,      -this->radius2+d1);
             itemPath.addPolygon(part);
-
         }
-
-
-
-
     }
     else if (this->t==J5)
     {
-
         itemPath.translate(0,4.5*this->radius2);
 
         QPolygonF lineUpper;
@@ -1122,7 +988,6 @@ int ModelItem::generate2DModel(bool text)
         lineUpper << QPointF(this->getEndPoint(1)->x(),this->getEndPoint(1)->y()+gauge);
         lineUpper << QPointF(this->getEndPoint(1)->x(),this->getEndPoint(1)->y()-gauge);
         lineUpper << QPointF(this->getEndPoint(0)->x(),this->getEndPoint(0)->y()-gauge);
-
 
         lineLower << QPointF(this->getEndPoint(2)->x(),this->getEndPoint(2)->y()+gauge);
         lineLower << QPointF(this->getEndPoint(3)->x(),this->getEndPoint(3)->y()+gauge);
@@ -1152,13 +1017,10 @@ int ModelItem::generate2DModel(bool text)
                          0,this->getEndPoint(1)->y()+gauge,
                          this->getEndPoint(1)->x(),this->getEndPoint(1)->y()+gauge);
 
-
         if (this->radius>0)
             itemPath.translate(0,-this->radius);
         else
             itemPath.translate(0,-this->radius);
-
-
 
     }
     else if (t==T1)
@@ -1207,11 +1069,7 @@ int ModelItem::generate2DModel(bool text)
             itemPath.translate(0,this->radius+gauge);
         else
             itemPath.translate(0,this->radius-gauge);
-
-
-
     }
-
 
     else if (t>=T2 && t<=T10)
     {
@@ -1227,12 +1085,9 @@ int ModelItem::generate2DModel(bool text)
             }
             else
             {
-                //uprav to
                 dy = -this->itemHeight+2*gauge;
-                //itemPath.translate(0,this->itemHeight+2*gauge);
             }
         }
-
             QPolygonF poly;
             poly << QPointF(-4*gauge,-this->radius-gauge+this->itemHeight-gauge);
             poly << QPointF(-2*gauge,-this->radius-gauge+this->itemHeight-5*gauge);
@@ -1260,9 +1115,6 @@ int ModelItem::generate2DModel(bool text)
 
             if (this->radius<0)
                 itemPath.translate(0,-2*this->itemHeight+2*gauge);
-
-
-
     }
 
     else if (t==JM)
@@ -1318,8 +1170,6 @@ int ModelItem::generate2DModel(bool text)
         }
     }
 
-
-
     GraphicsPathItemModelItem * gpi = new GraphicsPathItemModelItem(this);
     gpi->setFlag(QGraphicsItem::ItemIsMovable,false);
     gpi->setFlag(QGraphicsItem::ItemIsSelectable,true);
@@ -1343,7 +1193,6 @@ int ModelItem::generate2DModel(bool text)
 
         if (this->t==C1 || this->t==CB)
         {
-
             qreal rectParam = this->slotTrackInfo->getFstLaneDist();
             if (radius <0)
                 rectParam *=-1;
@@ -1377,13 +1226,11 @@ int ModelItem::generate2DModel(bool text)
                 lane << QPointF(-this->radius2,yCoord);
                 lane << QPointF(this->radius2,yCoord);
 
-
                 lanePath.addPolygon(lane);
                 if (this->radius>0)
                     yCoord+=this->slotTrackInfo->getLanesGauge();
                 else
                     yCoord-=this->slotTrackInfo->getLanesGauge();
-
             }
             if (this->t==X1)
             {
@@ -1405,49 +1252,48 @@ int ModelItem::generate2DModel(bool text)
                     lane << QPointF(xCoord,-d1);
                     lane << QPointF(xCoord,2*this->radius2-d1);
 
-
-
                     lanePath.addPolygon(lane);
 
                     if (this->radius>0)
                         xCoord+=this->slotTrackInfo->getLanesGauge();
                     else
                         xCoord-=this->slotTrackInfo->getLanesGauge();
-
                 }
             }
-
         }
         else if (this->t==C2)
         {
-
-            /*works just for two lanes
-*/
             qreal rectParam = this->slotTrackInfo->getFstLaneDist();
             if (radius <0)
                 rectParam *=-1;
+
             QRectF rectLane;
 
-            //for (int i = 0; i < this->slotTrackInfo->getNumberOfLanes(); i ++)
-            //{
+            int counter = 0;
+
+            for (unsigned int j = 0; j < this->slotTrackInfo->getNumberOfLanes(); j+=2)
+            {
                 rectLane = QRectF(this->radius-rectParam,
                                 -this->radius+rectParam,
                                 -this->radius*2+2*rectParam,
                                 this->radius*2-2*rectParam);
 
-                lanePath.moveTo(*this->getEndPoint(0));
-                lanePath.cubicTo(this->getEndPoint(0)->x()/2,rectParam,
+
+                lanePath.moveTo(*this->getEndPoint(0+counter*4));
+                lanePath.cubicTo(this->getEndPoint(0+counter*4)->x()/2,rectParam,
                                  0,rectParam,
-                                 this->getEndPoint(3)->x(),this->getEndPoint(3)->y());
-                lanePath.moveTo(*this->getEndPoint(1));
-                lanePath.cubicTo(this->getEndPoint(1)->x()/2,rectParam,
+                                 this->getEndPoint(3+counter*4)->x(),this->getEndPoint(3+counter*4)->y());
+                lanePath.moveTo(*this->getEndPoint(1+counter*4));
+                lanePath.cubicTo(this->getEndPoint(1+counter*4)->x()/2,rectParam,
                                  0,rectParam,
-                                 this->getEndPoint(2)->x(),this->getEndPoint(2)->y());
+                                 this->getEndPoint(2+counter*4)->x(),this->getEndPoint(2+counter*4)->y());
 
                 if (radius > 0)
-                    rectParam += this->slotTrackInfo->getLanesGauge();
+                    rectParam += 2*this->slotTrackInfo->getLanesGauge();
                 else
-                    rectParam -= this->slotTrackInfo->getLanesGauge();
+                    rectParam -= 2*this->slotTrackInfo->getLanesGauge();
+                counter++;
+            }
 
 
         }
@@ -1456,7 +1302,6 @@ int ModelItem::generate2DModel(bool text)
         {
             for (unsigned int i = 0; i < this->slotTrackInfo->getNumberOfLanes()*2; i+=2)
             {
-
                 lanePath.moveTo(*this->getEndPoint(i));
                 lanePath.cubicTo(this->getEndPoint(i)->x()+abs(this->radius),this->getEndPoint(i)->y(),this->getEndPoint(i+1)->x()-abs(this->radius),this->getEndPoint(i+1)->y(),this->getEndPoint(i+1)->x(),this->getEndPoint(i+1)->y());
             }
@@ -1483,7 +1328,6 @@ int ModelItem::generate2DModel(bool text)
                 else
                     lane2 << QPointF(-this->radius2+this->slotTrackInfo->getLanesGaugeEnd(),yCoord);
 
-
                 lanePath.addPolygon(lane);
                 lanePath.addPolygon(lane2);
 
@@ -1491,11 +1335,9 @@ int ModelItem::generate2DModel(bool text)
                     yCoord+=this->slotTrackInfo->getLanesGauge();
                 else
                     yCoord-=this->slotTrackInfo->getLanesGauge();
-
             }
         }
-
-        //don't change this "if" to "else if" - it has to be like that!!!
+        //don't change this "if" to "else if" - it has to be like that!
         if (this->t==X2 || this->t==J5)
         {
             qreal yCoord = this->slotTrackInfo->getFstLaneDist();
@@ -1517,14 +1359,12 @@ int ModelItem::generate2DModel(bool text)
                                  0,yCoord,
                                  this->radius2,yCoord);
 
-
                 if (this->radius>0)
                     yCoord+=2*this->slotTrackInfo->getLanesGauge();
                 else
                     yCoord-=2*this->slotTrackInfo->getLanesGauge();
             }
         }
-
         else if (this->t==J1)
         {
             qreal d1 = this->slotTrackInfo->getFstLaneDist()+(this->slotTrackInfo->getNumberOfLanes()-1)*this->slotTrackInfo->getLanesGauge();
@@ -1539,8 +1379,6 @@ int ModelItem::generate2DModel(bool text)
             lanePath.cubicTo(0,d1,
                              0,d2,
                              this->radius2,d2);
-
-
         }
         else if (this->t==J2)
         {
@@ -1556,8 +1394,6 @@ int ModelItem::generate2DModel(bool text)
             lanePath.cubicTo(0,d1,
                              0,d2,
                              this->radius2,d2);
-
-
         }
 
         col.setRed(255);
@@ -1569,14 +1405,10 @@ int ModelItem::generate2DModel(bool text)
         p.setColor(col);
         p.setWidth(3);
         lane->setPen(p);
-
         lane->setPath(lanePath);
 
     }
 
-
-
-    //qreal num = 0*(this->itemHeight-this->prodLine->getScaleEnum()/2);
     qreal num = 0;
     if (this->t!=J5)
         num = (this->itemHeight-this->getProdLine()->getScaleEnum()/2.0);
@@ -1591,16 +1423,9 @@ int ModelItem::generate2DModel(bool text)
     else
         itemPath.translate(0,this->radius+num);
 
-
-
-
     gpi->setPath(itemPath);
     gpi->changeCountPath(10);
     gpi->setToolTip(label);
-
-
-
-
 
     if (text)
     {
@@ -1618,19 +1443,13 @@ int ModelItem::generate2DModel(bool text)
     if (this->slotTrackInfo!=NULL && !text && this->endPointsHeightGraphics->first()!=NULL)
         QObject::connect(gpi,SIGNAL(hpiDialogExec(QGraphicsSceneMouseEvent*)),((HeightPathItem*)this->endPointsHeightGraphics->at(0)),SLOT(mouseDoubleClickEvent(QGraphicsSceneMouseEvent*)));
 
-
     return 0;
 }
 
 ItemType ModelItem::getType() const
-{
-    return this->t;
-}
-
+{return this->t;}
 ModelFragment *ModelItem::getParentFragment() const
-{
-    return this->parentFragment;
-}
+{return this->parentFragment;}
 
 int ModelItem::setParentFragment(ModelFragment *frag)
 {
@@ -1643,14 +1462,12 @@ int ModelItem::setParentFragment(ModelFragment *frag)
 
 void ModelItem::rotate(qreal angle)
 {
-
     if (angle!=0)
         logFile << "        Rotating item " << this->getPartNo()->toStdString() << " by " << angle << endl;
 
     QString str = QString("rotate item %1 %2 %3 %4 ").arg(QString::number(this->get2DModelNoText()->scenePos().x()),QString::number(this->get2DModelNoText()->scenePos().y()),QString::number(0),QString::number(0));
 
     str.append(QString::number(angle));
-
 
     QTransform rot;
     QTransform rot2;
@@ -1671,12 +1488,10 @@ void ModelItem::rotate(qreal angle)
     }
 
     QPointF s(this->itemWidth,this->itemHeight);
-
     rotatePoint(&s,angle);
 
     this->itemHeight=s.y();
     this->itemWidth=s.x();
-
 
     if (this->slotTrackInfo!=NULL)
     {
@@ -1695,12 +1510,8 @@ void ModelItem::rotate(qreal angle)
 
     QString negStr = QString("rotate item %1 %2 %3 %4 ").arg(QString::number(this->get2DModelNoText()->scenePos().x()),QString::number(this->get2DModelNoText()->scenePos().y()),QString::number(0),QString::number(0));
     negStr.append(QString::number(-angle));
-
-
     //DONT PRINT COMMAND
     //app->getWindow()->getWorkspaceWidget()->pushBackCommand(str,negStr);
-
-
 }
 
 void ModelItem::rotate(qreal angle, QPointF *center, bool printCommand)
@@ -1708,16 +1519,11 @@ void ModelItem::rotate(qreal angle, QPointF *center, bool printCommand)
     if (angle!=0)
         logFile << "        Rotating item " << this->getPartNo()->toStdString() << " by " << angle << " around point [" << center->x() << "," << center->y() << "]"  << endl;
 
-
     QString str = QString("rotate item %1 %2 %3 %4 ").arg(QString::number(this->get2DModelNoText()->scenePos().x()),QString::number(this->get2DModelNoText()->scenePos().y()),QString::number(center->x()),QString::number(center->y()));
-
     str.append(QString::number(angle));
-
-
 
     QTransform mat;
     QPointF newPointAfterRotation(this->get2DModelNoText()->scenePos().x(),this->get2DModelNoText()->scenePos().y());
-
     rotatePoint(&newPointAfterRotation,angle,center);
 
     //rotate 2D
@@ -1737,8 +1543,6 @@ void ModelItem::rotate(qreal angle, QPointF *center, bool printCommand)
     int index = 0;
     while (this->getEndPoint(index)!=NULL)
     {
-        //this->getEndPoint(index)->setX(this->getEndPoint(index)->x()-this->get2DModelNoText()->scenePos().x());
-        //this->getEndPoint(index)->setY(this->getEndPoint(index)->y()-this->get2DModelNoText()->scenePos().y());
         this->getEndPoint(index)->setX(this->getEndPoint(index)->x());
         this->getEndPoint(index)->setY(this->getEndPoint(index)->y());
         rotatePoint(this->getEndPoint(index),angle,center);
@@ -1749,7 +1553,6 @@ void ModelItem::rotate(qreal angle, QPointF *center, bool printCommand)
 
     this->itemHeight=s.y();
     this->itemWidth=s.x();
-
 
     if (this->slotTrackInfo!=NULL)
     {
@@ -1783,7 +1586,6 @@ void ModelItem::moveBy(qreal dx, qreal dy)
     mat.translate(-dx,-dy);
 
     this->get2DModelNoText()->moveBy(dx,dy);
-    //this->get2DModelNoText()->setTransform(mat,true);
     for(int i = 0; i < this->endPoints->count(); i++)
     {
         this->endPoints->at(i)->setX(this->endPoints->at(i)->x()+dx);
@@ -1819,12 +1621,7 @@ void ModelItem::setSecondRadius(qreal radi2)
 }
 
 int ModelItem::adjustHeightProfile(int dz, QPointF *point, bool printCommand, bool adjustOnlyThis)//, bool ignoreRecursionStopper)
-{/*
-    if (!ignoreRecursionStopper && this->recursionStopper)
-        return 0;
-    if (ignoreRecursionStopper && this->recursionStopper)
-        this->recursionStopper=false;*/
-
+{
     if (this->recursionStopperAdj)
         return 0;
 
@@ -1834,7 +1631,6 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point, bool printCommand, bo
         QString negStr = QString("height point %1 %2 %3 %4 %5").arg(QString::number(-dz),QString::number(point->x()),QString::number(point->y()),QString::number(this->get2DModelNoText()->scenePos().x()),QString::number(this->get2DModelNoText()->scenePos().y()));
         app->getWindow()->getWorkspaceWidget()->pushBackCommand(str,negStr);
     }
-
 
     if (point==NULL || dz<=-12300) //dz part - in case when item->getHeightProfileAt(point) is called and point is not found -12345 is returned
         return 1;
@@ -1864,7 +1660,6 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point, bool printCommand, bo
     if (index==this->endPoints->count())
         return 2;
 
-
     //adjustHeight of all endPoints and all neighbours
 
     if (adjustOnlyThis)
@@ -1882,25 +1677,18 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point, bool printCommand, bo
                 {
                     this->recursionStopperAdj=true;
                     (*neighIter)->adjustHeightProfile(dz,*ePIter);
-
-
                 }
                 *heightIter+=dz;
                 this->recursionStopperAdj=false;
-
             }
-
-
             ePIter++;
             heightIter++;
             neighIter++;
-
         }
     }
     //or adjust height at "point" and neighbour connected at point
     else if (this->slotTrackInfo==NULL)
     {
-
         if (!this->recursionStopperAdj)
         {
             this->recursionStopperAdj=true;
@@ -1915,7 +1703,6 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point, bool printCommand, bo
         if (!this->recursionStopperAdj)
             *heightIter+=dz;
 
-
         //find neighbours´ lane which is connected at point = find neig. index of point => odd(i)=i&i-1
         //for both endpoints of that lane call adjust (DONT FORGET TO TURN ON STOPPER)
         int nEPIndex = 0;
@@ -1929,20 +1716,11 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point, bool printCommand, bo
                 {
                     this->recursionStopperAdj=true;
                     qreal newDz = dz;//-(*neighIter)->getHeightProfileAt((*neighIter)->getEndPoint(nEPIndex));
-
-
-                    //HeightPathItem * hpi = (HeightPathItem*)(*neighIter)->endPointsHeightGraphics->at(0);
-
-
-
                     int i = 0;
-
                     HeightPathItem * hpi2 = (HeightPathItem*)this->endPointsHeightGraphics->at(0);
-
                     QList<HeightPathItem*> myList;
                     for (int ijk = 0; ijk < this->endPoints->count(); ijk++)
                         myList.push_back((HeightPathItem*)this->endPointsHeightGraphics->at(ijk));
-
 
                     qreal angle = hpi2->getAngle();
                     while (this->getEndPoint(i)!=NULL)
@@ -1955,11 +1733,8 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point, bool printCommand, bo
 
                     (*neighIter)->adjustHeightProfile(newDz,(*neighIter)->getEndPoint(nEPIndex));
 
-
                     if ((int)((HeightPathItem*)this->endPointsHeightGraphics->at(0))->getAngle()!=0)
                     {
-
-
                         if (nEPIndex%2==0)
                         {
                             (*neighIter)->adjustHeightProfile(newDz,(*neighIter)->getEndPoint(nEPIndex+1));
@@ -1969,18 +1744,15 @@ int ModelItem::adjustHeightProfile(int dz, QPointF *point, bool printCommand, bo
                             (*neighIter)->adjustHeightProfile(newDz,(*neighIter)->getEndPoint(nEPIndex-1));
                         }
                     }
-
                     this->recursionStopperAdj=false;
                 }
                 nEPIndex++;
             }
         }
-
     }
 
     this->recursionStopper=false;
     this->updateEndPointsHeightGraphics();
-
     return 0;
 }
 
@@ -1991,10 +1763,7 @@ void ModelItem::updateEndPointsHeightGraphics(bool forceUpdate)
 
     qreal gaugeHalf = 8;
     QFont font2;
-
-
     font2.setPixelSize(1.5*gaugeHalf);
-
 
     QList<QGraphicsPathItem*>::Iterator grIter = this->endPointsHeightGraphics->begin();
     for (int i = 0; i < this->endPointsHeightGraphics->count();i++)
@@ -2010,23 +1779,15 @@ void ModelItem::updateEndPointsHeightGraphics(bool forceUpdate)
         else
             heightInfoText.addText(this->getEndPoint(i)->x()-gaugeHalf/1.5,this->getEndPoint(i)->y()+gaugeHalf/2.5,font2,number.setNum(this->endPointsHeight->at(i)));
 
-
-
         QGraphicsPathItem * gpiProfile = new QGraphicsPathItem();
         QGraphicsPathItem * gpiProfileNumber = new QGraphicsPathItem(gpiProfile);
-
-        //QGraphicsPathItem * gpiProfileNumber = new QGraphicsPathItem();
-        //QGraphicsPathItem * gpiProfile = new QGraphicsPathItem(gpiProfileNumber);
 
         gpiProfile->setPath(heightInfoEllipse);
         gpiProfileNumber->setPath(heightInfoText);
 
-        /*qreal sc = 8.0/gpiProfileNumber->boundingRect().width();
-        gpiProfileNumber->setScale(sc);*/
         QBrush b = gpiProfile->brush();
         if (app!=NULL)
         {
-            //if (*app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()==*this->endPoints->at(i))
             if (pointsAreCloseEnough(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint(),this->endPoints->at(i),this->getProdLine()->getScaleEnum()/4.0))
             {
                 b.setColor(QColor(0,200,255));
@@ -2036,14 +1797,13 @@ void ModelItem::updateEndPointsHeightGraphics(bool forceUpdate)
                 b.setColor(Qt::blue);
 
             ModelItem * n = this->getNeighbour(i);
-            if (n!=NULL)// && !this->recursionStopper)
+            if (n!=NULL)
             {
                 this->recursionStopper=true;
                 n->updateEndPointsHeightGraphics();
                 this->recursionStopper=false;
             }
         }
-
 
         b.setStyle(Qt::SolidPattern);
         gpiProfile->setBrush(b);
@@ -2054,13 +1814,8 @@ void ModelItem::updateEndPointsHeightGraphics(bool forceUpdate)
         gpiProfileNumber->setPen(p);
         gpiProfileNumber->setZValue(1);
         gpiProfile->setZValue(2000);
-        //gpiProfile->setFlag(QGraphicsItem::ItemIsMovable);
 
         QGraphicsPathItem * toDelete = (*grIter);
-
-
-        //if ((*grIter)!=NULL && app!=NULL)
-        //    app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->removeItem(*grIter);
 
         if (app!=NULL)
         {
@@ -2080,9 +1835,7 @@ void ModelItem::updateEndPointsHeightGraphics(bool forceUpdate)
                         hpi = new HeightPathItem(this);
                     else
                         hpi = new HeightPathItem(*(HeightPathItem*)(this->endPointsHeightGraphics->first()));
-                        //hpi = new HeightPathItem(*(HeightPathItem*)(*this->endPointsHeightGraphics->begin()));
 
-                    //gpiProfile->setParentItem(hpi);
                     hpi->setPath(gpiProfile->path());
                     hpi->setBrush(gpiProfile->brush());
                     hpi->setPen(gpiProfile->pen());
@@ -2091,45 +1844,30 @@ void ModelItem::updateEndPointsHeightGraphics(bool forceUpdate)
                     hpi->setFlag(QGraphicsItem::ItemIsSelectable,true);
                     hpi->setZValue(5000);
                     (*this->endPointsHeightGraphics)[i]=(hpi);
-                    //(*grIter)=hpi;
 
-                    //if (app!=NULL)
                     app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(hpi);
-
                 }
-
             }
-
-
         }
         else
-        {/*
-            if((*grIter)!=NULL)
-            {
-                (*grIter)->scene()->removeItem(*grIter);
-                delete (*grIter);
-            }*/
+        {
             (*this->endPointsHeightGraphics)[i]=gpiProfile;
             if (app!=NULL)
                 app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(gpiProfile);
-
         }
 
-        if (app!=NULL)//(*grIter)!=NULL)//call scene to delete item
+        if (app!=NULL)
         {
             if (((toDelete)!=NULL))
             {
                 app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->removeItem((toDelete));
-
                 //this should be done, because the childItems would cause memory leaks
                 for (int i = 0; i < toDelete->childItems().count(); i++)
                     delete toDelete->childItems().at(i);
                 //this cant be done, because caller of this method can be instance of HPI (aditionally - call of this method is not the last line in HPI's method
                 //delete toDelete;
             }
-
         }
-
         grIter++;
     }
     if (app!=NULL)
@@ -2169,12 +1907,8 @@ void ModelItem::setLateralAngle(qreal angle)
 {
     if (this->slotTrackInfo==NULL)
         return;
-
-
     ((HeightPathItem*)this->endPointsHeightGraphics->at(0))->setAngle(angle);
     ((HeightPathItem*)this->endPointsHeightGraphics->at(0))->adjustHeightOfParentItem();
-
-
 }
 
 int ModelItem::getEndPointIndex(QPointF *pt)
@@ -2198,7 +1932,6 @@ void ModelItem::setEndPointAngle(int index, qreal angle)
         it++;
 
     *it=angle;
-
 }
 
 void ModelItem::setEndPointAngle(QPointF *pt, qreal angle)
@@ -2305,7 +2038,6 @@ int ModelItem::setNeighbour(ModelItem *neighbour, int index)
 int ModelItem::setNeighbour(ModelItem *neighbour, QPointF *pos)
 {
     //logFile << "set neighbour: this=" << this << ", neighbour=" << neighbour << endl;
-    //if (neighbour==NULL || pos==NULL)
     if (pos==NULL)
         return 1;
 
@@ -2330,14 +2062,10 @@ int ModelItem::setNeighbour(ModelItem *neighbour, QPointF *pos)
         iter++;
     }
 
-
-
     if (index < 0 || index>=this->endPoints->count())
     {
-
         return 2;
     }
-
 
     *iter=neighbour;
 
@@ -2354,20 +2082,16 @@ int ModelItem::setNeighbour(ModelItem *neighbour, QPointF *pos)
                     break;
                 }
             }
-
             HeightPathItem * hpi = (HeightPathItem*)neighbour->endPointsHeightGraphics->at(nIndex);
             HeightPathItem * hpi2 = (HeightPathItem*)this->endPointsHeightGraphics->at(index);
             hpi->setAngle(hpi2->getAngle());
         }
     }
-
-
     return 0;
 }
 
 bool ModelItem::leftRightDifference180(int index1, int index2) const
 {
-
     if (this->t==T1)
         return true;
     if (this->slotTrackInfo!=NULL && (this->t==J1 || this->t==J2))
@@ -2390,6 +2114,8 @@ bool ModelItem::leftRightDifference180(int index1, int index2) const
 
     if (index1 >= this->endPoints->count() || index2 >= this->endPoints->count())
         return false;
+    if (index1==index2)
+        return true;
 
     if (this->radius<0 && this->t==J1 && this->slotTrackInfo==NULL)
     {
@@ -2405,22 +2131,15 @@ bool ModelItem::leftRightDifference180(int index1, int index2) const
             return true;
     }
 
-    dA = dA;/// /2.0;
+    dA = dA;
     dA = abs(dA);
 
     if (this->radius<0 && this->t==J1)
     {
-        /*if (index1==0 && index2==1)
-            index2=2;*/
         if (dA>165)
             return true;
-
         qreal result = 0;
-        //if (index1==1)
-            result = ((abs(this->getTurnAngle(index2))+dA)-abs(this->getTurnAngle(index1)));
-        //else if (index1==0)
-        //    result = abs((-(this->getTurnAngle(index1))+dA)+(this->getTurnAngle(index2)));
-
+        result = ((abs(this->getTurnAngle(index2))+dA)-abs(this->getTurnAngle(index1)));
         if (result==0)
             return false;
         else
@@ -2430,16 +2149,13 @@ bool ModelItem::leftRightDifference180(int index1, int index2) const
     {
         if (dA>165)
             return true;
-
         qreal result = 0;
         result = ((abs(this->getTurnAngle(index2))+dA)-abs(this->getTurnAngle(index1)));
-
         if (result==0)
             return false;
         else
             return true;
     }
-
 
     //left < right
     if (((this->getTurnAngle(index2))-(this->getTurnAngle(index1)))>=0)//(dA>=0)//(this->getTurnDegree(index2)>this->getTurnDegree(index1))
@@ -2455,12 +2171,9 @@ bool ModelItem::leftRightDifference180(int index1, int index2) const
             return true;
         if (result==0)
             return false;
-
     }
-    else if (dA<180)///(dA<90) //dA=90 means it was =180
+    else if (dA<180)
     {
-        //qreal dA = (this->getTurnDegree(index2)-this->getTurnDegree(index1));
-        //dA = dA /2.0;
         dA = abs(dA);
         qreal result = 0;
         if (this->radius>0)// )
@@ -2491,15 +2204,10 @@ bool ModelItem::leftRightDifference180(QPointF *pt1, QPointF *pt2) const
         i2++;
     }
     return leftRightDifference180(i1,i2);
-
 }
 
 qreal ModelItem::getMaxFlex() const
-{
-    return this->maxFlex;
-}
-
-
+{return this->maxFlex;}
 
 BorderItem::BorderItem(QString &partNo, QString &nameEn, QString &nameCs,
                        qreal dAlpha, qreal radius, QList<QPointF> &endPoints,
@@ -2517,7 +2225,6 @@ BorderItem::BorderItem(QString &partNo, QString &nameEn, QString &nameCs,
         this->endPoints->push_back(new QPointF(endPoints[i]));
         this->neighbours->push_back(NULL);
     }
-
 }
 
 BorderItem::~BorderItem()
@@ -2527,6 +2234,7 @@ BorderItem::~BorderItem()
     delete this->endPoints;
     delete this->neighbours;
 }
+
 QPointF * BorderItem::getEndPoint(int index) const
 {
     if (index<0 || index >= this->endPoints->count())
@@ -2539,29 +2247,17 @@ QPointF * BorderItem::getEndPoint(int index) const
 
 int BorderItem::getEndPointsCount() const
 {return this->endPoints->count();}
-
 qreal BorderItem::getAngle() const
 {return this->dAlpha;}
-
 qreal BorderItem::getRadius() const
-{
-    return this->radius;
-}
-
+{return this->radius;}
 bool BorderItem::getInnerBorderFlag() const
-{
-    return this->innerBorder;
-}
-
+{return this->innerBorder;}
 bool BorderItem::getDeleteFlag() const
-{
-    return this->deleteFlag;
-}
-
+{return this->deleteFlag;}
 GraphicsPathItemBorderItem * BorderItem::get2DModel() const
-{
-    return (GraphicsPathItemBorderItem *) GenericModelItem::get2DModel();
-}
+{return (GraphicsPathItemBorderItem *) GenericModelItem::get2DModel();}
+
 int BorderItem::set2DModel(GraphicsPathItemBorderItem * model)
 {
     if (model!=NULL)
@@ -2570,9 +2266,8 @@ int BorderItem::set2DModel(GraphicsPathItemBorderItem * model)
     return 0;
 }
 GraphicsPathItemBorderItem *BorderItem::get2DModelNoText() const
-{
-    return (GraphicsPathItemBorderItem *) GenericModelItem::get2DModelNoText();
-}
+{return (GraphicsPathItemBorderItem *) GenericModelItem::get2DModelNoText();}
+
 int BorderItem::set2DModelNoText(GraphicsPathItemBorderItem * model)
 {
     if (model!=NULL)
@@ -2585,9 +2280,8 @@ int BorderItem::generate2DModel(bool text)
 {
     QRectF rectOuter;
     QRectF rectInner;
-
     qreal gauge = 0;
-    gauge = 16;//abs(this->neighbours->first()->getRadius()-this->neighbours->first()->getSecondRadius())/2.0;
+    gauge = 16;
 
     if (this->innerBorder)
     {
@@ -2616,14 +2310,8 @@ int BorderItem::generate2DModel(bool text)
         }
     }
 
-
-
-
     QPainterPath itemPath;
-
     qreal startAngle = 90-(this->dAlpha/2);
-
-
     QFont font;
     font.setPixelSize(20);
     QString label(*this->getPartNo());
@@ -2633,13 +2321,11 @@ int BorderItem::generate2DModel(bool text)
         s.setNum(this->getAngle(),'f',1);
     else
         s.setNum(this->getAngle(),'f',0);
-
     label.append(s);
     label.append("° ");
     s.setNum(this->radius);
     label.append(s);
-
-    if (text)// && this->getTurnDegree()!=0)
+    if (text)
     {
         qreal movement = -50;
         if (this->innerBorder)
@@ -2650,23 +2336,13 @@ int BorderItem::generate2DModel(bool text)
             itemPath.addText(-(12*this->getPartNo()->length())/2,0*movement+24-this->radius-50,font,*this->getPartNo());
 
     }
-    //else
-        //itemPath.addText(-(6*this->partNo->length())/2,24,font,*this->partNo);
-
     if (this->dAlpha>2)
     {
         itemPath.arcMoveTo(rectOuter,startAngle);
         itemPath.arcTo(rectOuter,startAngle,this->dAlpha);
-
-        //itemPath.arcMoveTo(rectInner,startAngle);
         itemPath.arcTo(rectInner,startAngle,this->dAlpha);
-
-
         itemPath.closeSubpath();
-
-
         itemPath.translate(0,-0*gauge);
-
     }
     else
     {
@@ -2680,10 +2356,7 @@ int BorderItem::generate2DModel(bool text)
             poly << QPointF(-this->radius,14-this->radius);
         poly << QPointF(-this->radius,0-this->radius);
         itemPath.addPolygon(poly);
-
     }
-
-
 
     GraphicsPathItemBorderItem * gpi = new GraphicsPathItemBorderItem(this);
     gpi->setFlag(QGraphicsItem::ItemIsMovable,false);
@@ -2701,40 +2374,28 @@ int BorderItem::generate2DModel(bool text)
     {
         QRectF rect(rectInner.x()-7,rectInner.y()-7,rectInner.size().width()+14,rectInner.size().height()+14);
         if (this->innerBorder)
-            rect = QRectF(rectOuter.x()+7,rectOuter.y()+7,rectOuter.size().width()-14,rectOuter.size().height()-14);
+            rect = QRectF(rectOuter.x()-7,rectOuter.y()+7,rectOuter.size().width()+14,rectOuter.size().height()+14);
 
-
-
-            pathKerbRed.arcMoveTo(rect,startAngle+1);
-            pathKerbRed.arcTo(rect,startAngle+1,this->dAlpha-2);
+            pathKerbRed.arcMoveTo(rect,startAngle);
+            pathKerbRed.arcTo(rect,startAngle,this->dAlpha);
             pathKerbRed.translate(0,this->radius);
 
-            pathKerbWhite.arcMoveTo(rect,startAngle+1);
-            pathKerbWhite.arcTo(rect,startAngle+1,this->dAlpha-2);
+            pathKerbWhite.arcMoveTo(rect,startAngle);
+            pathKerbWhite.arcTo(rect,startAngle,this->dAlpha);
             pathKerbWhite.translate(0,this->radius);
-
     }
     else
     {
-        pathKerbRed.moveTo(-this->radius+7,7);
-        pathKerbRed.lineTo(this->radius-7,7);
+        pathKerbRed.moveTo(-this->radius+0,7);
+        pathKerbRed.lineTo(this->radius-0,7);
 
-        pathKerbWhite.moveTo(-this->radius+7,7);
-        pathKerbWhite.lineTo(this->radius-7,7);
-
-        /*QPolygonF poly;
-        poly << QPointF(-this->radius+7,0+7);
-        poly << QPointF(this->radius-7,0+7);
-        pathKerbRed.addPolygon(poly);
-
-        QPolygonF poly2;
-        poly2 << QPointF(-this->radius+7,0+7);
-        poly2 << QPointF(this->radius-7,0+7);
-        pathKerbWhite.addPolygon(poly2);*/
+        pathKerbWhite.moveTo(-this->radius+0,7);
+        pathKerbWhite.lineTo(this->radius-0,7);
     }
     qgpi->setPath(pathKerbRed);
     qgpi2->setPath(pathKerbWhite);
     QPen p = qgpi->pen();
+    p.setCapStyle(Qt::FlatCap);
     p.setStyle(Qt::SolidLine);
     p.setWidth(14);
     p.setColor(Qt::red);
@@ -2746,11 +2407,9 @@ int BorderItem::generate2DModel(bool text)
     if (this->radius>0)
         itemPath.translate(0,this->radius);
 
-
     gpi->setPath(itemPath);
     gpi->changeCountPath(10);
     gpi->setToolTip(label);
-
 
     qgpi->setZValue(gpi->zValue()+2);
     qgpi2->setZValue(gpi->zValue()+1);
@@ -2772,11 +2431,8 @@ int BorderItem::generate2DModel(bool text)
         this->set2DModelNoText(gpi);
     }
 
-
     return 0;
 }
-
-
 
 ModelItem * BorderItem::getNeighbour(int index)
 {
@@ -2786,8 +2442,7 @@ ModelItem * BorderItem::getNeighbour(int index)
 }
 ModelItem * BorderItem::getNeighbour(QPointF * pos)
 {
-    int ptIndex = 0;//this->endPoints->indexOf(pos,0);
-
+    int ptIndex = 0;
     //correct version
     QList<QPointF*>::Iterator iter = this->endPoints->begin();
     while (iter!=this->endPoints->end())
@@ -2825,7 +2480,6 @@ int BorderItem::setNeighbour(ModelItem * neighbour, int index)
 }
 int BorderItem::setNeighbour(ModelItem * neighbour, QPointF * pos)
 {
-
     if (pos==NULL)
         return 1;
 
@@ -2865,7 +2519,6 @@ void BorderItem::rotate(qreal angle)
     rot2 = rot.rotate(angle);
     this->get2DModelNoText()->setTransform(rot,true);
 
-
     int index = 0;
     while (this->getEndPoint(index)!=NULL)
     {
@@ -2879,10 +2532,8 @@ void BorderItem::rotate(qreal angle, QPointF *center, bool printCommand)
     //just to avoid warning
     logFile << "            I want to avoid compiler warnings: " << printCommand << endl;
 
-
     QTransform mat;
     QPointF newPointAfterRotation(this->get2DModelNoText()->scenePos().x(),this->get2DModelNoText()->scenePos().y());
-
     rotatePoint(&newPointAfterRotation,angle,center);
 
     //rotate 2D
@@ -2927,7 +2578,6 @@ GraphicsPathItem::GraphicsPathItem(GenericModelItem *item, QGraphicsItem *parent
     this->dialog=NULL;
     this->contextMenuSBW = NULL;
     this->contextMenuWSW = NULL;
-    //this->mousePressed=false;
 }
 
 GraphicsPathItem::GraphicsPathItem(GenericModelItem *item, const QPainterPath &path, QGraphicsItem *parent) : QGraphicsPathItem(path,parent)
@@ -2941,7 +2591,6 @@ GraphicsPathItem::GraphicsPathItem(GenericModelItem *item, const QPainterPath &p
     this->dialog=NULL;
     this->contextMenuSBW = NULL;
     this->contextMenuWSW = NULL;
-    //this->mousePressed=false;
 }
 
 GraphicsPathItem::~GraphicsPathItem()
@@ -2953,14 +2602,9 @@ GraphicsPathItem::~GraphicsPathItem()
 }
 
 bool GraphicsPathItem::contains(const QPointF &point) const
-{
-    return this->path().boundingRect().contains(point);
-}
-
+{return this->path().boundingRect().contains(point);}
 QRectF GraphicsPathItem::boundingRect() const
-{
-    return this->path().controlPointRect();
-}
+{return this->path().controlPointRect();}
 
 QPainterPath GraphicsPathItem::shape() const
 {
@@ -2970,9 +2614,7 @@ QPainterPath GraphicsPathItem::shape() const
 }
 
 GenericModelItem *GraphicsPathItem::getParentItem()
-{
-    return this->parentItem;
-}
+{return this->parentItem;}
 
 void GraphicsPathItem::changeCountPath(unsigned int count)
 {
@@ -2985,7 +2627,6 @@ void GraphicsPathItem::changeCountPath(unsigned int count)
     QString text;
     text.setNum(count);
     text.append("x");
-
 
     pp.addText(-this->parentItem->getPartNo()->length()*12-48,-12,font,text);
 
@@ -3002,7 +2643,6 @@ void GraphicsPathItem::changeCountPath(unsigned int count)
     {
         p.setColor(Qt::red);
         b.setColor(Qt::red);
-
     }
     else
     {
@@ -3029,7 +2669,6 @@ void GraphicsPathItem::changeCountPath(unsigned int count)
         if (!app->getRestrictedInventoryMode())
             this->restrictedCountPath->setVisible(false);
     }
-
 }
 
 int GraphicsPathItem::initDialog()
@@ -3044,20 +2683,15 @@ int GraphicsPathItem::initDialog()
     QLabel * partNoTextBox = new QLabel(*(this->parentItem->getPartNo()),this->dialog);
     partNoTextBox->setFixedHeight(30);
 
-
     QSpinBox * countSpinBox = new QSpinBox(this->dialog);
     countSpinBox->setRange(0,999);
     countSpinBox->setValue(this->parentItem->getAvailableCount());
-
-
 
     QPushButton * confirm = new QPushButton("Confirm",this->dialog);
     QPushButton * discard = new QPushButton("Discard",this->dialog);
 
     QWidget::connect(discard,SIGNAL(clicked()),this->dialog,SLOT(close()));
     connect(confirm,SIGNAL(clicked()),this,SLOT(updateItem()));
-
-
 
     if (!app->getUserPreferences()->getLocale()->startsWith("EN"))
     {
@@ -3077,9 +2711,7 @@ int GraphicsPathItem::initDialog()
         layout->addRow(confirm,discard);
 
     }
-
     this->dialog->setLayout(layout);
-
     return 0;
 }
 
@@ -3088,10 +2720,6 @@ int GraphicsPathItem::initMenus()
     this->contextMenuSBW = new QMenu(app->getWindow()->getSideBarWidget());
     QAction * action = new QAction ("Change available count",this->contextMenuSBW);
     this->contextMenuSBW->addAction(action);
-
-
-    //this->contextMenuWSW = app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->getContextMenu();
-    //this->contextMenuWSW = new QMenu(*app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->getContextMenu());
     this->contextMenuWSW = new QMenu(app->getWindow()->getWorkspaceWidget());
     this->contextMenuWSW->addActions(app->getWindow()->getMainContextMenu()->actions());
 
@@ -3103,8 +2731,6 @@ int GraphicsPathItem::initMenus()
     }
     this->contextMenuWSW->addSeparator();
     this->contextMenuWSW->addAction(action2);
-
-    ///IF NULL RETURN 1
     return 0;
 }
 
@@ -3113,11 +2739,8 @@ void GraphicsPathItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     if (this->dialog==NULL)
         this->initDialog();
 
-
     if(this->contextMenuSBW==NULL && this->contextMenuWSW==NULL)
         this->initMenus();
-
-
 
     QPointF pt = event->screenPos();
     QAction * actionSelected = NULL;
@@ -3139,7 +2762,6 @@ void GraphicsPathItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         }
         else
             this->dialog->show();
-
     }
 }
 
@@ -3161,33 +2783,25 @@ void GraphicsPathItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void GraphicsPathItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     app->getWindow()->statusBar()->showMessage("");
-
     //just to avoid warning
     event->setLastPos(event->lastPos());
 }
 
 QGraphicsPathItem *GraphicsPathItem::getRestrictedCountPath() const
-{
-    return this->restrictedCountPath;
-}
-
+{return this->restrictedCountPath;}
 
 void GraphicsPathItem::updateItem()
 {
-
     unsigned int count = ((QSpinBox*)this->dialog->layout()->itemAt(5)->widget())->value();
     this->parentItem->setAvailableCount(count);
     this->changeCountPath(count);
     this->dialog->close();
 }
 
-
-
 GraphicsPathItemModelItem::GraphicsPathItemModelItem(ModelItem * item, QGraphicsItem * parent) : GraphicsPathItem(item,parent)
 {}
 GraphicsPathItemModelItem::GraphicsPathItemModelItem(ModelItem * item, const QPainterPath & path, QGraphicsItem * parent) : GraphicsPathItem(item,path,parent)
 {}
-
 GraphicsPathItemModelItem::~GraphicsPathItemModelItem()
 {
     logFile << "~GraphicsPathItemModelItem " << this << endl;
@@ -3199,12 +2813,10 @@ GraphicsPathItemModelItem::~GraphicsPathItemModelItem()
 
     if (this->getParentItem()->getSlotTrackInfo()!=NULL)
     {
-        //this will delete lanes' qgpi
+        //this will delete slot track lanes' qgpi
         delete this->childItems().first();
     }
 }
-
-
 
 void GraphicsPathItemModelItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -3219,9 +2831,9 @@ void GraphicsPathItemModelItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *even
     if (this->getParentItem()->getParentWidget()==app->getWindow()->getWorkspaceWidget())
         app->getWindow()->getWorkspaceWidget()->connectFragments(this->getParentItem()->getParentFragment());
 }
+
 void GraphicsPathItemModelItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-
     if ((this->mousePressed) && this->getParentItem()->getParentFragment()!=NULL)
     {
         if (this->getParentItem()->getParentWidget()==app->getWindow()->getWorkspaceWidget() && app->getWindow()->getWorkspaceWidget()->getRotationMode())
@@ -3235,44 +2847,30 @@ void GraphicsPathItemModelItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPoint);
 
             this->getParentItem()->getParentFragment()->rotate(angle,&center);
-
-
-
         }
         else
         {
             QPointF diff = event->lastScenePos()-event->scenePos();
             this->getParentItem()->getParentFragment()->moveBy(-diff.x(),-diff.y());
 
-            //QPointF * newPoint = new QPointF(*);
-            //newPoint->setX(newPoint->x()-diff.x());
-            //newPoint->setY(newPoint->y()-diff.y());
             if (this->getParentItem()->getParentFragment()==app->getWindow()->getWorkspaceWidget()->getActiveFragment())
             {
                 QPointF * newPoint = new QPointF(*app->getWindow()->getWorkspaceWidget()->getActiveEndPoint());
                 newPoint->setX(newPoint->x()-diff.x());
                 newPoint->setY(newPoint->y()-diff.y());
                 app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPoint);
-
-                //app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint());
             }
         }
     }
-
-
 
     QGraphicsPathItem::mouseMoveEvent(event);
 }
 
 ModelItem *GraphicsPathItemModelItem::getParentItem()
-{
-    return (ModelItem*)GraphicsPathItem::getParentItem();
-}
+{return (ModelItem*)GraphicsPathItem::getParentItem();}
 
 int GraphicsPathItemModelItem::type() const
-{
-    return Type;
-}
+{return Type;}
 
 void GraphicsPathItemModelItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
@@ -3283,22 +2881,19 @@ void GraphicsPathItemModelItem::paint(QPainter *painter, const QStyleOptionGraph
     else if ((!app->getRestrictedInventoryMode() || this->getParentItem()->getParentWidget()==app->getWindow()->getWorkspaceWidget()) && this->getRestrictedCountPath()!=NULL)
         this->getRestrictedCountPath()->setVisible(false);
 
-    if (this->isSelected())// && this->getParentItem()->getParentFragment()!=NULL)
+    if (this->isSelected())
     {
-
         if (this->getParentItem()->getSlotTrackInfo()!=NULL)
         {
             QBrush b = this->brush();
             b.setColor(QColor(64,110,64));
             b.setStyle(Qt::SolidPattern);
             this->setBrush(b);
-
         }
         else
         {
             QPen p = this->pen();
             p.setColor(QColor(0,200,0));
-
             this->setPen(p);
         }
     }
@@ -3323,333 +2918,10 @@ void GraphicsPathItemModelItem::paint(QPainter *painter, const QStyleOptionGraph
         this->setBrush(painter->brush());
 
     QStyleOptionGraphicsItem myoption = (*option);
-    //if (this->getParentItem()->getParentFragment()!=NULL)
-        myoption.state &= !QStyle::State_Selected;
-
+    myoption.state &= !QStyle::State_Selected;
     QGraphicsPathItem::paint(painter,&myoption,widget);
 }
 
-
-void makeNewItem(QPointF eventPos, GraphicsPathItemModelItem * gpi, ModelItem * parentItem, ModelItem * toMake, bool key)
-{
-
-
-    bool enable = true;
-
-    if (parentItem->getParentWidget()!=app->getWindow()->getWorkspaceWidget() || key)
-    {
-        if (app->getRestrictedInventoryMode())
-        {
-            if (parentItem->getAvailableCount()<1)
-                enable = false;
-            parentItem->decrAvailableCount();
-            gpi->changeCountPath(parentItem->getAvailableCount());
-        }
-
-        if (enable)
-        {
-            ModelItem * it = NULL;
-
-            QList<qreal> * endDegrees = new QList<qreal>();
-            QList<QPointF> * endPoints = new QList<QPointF>();
-            unsigned int index = 0;
-
-            while(toMake->getEndPoint(index)!=NULL)
-            {
-                if (eventPos.x()<gpi->pos().x()/2)
-                {
-                    if ((toMake->getType()==HS || toMake->getType()==HE || toMake->getType()==HC))
-                    {
-                        if (toMake->getSlotTrackInfo()!=NULL && index > 1 && index%2==0 &&
-                            app->getWindow()->getWorkspaceWidget()->getActiveFragment()!=NULL)
-                            endDegrees->push_back(-toMake->getTurnAngle(index));
-                        else
-                            endDegrees->push_back(180-toMake->getTurnAngle(index));
-                    }
-                    else
-                    {
-                        if (index%2==0 && toMake->getSlotTrackInfo()!=NULL && index > 1 &&
-                            app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL)
-                            endDegrees->push_back(180-toMake->getTurnAngle(index));
-                        else
-                            endDegrees->push_back(-toMake->getTurnAngle(index));
-                    }
-                }
-                else
-                {
-                    if (index%2==0 && toMake->getSlotTrackInfo()!=NULL && index > 1
-                        && app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL)
-                        endDegrees->push_back(180+toMake->getTurnAngle(index));
-                    else
-                        endDegrees->push_back(toMake->getTurnAngle(index));
-                }
-
-                if (toMake->getSlotTrackInfo()!=NULL && eventPos.x()<gpi->pos().x()/2)
-                {
-                    QPointF pt;
-                    if (((toMake->getType()==X1 && index>=toMake->getSlotTrackInfo()->getNumberOfLanes()*2)) || ((toMake->getType()==J1 || toMake->getType()==J2) && index==2*toMake->getSlotTrackInfo()->getNumberOfLanes()))
-                        pt = QPointF(-toMake->getEndPoint(index)->x(),-toMake->getEndPoint(index)->y());
-                    else
-                    {
-                        pt = QPointF(toMake->getEndPoint(index)->x(),-toMake->getEndPoint(index)->y());
-                        if (toMake->getType()==HS || toMake->getType()==HE  || toMake->getType()==HC)
-                        {
-                            pt.setX(-pt.x());
-
-                            QPointF pt2(*toMake->getEndPoint(index+1));
-                            pt2.setX(-pt2.x());
-                            pt2.setY(-pt2.y());
-                            endPoints->push_back(pt2);
-                            endDegrees->push_back(toMake->getTurnAngle(index+1));
-
-                            if (index==0)
-                                (*endDegrees)[index]=toMake->getTurnAngle(index);
-
-                            index++;
-
-                        }
-                    }
-                    endPoints->push_back(pt);
-                }
-                else if (toMake->getType()==J5 && toMake->getSlotTrackInfo()==NULL && eventPos.x()<gpi->pos().x()/2)
-                {
-                    endPoints->push_back(QPointF(toMake->getEndPoint(index)->x(),-toMake->getEndPoint(index)->y()));
-                }
-                else
-                    endPoints->push_back(*toMake->getEndPoint(index));
-
-
-                index++;
-            }
-
-            if (app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL)
-            {
-
-                if (eventPos.x()<gpi->pos().x()/2)
-                {
-
-
-                    it = new ModelItem(*toMake->getPartNo(),*toMake->getNameEn(),*toMake->getNameCs(),
-                                       *endPoints,*endDegrees,-toMake->getRadius(),toMake->getItemWidth(),
-                                       toMake->getItemHeight(), toMake->getType(),toMake->getProdLine(),
-                                       app->getWindow()->getWorkspaceWidget());
-                    it->setSecondRadius(-toMake->getSecondRadius());
-                    if (toMake->getSlotTrackInfo()!=NULL)
-                    {
-                        toMake->getSlotTrackInfo()->setParentItem(it);
-                        it->setSlotTrackInfo(new SlotTrackInfo(*toMake->getSlotTrackInfo()));
-                        it->getSlotTrackInfo()->setParentItem(it);
-                        toMake->getSlotTrackInfo()->setParentItem(toMake);
-                    }
-                }
-                else
-                {
-
-                    it = new ModelItem(*toMake->getPartNo(),*toMake->getNameEn(),*toMake->getNameCs(),
-                                       *endPoints,*endDegrees,toMake->getRadius(),toMake->getItemWidth(),
-                                       toMake->getItemHeight(), toMake->getType(),toMake->getProdLine(),
-                                       app->getWindow()->getWorkspaceWidget());
-                    it->setSecondRadius(toMake->getSecondRadius());
-
-
-
-                    if (toMake->getSlotTrackInfo()!=NULL)
-                    {
-                        toMake->getSlotTrackInfo()->setParentItem(it);
-                        it->setSlotTrackInfo(new SlotTrackInfo(*toMake->getSlotTrackInfo()));
-                        it->getSlotTrackInfo()->setParentItem(it);
-                        toMake->getSlotTrackInfo()->setParentItem(toMake);
-                    }
-                }
-
-
-
-                //no need to generate model with text, because text isn't needed in workspace scene
-                it->generate2DModel(false);
-
-
-
-                if (eventPos.x()<gpi->pos().x()/2)
-                {
-                    if ((!(it->getType()>=T1 && it->getType()<=T10) && app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL))
-                        it->setEndPointAngle(0,180+it->getTurnAngle(0));
-                }
-                else
-                {
-                    if ((!(it->getType()>=T1 && it->getType()<=T10) && app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL))
-                        it->setEndPointAngle(0,180+it->getTurnAngle(0));
-                }
-
-
-
-
-                //!eventPos???
-                if (toMake->getType()==J2 && toMake->getSlotTrackInfo()==NULL)
-                {
-                    it->setEndPointAngle(1,180-it->getTurnAngle());
-                }
-
-                if(toMake->getType()==J1 && toMake->getSlotTrackInfo()!=NULL && eventPos.x()>gpi->pos().x()/2)
-                    it->setEndPointAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2,180-it->getTurnAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2));
-
-
-                if(toMake->getType()==J2 && toMake->getSlotTrackInfo()!=NULL && eventPos.x()>gpi->pos().x()/2)
-                    it->setEndPointAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2,180-it->getTurnAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2));
-
-
-
-                if ((toMake->getType()==X1 || toMake->getType()==J4) && toMake->getSlotTrackInfo()==NULL)
-                {
-                    if (it->getRadius()<0)
-                    {
-                    }
-                    it->setEndPointAngle(2,180-it->getTurnAngle(2));
-
-                }
-                else if ((toMake->getType()==X1 || toMake->getType()==J4) && toMake->getSlotTrackInfo()!=NULL)
-                {
-                    int index = toMake->getSlotTrackInfo()->getNumberOfLanes()*2;
-                    while (it->getEndPoint(index)!=NULL)
-                    {
-                        it->setEndPointAngle(index,180+it->getTurnAngle(index));
-                        index+=2;
-                    }
-
-                }
-
-                if (toMake->getType()==J5)
-                    it->setEndPointAngle(2,180);
-                if (it->getType()>=T2 && it->getType()<=T10)
-                {
-                    int index = 0;
-                    while (index<2*(it->getType()-8))
-                    {
-                        it->setEndPointAngle(index,180+it->getTurnAngle(index));
-                        index+=2;
-                    }
-
-
-                }
-
-
-                it->moveBy(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->x(),app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->y());
-                ModelFragment * fragment = new ModelFragment(it);
-
-                app->getWindow()->getWorkspaceWidget()->addFragment(fragment);
-                app->getWindow()->getWorkspaceWidget()->setActiveFragment(fragment);
-
-                app->getWindow()->getWorkspaceWidget()->setLastInserted(it);
-
-
-                QPointF * newActive = NULL;
-
-                if (fragment->getEndPoints()->count()>1)
-                    newActive = new QPointF(*fragment->getEndPoints()->at(1));
-                else
-                    newActive = new QPointF(*fragment->getEndPoints()->at(0));
-
-                app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newActive);
-
-
-
-            }
-            else
-            {
-                it = NULL;
-                if (eventPos.x()<gpi->pos().x()/2)
-                {
-
-                    it = new ModelItem(*toMake->getPartNo(),*toMake->getNameEn(),*toMake->getNameCs(),
-                                       *endPoints,*endDegrees,-toMake->getRadius(),toMake->getItemWidth(),
-                                       toMake->getItemHeight(), toMake->getType(),toMake->getProdLine(),
-                                       app->getWindow()->getWorkspaceWidget());
-                    it->setSecondRadius(-toMake->getSecondRadius());
-                    if (toMake->getSlotTrackInfo()!=NULL)
-                    {
-                        toMake->getSlotTrackInfo()->setParentItem(it);
-                        it->setSlotTrackInfo(new SlotTrackInfo(*toMake->getSlotTrackInfo()));
-                        it->getSlotTrackInfo()->setParentItem(it);
-                        toMake->getSlotTrackInfo()->setParentItem(toMake);
-                    }
-                }
-                else
-                {
-
-                    it = new ModelItem(*toMake->getPartNo(),*toMake->getNameEn(),*toMake->getNameCs(),
-                                       *endPoints,*endDegrees,toMake->getRadius(),toMake->getItemWidth(),
-                                       toMake->getItemHeight(), toMake->getType(),toMake->getProdLine(),
-                                       app->getWindow()->getWorkspaceWidget());
-                    it->setSecondRadius(toMake->getSecondRadius());
-                    if (toMake->getSlotTrackInfo()!=NULL)
-                    {
-                        toMake->getSlotTrackInfo()->setParentItem(it);
-                        it->setSlotTrackInfo(new SlotTrackInfo(*toMake->getSlotTrackInfo()));
-                        it->getSlotTrackInfo()->setParentItem(it);
-                        toMake->getSlotTrackInfo()->setParentItem(toMake);
-                    }
-                }
-
-                //no need to generate model with text, because text isn't needed in workspace scene
-                it->generate2DModel(false);
-
-
-
-                if (toMake->getType()==J2 && toMake->getSlotTrackInfo()==NULL)
-                {
-                    if (toMake->getRadius()>0)
-                        it->setEndPointAngle(1,180-it->getTurnAngle());
-                    else
-                        it->setEndPointAngle(1,it->getTurnAngle());
-                }
-
-                if(toMake->getType()==J1 && toMake->getSlotTrackInfo()!=NULL && eventPos.x()<gpi->pos().x()/2)
-                    it->setEndPointAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2,180-it->getTurnAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2));
-
-
-                if(toMake->getType()==J2 && toMake->getSlotTrackInfo()!=NULL && eventPos.x()<gpi->pos().x()/2)
-                    it->setEndPointAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2,180-it->getTurnAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2));
-
-
-                if (toMake->getType()==X1 || toMake->getType()==J4)
-                {
-                    if (it->getRadius()<0)
-                    {
-                    }
-                    it->setEndPointAngle(2,180-it->getTurnAngle(2));
-
-                }
-
-                if (toMake->getType()==J5)
-                    it->setEndPointAngle(2,180);
-
-
-                if (toMake->getType()==T1)
-                    it->rotate(180);
-
-                if (it->getType()>=T2 && it->getType()<=T10)
-                {
-                }
-
-
-
-
-
-
-                app->getWindow()->getWorkspaceWidget()->getActiveFragment()->addFragmentItem(it,app->getWindow()->getWorkspaceWidget()->getActiveEndPoint());
-                app->getWindow()->getWorkspaceWidget()->setLastInserted(it);
-
-
-
-            }
-
-            app->getWindow()->getWorkspaceWidget()->setLastUsedPart(parentItem);
-            app->getWindow()->getWorkspaceWidget()->setLastEventPos(eventPos);
-        }
-    }
-
-
-
-}
 
 void GraphicsPathItemModelItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -3666,16 +2938,11 @@ void GraphicsPathItemModelItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *
                     QGraphicsPathItem::mouseDoubleClickEvent(event);
                     return;
                 }
-
             }
         }
 
         if (this->getParentItem()->getParentFragment()==NULL)
             app->getWindow()->getWorkspaceWidget()->makeItem(this->getParentItem(),NULL,event->scenePos());
-
-        //if (app->getWindow()->getWorkspaceWidget()->canInsert(this->getParentItem()))
-        //    makeNewItem(event->scenePos(),this,this->getParentItem(),this->getParentItem(), false);
-
 
     }
     else if (this->getParentItem()->getSlotTrackInfo()!=NULL)
@@ -3683,16 +2950,12 @@ void GraphicsPathItemModelItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *
         emit this->hpiDialogExec(event);
     }
 
-    //app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->invalidate(this->scene()->sceneRect());
-
     //this fixes the bug with "no background" of SBW scene
     QBrush b = app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->backgroundBrush();
     b.setColor(QColor(255,255,255));
     app->getWindow()->getSideBarWidget()->getCurrentScene()->setBackgroundBrush(b);
 
     QGraphicsPathItem::mouseDoubleClickEvent(event);
-
-
 }
 
 
@@ -3708,7 +2971,6 @@ void GraphicsPathItemModelItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
     bool english = true;
     if (app->getUserPreferences()->getLocale()->startsWith("CS"))
         english = false;
-
 
     if (t==C1 || t==C2 || t==J1 || t==J2 || t==J3 || t==CB)
     {
@@ -3729,7 +2991,6 @@ void GraphicsPathItemModelItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         else
             message.append(QString::number(abs(2*this->getParentItem()->getRadius())));
     }
-
 
     if (this->getParentItem()->getSlotTrackInfo()!=NULL && (t==C1 || t==C2 || t==CB))
     {
@@ -3753,10 +3014,6 @@ void GraphicsPathItemModelItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         }
     }
 
-
-
-
-
     //message.append(*this->parentItem->getPartNo());
     app->getWindow()->statusBar()->showMessage(message);
 
@@ -3774,7 +3031,6 @@ GraphicsPathItemBorderItem::GraphicsPathItemBorderItem(BorderItem * item, QGraph
 
 GraphicsPathItemBorderItem::~GraphicsPathItemBorderItem()
 {
-
     if (app->getWindow()!=NULL && this->scene()==app->getWindow()->getWorkspaceWidget()->getGraphicsScene())
         delete this->getParentItem();
 
@@ -3784,7 +3040,6 @@ GraphicsPathItemBorderItem::~GraphicsPathItemBorderItem()
         if (this->childItems().at(i)!=this->getRestrictedCountPath())
             delete this->childItems().at(i);
     }
-    ///app->getWindow()->getWorkspaceWidget()->deselectItem(this->parentItem);
 }
 
 BorderItem * GraphicsPathItemBorderItem::getParentItem()
@@ -3844,10 +3099,7 @@ void GraphicsPathItemBorderItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent 
             app->getWindow()->getWorkspaceWidget()->makeBorder(this->getParentItem());
         else
             this->setTransform(this->transform().scale(-1,1));
-
     }
-
-
     //this fixes the bug with "no background" of SBW scene
     QBrush b = app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->backgroundBrush();
     b.setColor(QColor(255,255,255));
@@ -3859,7 +3111,6 @@ void GraphicsPathItemBorderItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent 
 void GraphicsPathItemBorderItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     this->mousePressed=true;
-    ///app->getWindow()->getWorkspaceWidget()->selectItem(this->getParentItem());
     QGraphicsPathItem::mousePressEvent(event);
 }
 void GraphicsPathItemBorderItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -3899,6 +3150,48 @@ void GraphicsPathItemBorderItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsPathItem::mouseMoveEvent(event);
 }
 
+void GraphicsPathItemBorderItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+
+    QString message;
+    message.append(*this->getParentItem()->getProdLine()->getName());
+    message.append(" ");
+    message.append(*this->getParentItem()->getPartNo());
+
+    bool english = true;
+    if (app->getUserPreferences()->getLocale()->startsWith("CS"))
+        english = false;
+
+    if (this->getParentItem()->getAngle()>5)
+    {
+        if (english)
+            message.append(", Radius: ");
+        else
+            message.append(", Poloměr: ");
+
+        qreal angle = (this->getParentItem()->getAngle());
+        message.append(QString::number(abs(this->getParentItem()->getRadius())));
+        if (english)
+            message.append(QString(", Angle: %1").arg(QString::number(angle)));
+        else
+            message.append(QString(", Úhel: %1").arg(QString::number(angle)));
+    }
+    else
+    {
+        if (english)
+            message.append(", Length: ");
+        else
+            message.append(", Délka: ");
+
+        message.append(QString::number(abs(2*this->getParentItem()->getRadius())));
+    }
+
+    app->getWindow()->statusBar()->showMessage(message);
+
+    //just to avoid warning
+    event->setLastPos(event->lastPos());
+}
+
 GraphicsPathItemVegetationItem::GraphicsPathItemVegetationItem(VegetationItem *item, QGraphicsItem * parent) : GraphicsPathItem(item,parent)
 {this->mousePressed=false;}
 
@@ -3924,10 +3217,7 @@ void GraphicsPathItemVegetationItem::mouseDoubleClickEvent(QGraphicsSceneMouseEv
 
         if (this->getParentItem()->getParentWidget()!=app->getWindow()->getWorkspaceWidget())
             app->getWindow()->getWorkspaceWidget()->makeVegetation(this->getParentItem());
-
-
     }
-
 
     //this fixes the bug with "no background" of SBW scene
     QBrush b = app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->backgroundBrush();
@@ -3989,8 +3279,6 @@ void GraphicsPathItemVegetationItem::paint(QPainter *painter, const QStyleOption
     QPen p = this->pen();
     p.setWidth(0);
 
-
-
     if (this->isSelected())
     {
         QBrush b = this->brush();
@@ -4012,8 +3300,6 @@ void GraphicsPathItemVegetationItem::paint(QPainter *painter, const QStyleOption
 
         b.setStyle(Qt::SolidPattern);
         this->setBrush(b);
-
-
     }
     else
     {
@@ -4039,8 +3325,6 @@ void GraphicsPathItemVegetationItem::paint(QPainter *painter, const QStyleOption
 
     }
     this->setPen(p);
-
-
 
     QStyleOptionGraphicsItem myoption = (*option);
     myoption.state &= !QStyle::State_Selected;
@@ -4111,13 +3395,8 @@ int VegetationItem::generate2DModel(bool text)
     QFont font;
     font.setPixelSize(20);
 
-
     if (text)
         pp.addText((-(12*this->getPartNo()->length())/2),-12,font,*this->getPartNo());
-
-
-
-    //pp.addRect(-this->itemWidth/2,-this->itemHeight/2,this->itemWidth,this->itemHeight);
 
     pp.addEllipse(-this->itemWidth/2,-this->itemHeight/4,this->itemHeight/2,this->itemHeight/2);
     pp.addEllipse(-this->itemWidth*0.375,-this->itemHeight*0.375,this->itemHeight*0.75,this->itemHeight*0.75);
@@ -4149,19 +3428,10 @@ int VegetationItem::generate2DModel(bool text)
         QPen p = spring->pen();
         p.setColor(Qt::white);
         spring->setPen(p);
-
-
     }
-
-
-
-
 
     pp.setFillRule(Qt::WindingFill);
     gpi->setPath(pp);
-
-
-
 
     if (text)
         this->set2DModel(gpi);
@@ -4172,8 +3442,6 @@ int VegetationItem::generate2DModel(bool text)
     gpi->setFlag(QGraphicsItem::ItemIsMovable,false);
     gpi->setFlag(QGraphicsItem::ItemIsSelectable,true);
 
-
-
     return 0;
 }
 
@@ -4183,12 +3451,9 @@ void VegetationItem::rotate (qreal angle)
     if (angle!=0)
         logFile << "        Rotating vegetation " << this->getPartNo()->toStdString() << " by " << angle << " around point [" << 0 << "," << 0 << "]"  << endl;
 
-
     QString str = QString("rotate vegetation %1 %2 %3 %4 ").arg(QString::number(this->get2DModelNoText()->scenePos().x()),QString::number(this->get2DModelNoText()->scenePos().y()),QString::number(0),QString::number(0));
 
     str.append(QString::number(angle));
-
-
 
     QTransform mat;
     QPointF newPointAfterRotation(this->get2DModelNoText()->scenePos().x(),this->get2DModelNoText()->scenePos().y());
@@ -4209,8 +3474,6 @@ void VegetationItem::rotate (qreal angle)
     this->itemHeight=s.y();
     this->itemWidth=s.x();
 
-
-
     QString negStr = QString("rotate vegetation %1 %2 0 0 ").arg(QString::number(this->get2DModelNoText()->scenePos().x()),QString::number(this->get2DModelNoText()->scenePos().y()));
     negStr.append(QString::number(-angle));
 
@@ -4229,8 +3492,6 @@ void VegetationItem::rotate (qreal angle,QPointF * center, bool printCommand)
 
     QTransform mat;
     QPointF newPointAfterRotation(this->get2DModelNoText()->scenePos().x(),this->get2DModelNoText()->scenePos().y());
-
-    //app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addEllipse(center->x(),center->y(),5,5);
 
     rotatePoint(&newPointAfterRotation,angle,center);
 
@@ -4317,7 +3578,6 @@ ProductLine::~ProductLine()
     delete this->name;
     delete this->scale;
     delete this->gauge;
-
 }
 
 
@@ -4462,15 +3722,12 @@ int ProductLine::addItem(ModelItem* item)
     {
         if (item->getRadius()>this->maxStraightLength && item->getType()==S1)
             this->maxStraightLength=item->getRadius();
-
     }
     else
     {
         if (item->getSecondRadius()>this->maxStraightLength && (item->getType()==S1 || item->getType()==HE || item->getType()==HS || item->getType()==HC || item->getType()==SC))
             this->maxStraightLength=item->getSecondRadius();
     }
-
-
     return 0;
 }
 
@@ -4528,8 +3785,6 @@ ModelFragment::ModelFragment(ModelItem *item)
     this->infoDialog = NULL;
     //this->transformMatrix = NULL;
     this->fragmentID=-1024;
-
-
 }
 
 ModelFragment::~ModelFragment()
@@ -4542,7 +3797,6 @@ ModelFragment::~ModelFragment()
     delete this->endPointsAngles;
     this->endPointsAngles=NULL;
     //delete this->endPointsGraphics items through scene::removeItem function
-
 
     for (int i = 0; i < this->endPointsGraphics->count();i++)
     {
@@ -4578,7 +3832,6 @@ ModelFragment::~ModelFragment()
 
 void ModelFragment::setID(int id)
 {
-    //if (this->fragmentID==-1024)
     logFile << "        Set fragment id from " << this->fragmentID << " to " << id << endl;
     this->fragmentID=id;
 
@@ -4603,35 +3856,22 @@ ModelItem *ModelFragment::findEndPointItem(QPointF *approxPos)
 }
 
 QList <ModelItem*> * ModelFragment::getFragmentItems() const
-{
-    return this->fragmentItems;
-}
+{return this->fragmentItems;}
 
 QList<ProductLine*> * ModelFragment::getProductLines() const
-{
-    return this->lines;
-}
+{return this->lines;}
 
 QList<QPointF *> * ModelFragment::getEndPoints() const
-{
-    return this->endPoints;
-}
+{return this->endPoints;}
 
 QList<QGraphicsEllipseItem *> *ModelFragment::getEndPointsGraphics() const
-{
-    return this->endPointsGraphics;
-
-}
+{return this->endPointsGraphics;}
 
 QList<qreal> * ModelFragment::getEndPointsAngles() const
-{
-    return this->endPointsAngles;
-}
+{return this->endPointsAngles;}
 
 QList<ModelItem *> *ModelFragment::getEndPointsItems() const
-{
-    return this->endPointsItems;
-}
+{return this->endPointsItems;}
 
 int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertionIndex)
 {
@@ -4641,15 +3881,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
     if (item == NULL)
         return 1;
     logFile << "    Adding item " << item->getPartNo()->toStdString() << " at point [" << point->x() << "," << point->y() << "] with index " << insertionIndex << " and address " << item << " into fragment with id " << this->fragmentID << endl;
-
-    /*logFile << "        Item has endpoints:" << endl;
-    int xyz = 0;
-    while (item->getEndPoint(xyz)!=NULL)
-    {
-        logFile << "            [" << xyz << "]: [" << item->getEndPoint(xyz)->x() << ", " << item->getEndPoint(xyz)->y() << "] at " << item->getEndPoint(xyz) << " and with rotation of " << item->getTurnAngle(xyz) << "° and Neighbour is at " << item->getNeighbour(xyz) << endl;
-        xyz++;
-    }*/
-
     logFile << "        EP: " << this->endPoints->count() << " EPA: " << this->endPointsAngles->count() << endl;
 
     /*
@@ -4675,24 +3906,13 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
 
     QRectF insertionArea(QPointF(point->x()-TOLERANCE_HALF,point->y()-TOLERANCE_HALF),QSizeF(TOLERANCE_HALF*2,TOLERANCE_HALF*2));
 
-
-
-
     while(iter!=this->endPoints->end())
     {
-
-        //if (**iter==*point)
         if (insertionArea.contains(**iter))
         {
             //get frag. rotation and then remove it from the list - won't be used
             currentFragmentRotation = this->endPointsAngles->at(i);
             endPointItem = this->endPointsItems->at(i);
-/*
-            if (180==abs(currentFragmentRotation-(item->getTurnAngle(insertionIndex))))
-            {
-                cout << "watch out" << endl;
-            }*/
-
             this->removeEndPoint(*iter);
             break;
         }
@@ -4700,29 +3920,17 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
         i++;
     }
 
-
-
-
-
     //get start-point-rotation of inserted item and subtract it from currentFragmentRotation
     //^^-result==0 -> no rotation is needed
     if ((currentFragmentRotation-item->getTurnAngle(insertionIndex)!=0))// && endPointItem!=NULL)
     {
-        if (180==abs(currentFragmentRotation-(item->getTurnAngle(insertionIndex))))
-        {
-            //cout << "watch out" << endl;
-        }
-
         //rotate 2D model and modify item's attributes
-
         item->rotate(currentFragmentRotation-(item->getTurnAngle(insertionIndex)));
         item->updateEndPointsHeightGraphics();
     }
 
-
     QPointF pointOfInsertion(*point);
     QPointF point2 = *point;
-
 
     //by default item's endPoints are in local item's coordinates (center of item=[0,0] => without -(i.EP(0)) "point" parameter would be in the [0,0] of "item" parameter
     point2-=*item->getEndPoint(insertionIndex);
@@ -4738,8 +3946,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
     }
 
     item->moveBy(dx,dy);
-
-
 
     //set height profile of inserted item to h.p. of endPoint at which the item is being inserted
     int dz = endPointItem==NULL ? 0 : endPointItem->getHeightProfileAt(&pointOfInsertion);
@@ -4788,8 +3994,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                 insertionIndex%2==0 ? item->adjustHeightProfile(dz-item->getHeightProfileAt(item->getEndPoint(insertionIndex+1)),item->getEndPoint(insertionIndex+1))
                                     : item->adjustHeightProfile(dz-item->getHeightProfileAt(item->getEndPoint(insertionIndex-1)),item->getEndPoint(insertionIndex-1));
         }
-
-
     }
 
     //inserted item has been moved so it can finally be checked (because its points are now in global coords) whether more frag.endPoints can be removed
@@ -4800,17 +4004,20 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
         QList<ModelItem*>::Iterator ePIIter = this->endPointsItems->begin();
         while (iter!=this->endPoints->end())
         {
-            //QRectF r(QPointF((*iter)->x()-TOLERANCE_HALF,(*iter)->y()-TOLERANCE_HALF),QSizeF(2*TOLERANCE_HALF,2*TOLERANCE_HALF));
-            //for (unsigned int j = 0; j < 2*item->getSlotTrackInfo()->getNumberOfLanes(); j++)
             int j = 0;
+
             while (item->getEndPoint(j)!=NULL)
             {
-
+                if (j==insertionIndex && item->getType()==HC)
+                {
+                    j++;
+                    if (item->getEndPoint(j)==NULL)
+                        break;
+                }
                 if (pointsAreCloseEnough(item->getEndPoint(j),*iter,item->getProdLine()->getScaleEnum()/4.0) && item->getHeightProfileAt(item->getEndPoint(j))==(*ePIIter)->getHeightProfileAt(item->getEndPoint(j)))
                 {
-
-                    //item->setNeighbour(*ePIIter,j);
                     this->removeEndPoint(*iter);
+
 
                     iter=this->endPoints->begin();
                     ePIIter=this->endPointsItems->begin();
@@ -4818,6 +4025,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                     iter--;
                     ePIIter--;
                     break;
+
                 }
                 j++;
             }
@@ -4831,10 +4039,8 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
         QList<ModelItem*>::Iterator ePIIter = this->endPointsItems->begin();
         QList<qreal>::Iterator ePAIter = this->endPointsAngles->begin();
 
-
         while (iter!=this->endPoints->end())
         {
-            //QRectF r(QPointF((*iter)->x()-TOLERANCE_HALF,(*iter)->y()-TOLERANCE_HALF),QSizeF(2*TOLERANCE_HALF,2*TOLERANCE_HALF));
             for (int j = 0; item->getEndPoint(j)!=NULL; j++)
             {
                 qreal dAlpha = abs(item->getTurnAngle(j)-*ePAIter);
@@ -4843,14 +4049,11 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                 while (dAlpha < 0)
                     dAlpha+=360;
 
-                //if (**iter==*item->getEndPoint(j))
-                //if (r.contains(*item->getEndPoint(j)) && item->getHeightProfileAt(item->getEndPoint(j))==(*ePIIter)->getHeightProfileAt(item->getEndPoint(j)))
                 if (pointsAreCloseEnough(item->getEndPoint(j),*iter,item->getProdLine()->getScaleEnum()/4.0)
                         && item->getHeightProfileAt(item->getEndPoint(j))==(*ePIIter)->getHeightProfileAt(item->getEndPoint(j))
                         && (dAlpha<=10 || (dAlpha>=170 && dAlpha<=190) || dAlpha >=350)
                         )
                 {
-
                     this->removeEndPoint(*iter);
 
                     iter=this->endPoints->begin();
@@ -4870,11 +4073,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
     }
 
     doNotAddThese.push_back(insertionIndex);
-
     qreal newFragmentRotation = insertionIndex%2==0 ? item->getTurnAngle(insertionIndex+1) : item->getTurnAngle(insertionIndex-1);
-
-
-
 
     if (insertionIndex%2==0)
     {
@@ -4887,9 +4086,7 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
             this->endPointsAngles->push_back(newFragmentRotation);
     }
 
-
     //set neighbours of both endItem and inserted item
-
     if (endPointItem!=NULL)
     {
         if ((app->getWindow()->getWorkspaceWidget()->getDeletePress() && endPointItem->get2DModelNoText()->isSelected()))
@@ -4905,21 +4102,14 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
         }
     }
 
-
     QPointF * newPt = NULL;
-
     if (item->getEndPoint()!=NULL)
     {
         insertionIndex%2==0 ? newPt = new QPointF(item->getEndPoint(insertionIndex+1)->x(),item->getEndPoint(insertionIndex+1)->y()) : newPt = new QPointF(item->getEndPoint(insertionIndex-1)->x(),item->getEndPoint(insertionIndex-1)->y());
     }
 
-
-
-    if (newPt==NULL)// || doNotAddThese.contains(insertionIndex+1))
-    {/*
-        if (newPt!=NULL)
-            *newPt=QPointF(0,0);
-        else*/
+    if (newPt==NULL)
+    {
         newPt = new QPointF(0,0);
 
         app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPt);
@@ -4953,7 +4143,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                     *newPt = QPointF(0,0);
                     app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPt);
                     app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
-                    //this->endPointsAngles->removeOne(newFragmentRotation);
                 }
             }
             else
@@ -4974,7 +4163,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                     *newPt = QPointF(0,0);
                     app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newPt);
                     app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
-                    //this->endPointsAngles->removeOne(newFragmentRotation);
                 }
             }
         }
@@ -4998,13 +4186,10 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
             }
         }
 
-        ///logFile << "    CCCC EP: " << this->endPoints->count() << " EPA: " << this->endPointsAngles->count() << endl;
-
         if (item->getNeighbour(insertionIndex)==NULL)
             doNotAddThese.removeOne(insertionIndex);
 
-        //add all remaining endPoint's and modify slot track neighbours for other lanes
-
+        //add all remaining endPoint's and modify neighbours
         ItemType t = item->getType();
         if ( t==T1)
         {
@@ -5026,7 +4211,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                                 endPointItemOdd->setNeighbour(item,item->getEndPoint(index));
                         }
                     }
-
                 }
                 else
                 {
@@ -5039,7 +4223,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
         }
         else if (((t==J1 || t==J2) && item->getSlotTrackInfo()==NULL) || (t==J3) || t==J4 || (t==X1 && item->getSlotTrackInfo()==NULL))
         {
-
             int index = 1;
             doNotAddThese.removeOne(index);
             if (item->getNeighbour(index)==NULL)
@@ -5052,19 +4235,16 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                     else if (endPointItemOdd->getNeighbour(item->getEndPoint(index))==NULL && endPointItemOdd->getHeightProfileAt(item->getEndPoint(index))==item->getHeightProfileAt(item->getEndPoint(index)))
                     {
                         item->setNeighbour(endPointItemOdd,item->getEndPoint(index));
-                        if (endPointItemOdd!=NULL)// && endPointItemOdd!=item)
+                        if (endPointItemOdd!=NULL)
                             endPointItemOdd->setNeighbour(item,item->getEndPoint(index));
                     }
                 }
             }
-
             index = 2;
             if (!doNotAddThese.contains(index))
             {
                 if (t==J1 || t==J2)
                 {
-                    /*if (item->getNeighbour(index)==NULL && !item->leftRightDifference180(0,index))
-                        item->setEndPointAngle(index,180+item->getTurnAngle(index));*/
                     this->addEndPoint(item->getEndPoint(index));
                     this->endPointsAngles->push_back(item->getTurnAngle(index));
                     this->endPointsItems->push_back(item);
@@ -5147,29 +4327,26 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                 }
             }
         }
-        else
+        else //slot track, rail C1 and S1
         {
             //doesnt work for J1, J2, J3, J4, J5, X1 and T1 items because of changing even angles
             int index = 0;
             while (item->getEndPoint(index)!=NULL)
             {
-                if (true)//(!doNotAddThese.empty())
+                if (true)
                 {
                     if (!doNotAddThese.contains(index))
                     {
-
                         if (item->getType()==J2 || item->getType()==J1)
                         {
                             if (index%2==0 && item->getEndPoint(index+1)!=NULL && item->getNeighbour(index)==NULL && !item->leftRightDifference180(index,index+1))
                                 item->setEndPointAngle(index,180+item->getTurnAngle(index));
-
                         }
                         else
                         {
                             if (index%2==0 && item->getNeighbour(index)==NULL && !item->leftRightDifference180(index,index+1))
                                 item->setEndPointAngle(index,180+item->getTurnAngle(index));
                         }
-
 
                         this->addEndPoint(item->getEndPoint(index));
                         this->endPointsAngles->push_back(item->getTurnAngle(index));
@@ -5178,23 +4355,18 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                     else if (index!=insertionIndex)
                     {
                         doNotAddThese.removeOne(index);
-                        //for slot track
                         if (index%2==0)
                         {
                             if (endPointItem!=NULL)
                             {
                                 if ((app->getWindow()->getWorkspaceWidget()->getDeletePress() && endPointItem->get2DModelNoText()->isSelected()))
                                 {}
-
                                 else
                                 {
                                     if (item->getNeighbour(item->getEndPoint(index))==NULL)
                                     item->setNeighbour(endPointItem,item->getEndPoint(index));
-
-                                    //if (endPointItem!=NULL)
                                     endPointItem->setNeighbour(item,item->getEndPoint(index));
                                 }
-
                             }
                             else if (item->getEndPoint(index+1)==NULL)
                             {
@@ -5212,7 +4384,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                                     }
                                 }
                             }
-
                         }
                         else if (item->getNeighbour(index)==NULL)
                         {
@@ -5230,23 +4401,17 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
                                         endPointItemOdd->setNeighbour(item,item->getEndPoint(index));
                                 }
                             }
-
-
                         }
                     }
                 }
                 index++;
             }
         }
-
-
     }
 
 
     //update graphic representation of fragment
     app->getWindow()->getWorkspaceWidget()->updateFragment(this);
-
-
 
     if (this->endPoints->empty())
     {
@@ -5256,8 +4421,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
         app->getWindow()->getWorkspaceWidget()->setActiveFragment(NULL);
 
     }
-
-
 
     logFile << "        Item has endpoints:" << endl;
     int xyz = 0;
@@ -5269,7 +4432,6 @@ int ModelFragment::addFragmentItem(ModelItem* item,QPointF * point, int insertio
 
     logFile << "        EP: " << this->endPoints->count() << " EPA: " << this->endPointsAngles->count() << endl;
 
-    //cout << timer.elapsed() << endl;
     return 0;
 }
 
@@ -5298,7 +4460,7 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
 
     //case B) - run this code only if item has exactly 1 not-NULL neighbour (caution: slot track)
     //iterate through endPointsItems and try to find "item" if it wasn't successful, go to case C) else:
-    //-removed
+    //-removed because of performance issues
 
     //case C)
     //for each neighbour N of item:  !!check if N.parentFragment==this - true -> ok, false -> NOP
@@ -5328,7 +4490,6 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
                         }
                         m++;
                     }
-
                 }
             }
         }
@@ -5341,159 +4502,132 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
         ModelItem * neighbour = item->getNeighbour(i);
         if (neighbour!=NULL)
         {
-            //if (neighbour->getParentFragment()==this)
-            //{
-                //N.setNeighbour(NULL,index/point of connection)
-                neighbour->setNeighbour(NULL,item->getEndPoint(i));
+            neighbour->setNeighbour(NULL,item->getEndPoint(i));
 
-                if (neighbour->getSlotTrackInfo()!=NULL)
+            if (neighbour->getSlotTrackInfo()!=NULL)
+            {
+                //if neighbour's index is even, add 180 deg.
+                int k = 0;
+                while (neighbour->getEndPoint(k)!=NULL)
                 {
-                    //if neighbour's index is even, add 180 deg.
-                    int k = 0;
-                    //QRectF area(item->getEndPoint(i)->x()-TOLERANCE_HALF,item->getEndPoint(i)->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF);
+                    if (pointsAreCloseEnough(neighbour->getEndPoint(k),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0) && k%2==0)
+                    {
+                        if (!neighbour->leftRightDifference180(k,k+1))
+                            neighbour->setEndPointAngle(k,180+neighbour->getTurnAngle(k));
+
+                        break;
+                    }
+                    k++;
+                }
+            }
+            else
+            {
+                int k = 0;
+                ItemType nT = neighbour->getType();
+                if (nT == C1 || nT == S1 || nT == E1 || (nT >= T2 && nT <= T10))
+                {
                     while (neighbour->getEndPoint(k)!=NULL)
                     {
-                        //if (area.contains(*neighbour->getEndPoint(k)) && k%2==0)
                         if (pointsAreCloseEnough(neighbour->getEndPoint(k),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0) && k%2==0)
                         {
                             if (!neighbour->leftRightDifference180(k,k+1))
                                 neighbour->setEndPointAngle(k,180+neighbour->getTurnAngle(k));
-
                             break;
                         }
                         k++;
                     }
                 }
-                else
+                else if (nT==J1)
                 {
-                    int k = 0;
-                    //QRectF area(item->getEndPoint(i)->x()-TOLERANCE_HALF,item->getEndPoint(i)->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF);
-                    ItemType nT = neighbour->getType();
-                    if (nT == C1 || nT == S1 || nT == E1 || (nT >= T2 && nT <= T10))
+                    if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0) && neighbour->getRadius()>0)
                     {
-                        while (neighbour->getEndPoint(k)!=NULL)
-                        {
-
-                            //if (area.contains(*neighbour->getEndPoint(k)) && k%2==0)
-                            if (pointsAreCloseEnough(neighbour->getEndPoint(k),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0) && k%2==0)
-                            {
-                                if (!neighbour->leftRightDifference180(k,k+1))
-                                    neighbour->setEndPointAngle(k,180+neighbour->getTurnAngle(k));
-
-                                break;
-                            }
-                            k++;
-                        }
+                        if (!neighbour->leftRightDifference180(0,1))
+                            neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
                     }
-                    else if (nT==J1)
+                    else if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0) && neighbour->getRadius()<0)
                     {
-                        //if (area.contains(*neighbour->getEndPoint(0)) && neighbour->getRadius()>0)
-                        if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0) && neighbour->getRadius()>0)
-                        {
-                            if (!neighbour->leftRightDifference180(0,1))
-                                neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
-                        }
-                        //else if (area.contains(*neighbour->getEndPoint(0)) && neighbour->getRadius()<0)
-                        else if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0) && neighbour->getRadius()<0)
+                        if (!neighbour->leftRightDifference180(0,2))
+                            neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
+                    }
+                    else if (pointsAreCloseEnough(neighbour->getEndPoint(1),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0) && neighbour->getRadius()<0)
+                    {
+                        if (!neighbour->leftRightDifference180(1,2))
+                            neighbour->setEndPointAngle(1,180+neighbour->getTurnAngle(1));
+                    }
+
+
+                }
+                else if (nT==J2)
+                {
+                    if (neighbour->getRadius()>0)
+                    {
+                        if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
                         {
                             if (!neighbour->leftRightDifference180(0,2))
                                 neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
                         }
-                        //else if (area.contains(*neighbour->getEndPoint(1)) && neighbour->getRadius()<0)
-                        else if (pointsAreCloseEnough(neighbour->getEndPoint(1),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0) && neighbour->getRadius()<0)
+                        if (pointsAreCloseEnough(neighbour->getEndPoint(1),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
                         {
                             if (!neighbour->leftRightDifference180(1,2))
                                 neighbour->setEndPointAngle(1,180+neighbour->getTurnAngle(1));
                         }
-
-
                     }
-                    else if (nT==J2)
+                    else
                     {
-                        if (neighbour->getRadius()>0)
-                        {
-                            //if (area.contains(*neighbour->getEndPoint(0)))
-                            if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
-                            {
-                                if (!neighbour->leftRightDifference180(0,2))
-                                    neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
-                            }
-                            //if (area.contains(*neighbour->getEndPoint(1)))
-                            if (pointsAreCloseEnough(neighbour->getEndPoint(1),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
-                            {
-                                if (!neighbour->leftRightDifference180(1,2))
-                                    neighbour->setEndPointAngle(1,180+neighbour->getTurnAngle(1));
-                            }
-                        }
-                        else
-                        {
-                            //if (area.contains(*neighbour->getEndPoint(0)))
-                            if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
-                            {
-                                if (!neighbour->leftRightDifference180(0,1))
-                                    neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
-                            }
-                        }
-
-                    }
-                    else if (nT==J3)
-                    {
-                        if (neighbour->getRadius()>0)
-                        {
-                            //if (area.contains(*neighbour->getEndPoint(0)))
-                            if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
-                            {
-                                if (!neighbour->leftRightDifference180(0,1))
-                                    neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
-                            }
-                        }
-                        else
-                        {
-                            k=1;
-                            while (k<4)
-                            {
-                                //if (area.contains(*neighbour->getEndPoint(k)))
-                                if (pointsAreCloseEnough(neighbour->getEndPoint(k),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
-                                {
-                                    if (!neighbour->leftRightDifference180(0,k))
-                                        neighbour->setEndPointAngle(k,180+neighbour->getTurnAngle(k));
-                                    break;
-                                }
-                                k++;
-                            }
-
-                        }
-                    }
-                    else if (nT==J4 || nT==X1 || nT==J5)
-                    {
-                        //if (area.contains(*neighbour->getEndPoint(0)))
                         if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
                         {
                             if (!neighbour->leftRightDifference180(0,1))
                                 neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
                         }
-                        //else if (area.contains(*neighbour->getEndPoint(2)))
-                        else if (pointsAreCloseEnough(neighbour->getEndPoint(2),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
-                        {
-                            if (!neighbour->leftRightDifference180(2,3))
-                                neighbour->setEndPointAngle(2,180+neighbour->getTurnAngle(2));
-                        }
-                    }
-                    else if (nT==T1)
-                    {
-                        //do nothing
                     }
                 }
-
-
-            //}
+                else if (nT==J3)
+                {
+                    if (neighbour->getRadius()>0)
+                    {
+                        if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
+                        {
+                            if (!neighbour->leftRightDifference180(0,1))
+                                neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
+                        }
+                    }
+                    else
+                    {
+                        k=1;
+                        while (k<4)
+                        {
+                            if (pointsAreCloseEnough(neighbour->getEndPoint(k),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
+                            {
+                                if (!neighbour->leftRightDifference180(0,k))
+                                    neighbour->setEndPointAngle(k,180+neighbour->getTurnAngle(k));
+                                break;
+                            }
+                            k++;
+                        }
+                    }
+                }
+                else if (nT==J4 || nT==X1 || nT==J5)
+                {
+                    if (pointsAreCloseEnough(neighbour->getEndPoint(0),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
+                    {
+                        if (!neighbour->leftRightDifference180(0,1))
+                            neighbour->setEndPointAngle(0,180+neighbour->getTurnAngle(0));
+                    }
+                    else if (pointsAreCloseEnough(neighbour->getEndPoint(2),item->getEndPoint(i),item->getProdLine()->getScaleEnum()/4.0))
+                    {
+                        if (!neighbour->leftRightDifference180(2,3))
+                            neighbour->setEndPointAngle(2,180+neighbour->getTurnAngle(2));
+                    }
+                }
+                else if (nT==T1)
+                {
+                    //do nothing
+                }
+            }
         }
         i++;
     }
     i=-1;
-
-
-
 
     i=0;
     while (item->getEndPoint(i)!=NULL)
@@ -5511,7 +4645,6 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
         {
             if (this->fragmentItems->at(j)->getParentFragment()==this)
             {
-
                 //do something with left side angles if it is needed
                 if (this->fragmentItems->at(j)->getSlotTrackInfo()!=NULL)
                 {
@@ -5521,7 +4654,6 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
                         //original version
                         if (!this->fragmentItems->at(j)->leftRightDifference180(y,y+1))
                         //modified version because of connectFragments()
-                        //if (this->fragmentItems->at(j)->getNeighbour(y)==NULL)
                             this->fragmentItems->at(j)->setEndPointAngle(y,180+this->fragmentItems->at(j)->getTurnAngle(y));
                         y+=2;
                     }
@@ -5548,19 +4680,15 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
                             if (!this->fragmentItems->at(j)->leftRightDifference180(0,2))
                                 this->fragmentItems->at(j)->setEndPointAngle(0,180+this->fragmentItems->at(j)->getTurnAngle(0));
 
-                            /*if (!this->fragmentItems->at(j)->leftRightDifference180(1,2))
-                                this->fragmentItems->at(j)->setEndPointAngle(1,180+this->fragmentItems->at(j)->getTurnAngle(1));*/
                         }
                         else
                         {
-
                             if (!this->fragmentItems->at(j)->leftRightDifference180(0,2))
                                 this->fragmentItems->at(j)->setEndPointAngle(0,180+this->fragmentItems->at(j)->getTurnAngle(0));
 
                             if (!this->fragmentItems->at(j)->leftRightDifference180(1,2))
                                 this->fragmentItems->at(j)->setEndPointAngle(1,180+this->fragmentItems->at(j)->getTurnAngle(1));
                         }
-
                     }
                     else if (t==J2)
                     {
@@ -5571,15 +4699,12 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
 
                             if (!this->fragmentItems->at(j)->leftRightDifference180(1,2))
                                 this->fragmentItems->at(j)->setEndPointAngle(1,180+this->fragmentItems->at(j)->getTurnAngle(1));
-
                         }
                         else
                         {
                             if (!this->fragmentItems->at(j)->leftRightDifference180(0,1))
                                 this->fragmentItems->at(j)->setEndPointAngle(0,180+this->fragmentItems->at(j)->getTurnAngle(0));
-
                         }
-
                     }
                     else if (t==J3)
                     {
@@ -5606,11 +4731,9 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
                     }
                 }
 
-
                 ModelFragment * newF = new ModelFragment(this->fragmentItems->at(j));
 
                 logFile << "    New fragment has been created from item " << this->fragmentItems->at(j) << " at j==[" << j << "] and address " << newF << endl;
-
                 if (first)
                 {
                     app->getWindow()->getWorkspaceWidget()->addFragment(newF,item->getParentFragment()->getID());
@@ -5629,8 +4752,6 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
 
                     }
                 }
-                //QPointF ptZero(0,0);
-                //recursivelyAdd(this->fragmentItems->at(j),newF,&ptZero);
 
                 rebuildFragment(this->fragmentItems->at(j),newF);
                 if (newF->getFragmentItems()->count()==1)
@@ -5657,8 +4778,6 @@ int ModelFragment::deleteFragmentItem(ModelItem *item, QList<int> *idList)
     }
 
     app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newActive);
-
-
 
     QList<ModelItem*> list;
     list.append(*this->fragmentItems);
@@ -5700,8 +4819,6 @@ int ModelFragment::removeEndPoint (QPointF * &pt)
     //only remove pointer, because ITEM owns the point, fragment owns just another copy of pointer
     this->endPoints->removeAt(index);
 
-
-
     return 0;
 
 
@@ -5721,12 +4838,10 @@ int ModelFragment::setEndPointAngle(QPointF * pt, qreal angle)
 
     if (index>=this->endPoints->count()) //??
         return 2;
-    //this->endPointsAngles->at(index)=angle;
     QList<qreal>::Iterator iter = this->endPointsAngles->begin();
     for (int i = 0; i < index; i++)
         iter++;
     *iter=angle;
-
     return 0;
 }
 
@@ -5756,8 +4871,6 @@ int ModelFragment::showInfoDialog()
         return result;
 
     this->infoDialog->show();
-
-
     return result;
 }
 
@@ -5804,7 +4917,6 @@ int ModelFragment::initInfoDialog()
         itemsMap[str]++;
         prodLineMap[*this->fragmentItems->at(i)->getProdLine()->getName()]++;
 
-        //listWidgetI->addItem(str);
     }
 
     //print both maps
@@ -5826,7 +4938,7 @@ int ModelFragment::initInfoDialog()
         listWidgetM->addItem(val);
     }
 
-    //get approximate size of the fragment
+    /*get approximate size of the fragment - too approximated
     QPolygonF poly;
     for (int i = 0; i < this->fragmentItems->count(); i++)
     {
@@ -5836,25 +4948,30 @@ int ModelFragment::initInfoDialog()
             poly << *this->fragmentItems->at(i)->getEndPoint(j);
             j++;
         }
-    }
-    ///how to get exact dimensions of the fragment
-    ///create QGraphicsScene and add (copies?) of 2D models
-    ///sceneSize should equal to the dimensions
+    }*/
 
+    //how to get exact dimensions of the fragment
+    //create QGraphicsScene and add (copies?) of 2D models
+    //sceneSize should equal to the dimensions
+    QRectF poly;
+    for (int i = 0; i < this->fragmentItems->count(); i++)
+    {
+        poly = poly.united(this->fragmentItems->at(i)->get2DModelNoText()->sceneBoundingRect());
+    }
+    cout << poly.width() << endl;
 
     QString sizeStr;
     if (this->lines->first()->getType())
-        sizeStr.append(QString::number((int)poly.boundingRect().width()+this->lines->first()->getScaleEnum()/4.0));
+        sizeStr.append(QString::number((int)poly.width()+this->lines->first()->getScaleEnum()/4.0));
     else
-        sizeStr.append(QString::number((int)poly.boundingRect().height()));
+        sizeStr.append(QString::number((int)poly.width()));
     sizeStr.append("x");
     if (this->lines->first()->getType())
-        sizeStr.append(QString::number((int)poly.boundingRect().height()+this->lines->first()->getScaleEnum()/4.0));
+        sizeStr.append(QString::number((int)poly.height()+this->lines->first()->getScaleEnum()/4.0));
     else
-        sizeStr.append(QString::number((int)poly.boundingRect().height()));
+        sizeStr.append(QString::number((int)poly.height()));
     sizeStr.append("mm");
     QLabel * label2 = new QLabel(sizeStr);
-
 
     if (english)
     {
@@ -5884,9 +5001,7 @@ void ModelFragment::moveBy(qreal dx, qreal dy)
 
     for (int i = 0; i < this->fragmentItems->count(); i++)
     {
-
         this->fragmentItems->at(i)->moveBy(dx,dy);
-
     }
 
     //move all endpoints' graphics of this fragment
@@ -5896,11 +5011,8 @@ void ModelFragment::moveBy(qreal dx, qreal dy)
         (*it2)->moveBy(dx,dy);
         it2++;
     }
-
     QString negStr = (QString("move fragment %1 %2 %3").arg(QString::number(this->fragmentID),QString::number(-dx),QString::number(-dy)));
     app->getWindow()->getWorkspaceWidget()->pushBackCommand(str,negStr);
-
-
 }
 
 void ModelFragment::rotate(qreal angle, QPointF * center)
@@ -5910,23 +5022,15 @@ void ModelFragment::rotate(qreal angle, QPointF * center)
 
     QString str = (QString("rotate fragment %1 %2 %3 %4 ").arg(QString::number(this->fragmentID),QString::number(center->x()),QString::number(center->y()),QString::number(angle)));
 
-
-
     QList<ModelItem*>::Iterator itemIter = this->fragmentItems->begin();
     QList<qreal>::Iterator angleIter = this->endPointsAngles->begin();
     for (int i = 0; i < this->fragmentItems->count(); i++)
     {
-
         (*itemIter)->rotate(angle, center);
         itemIter++;
-
-
     }
     QTransform mat;
     mat.rotate(angle);
-
-
-
 
     QList<QGraphicsEllipseItem*>::Iterator it2 = this->endPointsGraphics->begin();
     while(it2!=this->endPointsGraphics->end())
@@ -5943,7 +5047,6 @@ void ModelFragment::rotate(qreal angle, QPointF * center)
 
     QString negStr = (QString("rotate fragment %1 %2 %3 %4 ").arg(QString::number(this->fragmentID),QString::number(center->x()),QString::number(center->y()),QString::number(-angle)));;
     app->getWindow()->getWorkspaceWidget()->pushBackCommand(str,negStr);
-
 }
 
 void ModelFragment::updateEndPointsGraphics()
@@ -5957,7 +5060,6 @@ int ModelFragment::addEndPoint(QPointF* pt, bool additionalInfo, qreal rotation,
     if (pt==NULL)
         return 1;
 
-    //QGraphicsEllipseItem * qgpi = new QGraphicsEllipseItem(pt->x(),pt->y(),1,1);
     QGraphicsEllipseItem * qgpi = new QGraphicsEllipseItem(0,0,1,1);
     qgpi->setPos(pt->x(),pt->y());
 
@@ -5969,13 +5071,11 @@ int ModelFragment::addEndPoint(QPointF* pt, bool additionalInfo, qreal rotation,
 
     this->endPointsGraphics->push_back(qgpi);
     this->endPoints->push_back(pt);
-
     if (additionalInfo)
     {
         this->endPointsAngles->push_back(rotation);
         this->endPointsItems->push_back(endPointItem);
     }
-
     return 0;
 }
 
@@ -6001,7 +5101,6 @@ SlotTrackInfo::SlotTrackInfo(ModelItem * item,unsigned int numberOfLanes,qreal l
     qreal angle = -dAlpha/2+22.5/2;
     for (int i = 0; i < n; i++)
     {
-
         QPointF * pt = new QPointF(0,-this->parentItem->getRadius());
         rotatePoint(pt,-angle);
         pt->setY(pt->y()+this->parentItem->getRadius());
@@ -6022,12 +5121,10 @@ SlotTrackInfo::SlotTrackInfo(ModelItem * item,unsigned int numberOfLanes,qreal l
             app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(ellipse);
         }
         angle+=22.5;
-
     }
     angle = -dAlpha/2+22.5/2;
     for (int i = 0; i < n; i++)
     {
-
         QPointF * pt = new QPointF(0,-this->parentItem->getSecondRadius());
         rotatePoint(pt,-angle);
         pt->setY(pt->y()+this->parentItem->getSecondRadius());
@@ -6048,7 +5145,6 @@ SlotTrackInfo::SlotTrackInfo(ModelItem * item,unsigned int numberOfLanes,qreal l
             app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(ellipse);
         }
         angle+=22.5;
-
     }
 
     if (item->getType()==X1)
@@ -6056,13 +5152,16 @@ SlotTrackInfo::SlotTrackInfo(ModelItem * item,unsigned int numberOfLanes,qreal l
     else if (!(item->getType()==C1 || item->getType()==C2 || item->getType()==CB))
     {
         qreal stdStraight = item->getProdLine()->getMaxStraight();
-
         int n = (item->getSecondRadius())/stdStraight+1;
         qreal xCoord = -abs(((int)n-1)*(stdStraight/2));
         for (int i = 0; i < 2*n; i++)
         {
             if (i==n)
                 xCoord = -abs(((int)n-1)*(stdStraight/2));
+            if (i==n && this->parentItem->getType()==J1)
+                break;
+            if (i==0 && this->parentItem->getType()==J2)
+                i=n;
             QPointF * pt = NULL;
             if (i>=n)
                 pt = new QPointF(xCoord,2*item->getRadius());
@@ -6084,11 +5183,8 @@ SlotTrackInfo::SlotTrackInfo(ModelItem * item,unsigned int numberOfLanes,qreal l
                 app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(ellipse);
             }
             xCoord+=stdStraight;
-
         }
     }
-
-
 }
 
 SlotTrackInfo::SlotTrackInfo(const SlotTrackInfo &s)
@@ -6120,19 +5216,12 @@ SlotTrackInfo::SlotTrackInfo(const SlotTrackInfo &s)
 
     for (int i = 0; i < n; i++)
     {
-
         QPointF * pt = new QPointF(0,-this->parentItem->getRadius());
-        //if (this->parentItem->getRadius()<0)
-        //    pt->setY(this->parentItem->getRadius());
         rotatePoint(pt,-angle);
-        //if (this->parentItem->getRadius()>0)
-            pt->setY(pt->y()+this->parentItem->getRadius());
-        //else
-            //pt->setY(pt->y()+this->parentItem->getRadius());
+        pt->setY(pt->y()+this->parentItem->getRadius());
         (*this->borders) << NULL;
         (*this->borderEndPoints) << pt;
 
-        //if (this->parentItem->getParentWidget()!=NULL)
         {
             QGraphicsEllipseItem * ellipse = new QGraphicsEllipseItem(-5,-5,10,10);
             ellipse->setPos(*pt);
@@ -6145,14 +5234,12 @@ SlotTrackInfo::SlotTrackInfo(const SlotTrackInfo &s)
             app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(ellipse);
         }
         angle+=22.5;
-
     }
 
     angle = -dAlpha/2+22.5/2;
     qreal dRadius = this->parentItem->getRadius()-this->parentItem->getSecondRadius();
     for (int i = 0; i < n; i++)
     {
-
         QPointF * pt = new QPointF(0,-this->parentItem->getSecondRadius());
         rotatePoint(pt,-angle);
         pt->setY(pt->y()+this->parentItem->getSecondRadius()+dRadius);
@@ -6173,7 +5260,6 @@ SlotTrackInfo::SlotTrackInfo(const SlotTrackInfo &s)
             app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(ellipse);
         }
         angle+=22.5;
-
     }
 
     if (item->getType()==X1)
@@ -6181,19 +5267,19 @@ SlotTrackInfo::SlotTrackInfo(const SlotTrackInfo &s)
     else if (!(item->getType()==C1 || item->getType()==C2 || item->getType()==CB))
     {
         qreal stdStraight = item->getProdLine()->getMaxStraight();
-
         int n = abs(item->getSecondRadius())/stdStraight+1;
         qreal xCoord = -abs(((int)n-1)*(stdStraight/2));
-
         int startValue = 0;
         if (this->parentItem->getType()==SC)
             startValue=n;
-
         for (int i = startValue; i < 2*n; i++)
         {
             if (i==n)
                 xCoord = -abs(((int)n-1)*(stdStraight/2));
-
+            if (i==n && this->parentItem->getType()==J1)
+                break;
+            if (i==0 && this->parentItem->getType()==J2)
+                i=n;
             QPointF * pt = NULL;
             if (i>=n)
                 pt = new QPointF(xCoord,2*item->getRadius());
@@ -6218,14 +5304,10 @@ SlotTrackInfo::SlotTrackInfo(const SlotTrackInfo &s)
             xCoord+=stdStraight;
         }
     }
-
-
 }
 
 SlotTrackInfo::~SlotTrackInfo()
 {
-
-
     if (this->parentItem->getParentWidget()!=NULL)
     {
         for (int i = 0; i < this->borderEndPointsGraphics->count();i++)
@@ -6238,11 +5320,6 @@ SlotTrackInfo::~SlotTrackInfo()
             if (this->borders->at(i)!=NULL)
                 delete this->borders->at(i);
         }
-
-
-
-        /*for (int i = 0; i < this->borderEndPointsGraphics->count();i++)
-            delete this->borderEndPointsGraphics->at(i);*/
     }
     for (int i = 0; i < this->borderEndPoints->count();i++)
         delete this->borderEndPoints->at(i);
@@ -6250,8 +5327,6 @@ SlotTrackInfo::~SlotTrackInfo()
     delete this->borderEndPoints;
     delete this->borderEndPointsGraphics;
     delete this->borders;
-
-
 }
 
 ModelItem *SlotTrackInfo::getParentItem() const
@@ -6288,13 +5363,12 @@ QList<QPointF *> *SlotTrackInfo::getBorderEndPoints() const
 QList<QGraphicsEllipseItem *> *SlotTrackInfo::getBorderEndPointsGraphics() const
 {return this->borderEndPointsGraphics;}
 
-
 void SlotTrackInfo::addBorder(BorderItem *border)
 {
     logFile << "    Adding the border item " << border->getPartNo()->toStdString() << " at address " << border << " to the item at address " << this->parentItem << endl;
 
-    QString str(QString("make border %1 %2 %3 %4 %5").arg(*border->getPartNo(),*border->getProdLine()->getName(),(border->getInnerBorderFlag() ? "I" : "O"),QString::number(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->x()),QString::number(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->y())));
 
+    QString str(QString("make border %1 %2 %3 %4 %5").arg(*border->getPartNo(),*border->getProdLine()->getName(),(border->getInnerBorderFlag() ? "I" : "O"),QString::number(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->x()),QString::number(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->y())));
 
     //move and rotate the border
     qreal dx = border->getEndPoint(0)->x()-app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->x();
@@ -6305,10 +5379,8 @@ void SlotTrackInfo::addBorder(BorderItem *border)
 
     while (dAlpha<0)
         dAlpha=abs(dAlpha);
-        //dAlpha+=360;
     while (dAlpha>=360)
         dAlpha-=360;
-
 
     border->moveBy(-dx,-dy);
 
@@ -6316,7 +5388,6 @@ void SlotTrackInfo::addBorder(BorderItem *border)
 
     if (this->parentItem->leftRightDifference180(0,1))
         angle-=180;
-
 
     bool angleAdjusted = false;
     //set the neighbours
@@ -6327,27 +5398,26 @@ void SlotTrackInfo::addBorder(BorderItem *border)
         {
             if (pointsAreCloseEnough(border->getEndPoint(j),this->borderEndPoints->at(i),this->parentItem->getProdLine()->getScaleEnum()/4.0))
             {
+                logFile << "        Index of connection point: " << i << endl;
                 border->setNeighbour(this->parentItem,j);
                 (*this->borders)[i]=border;
                 if (!angleAdjusted)
                 {
-                    //if (border->getInnerBorderFlag())
-                    //    i-=this->borderEndPoints->count()/2;
                     angle+=(this->borderEndPoints->count()-1-i)*22.5;
-                    angle-=(border->getEndPointsCount()-1)*22.5;///TADY BYLO -1 ne -j
+                    angle-=(border->getEndPointsCount()-1)*22.5;
                     angle = angle+border->getAngle()/2;
                     if (this->parentItem->getRadius()<0)
                         angle=angle-dAlpha+180;
 
-                    ///////////////////
                     if (!border->getInnerBorderFlag())
                         angle-=dAlpha;
-                    ///////////////////
 
                     if (border->getAngle()==0 && this->parentItem->getRadius()>0)
                     {
                         angle=0;
-                        if (i<this->borderEndPoints->count()/2 && this->parentItem->getType()!=SC)
+                        if (i<this->borderEndPoints->count()/2 && !(this->parentItem->getType()==SC || this->parentItem->getType()==J1 || this->parentItem->getType()==J2))
+                            angle=180;
+                        if (this->parentItem->getType()==J1)
                             angle=180;
 
                         angle+=this->parentItem->getTurnAngle(0);
@@ -6358,7 +5428,9 @@ void SlotTrackInfo::addBorder(BorderItem *border)
                     else if (border->getAngle()==0)
                     {
                         angle=180;
-                        if (i<this->borderEndPoints->count()/2)
+                        if (i<this->borderEndPoints->count()/2 && !(this->parentItem->getType()==SC || this->parentItem->getType()==J1 || this->parentItem->getType()==J2))
+                            angle=0;
+                        if (this->parentItem->getType()==J1)
                             angle=0;
 
                         angle+=this->parentItem->getTurnAngle(0);
@@ -6366,7 +5438,6 @@ void SlotTrackInfo::addBorder(BorderItem *border)
                         if (this->parentItem->leftRightDifference180(0,1))
                             angle-=180;
                     }
-
 
                     logFile << "    Border item will be rotated by " << angle << " around point (" << border->getEndPoint(0)->x() << ", " << border->getEndPoint(0)->y() << endl;
                     QPointF pt = *border->getEndPoint(0);
@@ -6380,20 +5451,9 @@ void SlotTrackInfo::addBorder(BorderItem *border)
     }
 
     //border items have scenePos in a strange place, so executeCommand will not find them
-    //QString negStr(QString("delete border %1 %2 %3").arg(QString::number(this->parentItem->getParentFragment()->getID()),QString::number(border->get2DModelNoText()->scenePos().x()),QString::number(border->get2DModelNoText()->scenePos().y())));
     QString negStr(QString("delete border %1 %2 %3").arg(QString::number(this->parentItem->getParentFragment()->getID()),QString::number(border->getEndPoint(0)->x()),QString::number(border->getEndPoint(0)->y())));
 
-    //QString negStr(QString("delete border %1 %2 %3").arg(QString::number(this->parentItem->getParentFragment()->getID()),QString::number(),QString::number()));
-
-
-
     app->getWindow()->getWorkspaceWidget()->pushBackCommand(str,negStr);
-
-
-
-
-
-
 
     logFile << "    Printing border neighbours:" << endl;
     j = 0;
@@ -6407,7 +5467,6 @@ void SlotTrackInfo::addBorder(BorderItem *border)
     {
         logFile << "        " << i << ": " << this->borders->at(i) << endl;
     }
-
     app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->addItem(border->get2DModelNoText());
 }
 
@@ -6415,8 +5474,7 @@ void SlotTrackInfo::removeBorder(BorderItem *border)
 {
     logFile << "    Removing the border item " << border->getPartNo()->toStdString() << " at address " << border << " from the item at address " << this->parentItem << endl;
 
-
-    /**
+    /*
      *how does the deletion work?
      *Scenario A:
      *  -borderItem was selected by the user, then the delete key was pressed   -> workspace->removeItems() has to be modified
@@ -6434,7 +5492,6 @@ void SlotTrackInfo::removeBorder(BorderItem *border)
 
     app->getWindow()->getWorkspaceWidget()->pushBackCommand(str,negStr);
 
-
     int i = 0;
     while (border->getEndPoint(i)!=NULL)
     {
@@ -6450,13 +5507,268 @@ void SlotTrackInfo::removeBorder(BorderItem *border)
     app->getWindow()->getWorkspaceWidget()->getGraphicsScene()->removeItem(border->get2DModelNoText());
 
     delete border;
-
-
 }
 
+void makeNewItem(QPointF eventPos, GraphicsPathItemModelItem * gpi, ModelItem * parentItem, ModelItem * toMake, bool key)
+{
+    bool enable = true;
+    if (parentItem->getParentWidget()!=app->getWindow()->getWorkspaceWidget() || key)
+    {
+        if (app->getRestrictedInventoryMode())
+        {
+            if (parentItem->getAvailableCount()<1)
+                enable = false;
+            parentItem->decrAvailableCount();
+            gpi->changeCountPath(parentItem->getAvailableCount());
+        }
+
+        if (enable)
+        {
+            ModelItem * it = NULL;
+            QList<qreal> * endDegrees = new QList<qreal>();
+            QList<QPointF> * endPoints = new QList<QPointF>();
+            unsigned int index = 0;
+            while(toMake->getEndPoint(index)!=NULL)
+            {
+                if (eventPos.x()<gpi->pos().x()/2)
+                {
+                    if ((toMake->getType()==HS || toMake->getType()==HE || toMake->getType()==HC))
+                    {
+                        if (toMake->getSlotTrackInfo()!=NULL && index > 1 && index%2==0 &&
+                            app->getWindow()->getWorkspaceWidget()->getActiveFragment()!=NULL)
+                            endDegrees->push_back(-toMake->getTurnAngle(index));
+                        else
+                            endDegrees->push_back(180-toMake->getTurnAngle(index));
+                    }
+                    else
+                    {
+                        if (index%2==0 && toMake->getSlotTrackInfo()!=NULL && index > 1 &&
+                            app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL)
+                            endDegrees->push_back(180-toMake->getTurnAngle(index));
+                        else
+                            endDegrees->push_back(-toMake->getTurnAngle(index));
+                    }
+                }
+                else
+                {
+                    if (index%2==0 && toMake->getSlotTrackInfo()!=NULL && index > 1
+                        && app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL)
+                        endDegrees->push_back(180+toMake->getTurnAngle(index));
+                    else
+                        endDegrees->push_back(toMake->getTurnAngle(index));
+                }
+
+                if (toMake->getSlotTrackInfo()!=NULL && eventPos.x()<gpi->pos().x()/2)
+                {
+                    QPointF pt;
+                    if (((toMake->getType()==X1 && index>=toMake->getSlotTrackInfo()->getNumberOfLanes()*2)) || ((toMake->getType()==J1 || toMake->getType()==J2) && index==2*toMake->getSlotTrackInfo()->getNumberOfLanes()))
+                        pt = QPointF(-toMake->getEndPoint(index)->x(),-toMake->getEndPoint(index)->y());
+                    else
+                    {
+                        pt = QPointF(toMake->getEndPoint(index)->x(),-toMake->getEndPoint(index)->y());
+                        if (toMake->getType()==HS || toMake->getType()==HE  || toMake->getType()==HC)
+                        {
+                            pt.setX(-pt.x());
+
+                            QPointF pt2(*toMake->getEndPoint(index+1));
+                            pt2.setX(-pt2.x());
+                            pt2.setY(-pt2.y());
+                            endPoints->push_back(pt2);
+                            endDegrees->push_back(toMake->getTurnAngle(index+1));
+
+                            if (index==0)
+                                (*endDegrees)[index]=toMake->getTurnAngle(index);
+
+                            index++;
+
+                        }
+                    }
+                    endPoints->push_back(pt);
+                }
+                else if (toMake->getType()==J5 && toMake->getSlotTrackInfo()==NULL && eventPos.x()<gpi->pos().x()/2)
+                {
+                    endPoints->push_back(QPointF(toMake->getEndPoint(index)->x(),-toMake->getEndPoint(index)->y()));
+                }
+                else
+                    endPoints->push_back(*toMake->getEndPoint(index));
+                index++;
+            }
+
+            if (app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL)
+            {
+                if (eventPos.x()<gpi->pos().x()/2)
+                {
+                    it = new ModelItem(*toMake->getPartNo(),*toMake->getNameEn(),*toMake->getNameCs(),
+                                       *endPoints,*endDegrees,-toMake->getRadius(),toMake->getItemWidth(),
+                                       toMake->getItemHeight(), toMake->getType(),toMake->getProdLine(),
+                                       app->getWindow()->getWorkspaceWidget());
+                    it->setSecondRadius(-toMake->getSecondRadius());
+                    if (toMake->getSlotTrackInfo()!=NULL)
+                    {
+                        toMake->getSlotTrackInfo()->setParentItem(it);
+                        it->setSlotTrackInfo(new SlotTrackInfo(*toMake->getSlotTrackInfo()));
+                        it->getSlotTrackInfo()->setParentItem(it);
+                        toMake->getSlotTrackInfo()->setParentItem(toMake);
+                    }
+                }
+                else
+                {
+                    it = new ModelItem(*toMake->getPartNo(),*toMake->getNameEn(),*toMake->getNameCs(),
+                                       *endPoints,*endDegrees,toMake->getRadius(),toMake->getItemWidth(),
+                                       toMake->getItemHeight(), toMake->getType(),toMake->getProdLine(),
+                                       app->getWindow()->getWorkspaceWidget());
+                    it->setSecondRadius(toMake->getSecondRadius());
+                    if (toMake->getSlotTrackInfo()!=NULL)
+                    {
+                        toMake->getSlotTrackInfo()->setParentItem(it);
+                        it->setSlotTrackInfo(new SlotTrackInfo(*toMake->getSlotTrackInfo()));
+                        it->getSlotTrackInfo()->setParentItem(it);
+                        toMake->getSlotTrackInfo()->setParentItem(toMake);
+                    }
+                }
+                //no need to generate model with text, because text isn't needed in workspace scene
+                it->generate2DModel(false);
+                if (eventPos.x()<gpi->pos().x()/2)
+                {
+                    if ((!(it->getType()>=T1 && it->getType()<=T10) && app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL))
+                        it->setEndPointAngle(0,180+it->getTurnAngle(0));
+                }
+                else
+                {
+                    if ((!(it->getType()>=T1 && it->getType()<=T10) && app->getWindow()->getWorkspaceWidget()->getActiveFragment()==NULL))
+                        it->setEndPointAngle(0,180+it->getTurnAngle(0));
+                }
+
+                if (toMake->getType()==J2 && toMake->getSlotTrackInfo()==NULL)
+                {
+                    it->setEndPointAngle(1,180-it->getTurnAngle());
+                }
+
+                if(toMake->getType()==J1 && toMake->getSlotTrackInfo()!=NULL && eventPos.x()>gpi->pos().x()/2)
+                    it->setEndPointAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2,180-it->getTurnAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2));
+
+                if(toMake->getType()==J2 && toMake->getSlotTrackInfo()!=NULL && eventPos.x()>gpi->pos().x()/2)
+                    it->setEndPointAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2,180-it->getTurnAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2));
+
+                if ((toMake->getType()==X1 || toMake->getType()==J4) && toMake->getSlotTrackInfo()==NULL)
+                {
+                    if (it->getRadius()<0)
+                    {
+                    }
+                    it->setEndPointAngle(2,180-it->getTurnAngle(2));
+
+                }
+                else if ((toMake->getType()==X1 || toMake->getType()==J4) && toMake->getSlotTrackInfo()!=NULL)
+                {
+                    int index = toMake->getSlotTrackInfo()->getNumberOfLanes()*2;
+                    while (it->getEndPoint(index)!=NULL)
+                    {
+                        it->setEndPointAngle(index,180+it->getTurnAngle(index));
+                        index+=2;
+                    }
+                }
+
+                if (toMake->getType()==J5)
+                    it->setEndPointAngle(2,180);
+                if (it->getType()>=T2 && it->getType()<=T10)
+                {
+                    int index = 0;
+                    while (index<2*(it->getType()-8))
+                    {
+                        it->setEndPointAngle(index,180+it->getTurnAngle(index));
+                        index+=2;
+                    }
+                }
+                it->moveBy(app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->x(),app->getWindow()->getWorkspaceWidget()->getActiveEndPoint()->y());
+                ModelFragment * fragment = new ModelFragment(it);
+
+                app->getWindow()->getWorkspaceWidget()->addFragment(fragment);
+                app->getWindow()->getWorkspaceWidget()->setActiveFragment(fragment);
+
+                app->getWindow()->getWorkspaceWidget()->setLastInserted(it);
+
+                QPointF * newActive = NULL;
+
+                if (fragment->getEndPoints()->count()>1)
+                    newActive = new QPointF(*fragment->getEndPoints()->at(1));
+                else
+                    newActive = new QPointF(*fragment->getEndPoints()->at(0));
+
+                app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(newActive);
+            }
+            else
+            {
+                it = NULL;
+                if (eventPos.x()<gpi->pos().x()/2)
+                {
+                    it = new ModelItem(*toMake->getPartNo(),*toMake->getNameEn(),*toMake->getNameCs(),
+                                       *endPoints,*endDegrees,-toMake->getRadius(),toMake->getItemWidth(),
+                                       toMake->getItemHeight(), toMake->getType(),toMake->getProdLine(),
+                                       app->getWindow()->getWorkspaceWidget());
+                    it->setSecondRadius(-toMake->getSecondRadius());
+                    if (toMake->getSlotTrackInfo()!=NULL)
+                    {
+                        toMake->getSlotTrackInfo()->setParentItem(it);
+                        it->setSlotTrackInfo(new SlotTrackInfo(*toMake->getSlotTrackInfo()));
+                        it->getSlotTrackInfo()->setParentItem(it);
+                        toMake->getSlotTrackInfo()->setParentItem(toMake);
+                    }
+                }
+                else
+                {
+                    it = new ModelItem(*toMake->getPartNo(),*toMake->getNameEn(),*toMake->getNameCs(),
+                                       *endPoints,*endDegrees,toMake->getRadius(),toMake->getItemWidth(),
+                                       toMake->getItemHeight(), toMake->getType(),toMake->getProdLine(),
+                                       app->getWindow()->getWorkspaceWidget());
+                    it->setSecondRadius(toMake->getSecondRadius());
+                    if (toMake->getSlotTrackInfo()!=NULL)
+                    {
+                        toMake->getSlotTrackInfo()->setParentItem(it);
+                        it->setSlotTrackInfo(new SlotTrackInfo(*toMake->getSlotTrackInfo()));
+                        it->getSlotTrackInfo()->setParentItem(it);
+                        toMake->getSlotTrackInfo()->setParentItem(toMake);
+                    }
+                }
+
+                //no need to generate model with text, because text isn't needed in workspace scene
+                it->generate2DModel(false);
+
+                if (toMake->getType()==J2 && toMake->getSlotTrackInfo()==NULL)
+                {
+                    if (toMake->getRadius()>0)
+                        it->setEndPointAngle(1,180-it->getTurnAngle());
+                    else
+                        it->setEndPointAngle(1,it->getTurnAngle());
+                }
+
+                if(toMake->getType()==J1 && toMake->getSlotTrackInfo()!=NULL && eventPos.x()<gpi->pos().x()/2)
+                    it->setEndPointAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2,180-it->getTurnAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2));
+
+                if(toMake->getType()==J2 && toMake->getSlotTrackInfo()!=NULL && eventPos.x()<gpi->pos().x()/2)
+                    it->setEndPointAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2,180-it->getTurnAngle(it->getSlotTrackInfo()->getNumberOfLanes()*2));
+
+                if (toMake->getType()==X1 || toMake->getType()==J4)
+                {
+                    it->setEndPointAngle(2,180-it->getTurnAngle(2));
+                }
+
+                if (toMake->getType()==J5)
+                    it->setEndPointAngle(2,180);
+
+                if (toMake->getType()==T1)
+                    it->rotate(180);
+
+                app->getWindow()->getWorkspaceWidget()->getActiveFragment()->addFragmentItem(it,app->getWindow()->getWorkspaceWidget()->getActiveEndPoint());
+                app->getWindow()->getWorkspaceWidget()->setLastInserted(it);
+
+            }
+            app->getWindow()->getWorkspaceWidget()->setLastUsedPart(parentItem);
+            app->getWindow()->getWorkspaceWidget()->setLastEventPos(eventPos);
+        }
+    }
+}
 void makeNewBorder(BorderItem * item)
 {
-
     bool enable = true;
 
     if (app->getRestrictedInventoryMode())
@@ -6484,21 +5796,12 @@ void makeNewBorder(BorderItem * item)
                            item->getAngle(),item->getRadius(),*endPoints,item->getInnerBorderFlag(),item->getProdLine(),
                            app->getWindow()->getWorkspaceWidget());
 
-
         //no need to generate model with text, because text isn't needed in workspace scene
         it->generate2DModel(false);
 
-
-        //app->getWindow()->getWorkspaceWidget()->getActiveFragment()->addFragmentItem(it,app->getWindow()->getWorkspaceWidget()->getActiveEndPoint());
-        //app->getWindow()->getWorkspaceWidget()->setLastInserted(it);
         app->getWindow()->getWorkspaceWidget()->getSelection()->first()->getSlotTrackInfo()->addBorder(it);
-
     }
-
-
 }
-
-
 
 VegetationItem * makeNewVegetation(VegetationItem *item)
 {
@@ -6518,7 +5821,6 @@ VegetationItem * makeNewVegetation(VegetationItem *item)
         it = new VegetationItem(*item->getPartNo(),*item->getNameEn(),*item->getNameCs(),*item->getSeason(),
                                 item->getItemWidth(),item->getItemHeight(),item->getProdLine(),app->getWindow()->getWorkspaceWidget());
 
-
         QPointF * pt = app->getWindow()->getWorkspaceWidget()->getActiveEndPoint();
 
         //no need to generate model with text, because text isn't needed in workspace scene
@@ -6529,20 +5831,14 @@ VegetationItem * makeNewVegetation(VegetationItem *item)
         it->moveBy(pt->x(),pt->y(),false);
 
         return it;
-
     }
     else
         return NULL;
-
-
-
 }
-
 
 void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
 {
     logFile << "    Rebuilding fragment: new fragment has address " << fragment << " and id " << fragment->getID() << ", start item is at " << startItem << endl;
-
 
     ModelItem * currentItem = NULL;
     ModelItem * previousItem = startItem;
@@ -6581,14 +5877,12 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                 k=0;
                 continue;
             }
-
         }
 
         if (!itemsToVisit.empty())
             currentItem = itemsToVisit.first();
         else
             return;
-
 
         logFile << "    currentItem = " << currentItem << ", previousItem = " << previousItem << endl;
 
@@ -6630,8 +5924,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     j++;
                 }
                 previousItem = currentItem->getNeighbour(j);
-
-
             }
             else
             {
@@ -6663,7 +5955,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
             {
                 if (currentItem->getSlotTrackInfo()!=NULL && (currentItem->getType()==J1 || currentItem->getType()==J2) && j==4)
                 {
-
                     if (pointsAreCloseEnough(fragment->getEndPoints()->at(k),currentItem->getEndPoint(j),currentItem->getProdLine()->getScaleEnum()/4.0))
                     {
                         //QPointF * pt = fragment->getEndPoints()->at(k);
@@ -6678,7 +5969,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                             fragment->addEndPoint(currentItem->getEndPoint(1),true,currentItem->getTurnAngle(j),currentItem->getNeighbour(1));
                             logFile << "    1.1RebuildFragment: endpoint (" << currentItem->getEndPoint(j%2)->x() << ", " << currentItem->getEndPoint(j%2)->y() << ") with the angle of " << currentItem->getTurnAngle(j) << " degrees was added in fragment " << fragment->getID() << endl;
                         }
-
                         break;
                     }
                 }
@@ -6697,17 +5987,14 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         fragment->addEndPoint(currentItem->getEndPoint(j%2),true,currentItem->getTurnAngle(j),previousItem);
                         logFile << "    1.2RebuildFragment: endpoint (" << currentItem->getEndPoint(j%2)->x() << ", " << currentItem->getEndPoint(j%2)->y() << ") with the angle of " << currentItem->getTurnAngle(j) << " degrees was added in fragment " << fragment->getID() << endl;
                     }
-
                     break;
                 }
             }
-
             //if N is at odd point && N is connected to currentItem by odd point: -P-><-C-
             //or N is at odd point && N is connected to currentItem by even point: -C->-P->
             logFile << "        i=" << i << " j=" << j << endl;
             if ((i%2==0 && j%2==0 && currentItem->getSlotTrackInfo()!=NULL && (currentItem->getType()==J1 || currentItem->getType()==J2)) || (i%2==1 && j%2==1) || (i%2==0 && j%2==1) || makeFirst || (dAlpha > 150))//(i%2==1 && j%2==1)
             {
-
                 int l = i;
                 if ((((previousItem->getRadius()>0 && currentItem->getRadius() >0)
                     || (previousItem->getRadius()<0 && currentItem->getRadius() <0))
@@ -6717,9 +6004,7 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         || (previousItem->getRadius()<0 && currentItem->getRadius() >0))
                         && ((i%2==0 && j%2==1)))
                     )
-
                 {
-
                     bool incremented = false;
                     while (previousItem->getEndPoint(l)!=NULL)
                     {
@@ -6739,13 +6024,11 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     logFile << "        l=" << l << endl;
                 }
 
-
                 ModelItem * currentItemNeighbourAtMod = currentItem->getNeighbour(j%2);
                 if (currentItem->getType()==J1 || currentItem->getType()==J2 || currentItem->getType()==J3 || currentItem->getType()==J1)
                     currentItemNeighbourAtMod = currentItem->getNeighbour(j);
                 QList<ModelItem*> currentItemOriginalNeighbours;
                 QList<QPointF> currentItemOriginalPoints;
-
 
                 int k = 0;
                 while (currentItem->getEndPoint(k)!=NULL)
@@ -6766,10 +6049,8 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     k++;
                 }
 
-
                 //fragment->getFragmentItems()->removeOne(currentItem);
                 itemsToVisit.removeAll(currentItem);
-
                 //find the item from which "currentItem" was created
                 ModelItem * originalItem = NULL;
                 QList<ModelItem*>::Iterator iter = currentItem->getProdLine()->getItemsList()->begin();
@@ -6784,10 +6065,7 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     }
                     iter++;
                 }
-
                 QPointF pos;
-
-
                 //determine if the new one will be left- or right-turn-item
                 if (dAlpha > 90)
                 {
@@ -6806,8 +6084,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         else if (j%2==1 || j==4)
                             pos.setX(originalItem->get2DModelNoText()->scenePos().x()-5);
                     }
-
-
                 }
                 else
                 {
@@ -6819,7 +6095,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     else
                         pos.setX(originalItem->get2DModelNoText()->scenePos().x()+5);
                 }
-
                 if ((currentItem->getType()==X1 || currentItem->getType()==J4))
                 {
                     //if signbit(currentItem->getRadius())!=signbit(pos.x())
@@ -6837,22 +6112,16 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         else
                             pos.setX(originalItem->get2DModelNoText()->scenePos().x()+5);
                     }
-
                 }
                 if (currentItem->getType()==HE || currentItem->getType()==HS)
                 {
-
                     if (currentItem->getRadius()>0)
                         pos.setX(originalItem->get2DModelNoText()->scenePos().x()-5);
                     else
                         pos.setX(originalItem->get2DModelNoText()->scenePos().x()+5);
                 }
-
-
-
                 //QPointF * active = new QPointF(*previousItem->getEndPoint(l));
                 QPointF * active = new QPointF(*currentItem->getEndPoint(j%2));
-                ///QPointF * active = new QPointF(*previousItem->getEndPoint(i%2));
                 QPointF * forFragment = new QPointF(*currentItem->getEndPoint(j%2));
 
                 if (j==4 && currentItem->getSlotTrackInfo()!=NULL && (currentItem->getType()==J1 || currentItem->getType()==J2))
@@ -6910,12 +6179,9 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                             }
                         }
 
-                        //if (!fragment->getEndPoints()->contains(currentItem->getEndPoint(j%2)))
                         for (int n = 0; n < fragment->getEndPoints()->count(); n++)
                         {
                             wasChecked=true;
-                            //QRectF r(fragment->getEndPoints()->at(n)->x()-TOLERANCE_HALF,fragment->getEndPoints()->at(n)->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF);
-                            //if (r.contains(*forFragment))
                             if (pointsAreCloseEnough(forFragment,fragment->getEndPoints()->at(n),fragment->getProductLines()->first()->getScaleEnum()/4.0))
                             {
                                 isThere = true;
@@ -6952,8 +6218,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     for (int n = 0; n < fragment->getEndPoints()->count(); n++)
                     {
                         wasChecked=true;
-                        //QRectF r(fragment->getEndPoints()->at(n)->x()-TOLERANCE_HALF,fragment->getEndPoints()->at(n)->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF);
-                        //if (r.contains(*forFragment))
                         if (pointsAreCloseEnough(forFragment,fragment->getEndPoints()->at(n),fragment->getProductLines()->first()->getScaleEnum()/4.0))
                         {
                             isThere = true;
@@ -7015,8 +6279,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     for (int n = 0; n < fragment->getEndPoints()->count(); n++)
                     {
                         wasChecked=true;
-                        //QRectF r(fragment->getEndPoints()->at(n)->x()-TOLERANCE_HALF,fragment->getEndPoints()->at(n)->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF);
-                        //if (r.contains(*forFragment))
                         if (pointsAreCloseEnough(forFragment,fragment->getEndPoints()->at(n),fragment->getProductLines()->first()->getScaleEnum()/4.0))
                         {
                             isThere = true;
@@ -7087,8 +6349,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     for (int n = 0; n < fragment->getEndPoints()->count(); n++)
                     {
                         wasChecked=true;
-                        //QRectF r(fragment->getEndPoints()->at(n)->x()-TOLERANCE_HALF,fragment->getEndPoints()->at(n)->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF);
-                        //if (r.contains(*forFragment))
                         if (pointsAreCloseEnough(forFragment,fragment->getEndPoints()->at(n),fragment->getProductLines()->first()->getScaleEnum()/4.0))
                         {
                             isThere = true;
@@ -7100,8 +6360,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         fragment->addEndPoint(forFragment,true,angleOfPoint,currentItemNeighbourAtMod);
                         logFile << "    5RebuildFragment: endpoint (" << forFragment->x() << ", " << forFragment->y() << ") with the angle of " << angleOfPoint << " degrees was added in fragment " << fragment->getID() << endl;
                     }
-
-
                 }
                 else if (currentItem->getType()==J3)
                 {
@@ -7138,7 +6396,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                             pos.setX(originalItem->get2DModelNoText()->scenePos().x()+5);
 
                     }
-
                     else if ((j==2 || j==3) && currentItem->getRadius()>0)
                     {
                         *active = *currentItem->getEndPoint(1);
@@ -7153,7 +6410,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                             angleOfPoint += abs(currentItem->getTurnAngle(j)-currentItem->getTurnAngle(1));
                         else
                             angleOfPoint -= abs(currentItem->getTurnAngle(j)-currentItem->getTurnAngle(1));
-
                     }
                     else if ((j==2 || j==3) && currentItem->getRadius()<0)
                     {
@@ -7170,7 +6426,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                             angleOfPoint -= abs(180+currentItem->getTurnAngle(j)-currentItem->getTurnAngle(1));
                         else
                             angleOfPoint -= abs(currentItem->getTurnAngle(j)-currentItem->getTurnAngle(1));
-
                     }
 
                     for (int n = 0; n < fragment->getEndPoints()->count(); n++)
@@ -7187,21 +6442,14 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         fragment->addEndPoint(forFragment,true,angleOfPoint,currentItemNeighbourAtMod);
                         logFile << "    6RebuildFragment: endpoint (" << forFragment->x() << ", " << forFragment->y() << ") with the angle of " << angleOfPoint << " degrees was added in fragment " << fragment->getID() << endl;
                     }
-
-
                 }
 
                 app->getWindow()->getWorkspaceWidget()->setActiveEndPoint(active);
                 ModelFragment * previouslyActiveFragment = app->getWindow()->getWorkspaceWidget()->getActiveFragment();
                 app->getWindow()->getWorkspaceWidget()->setActiveFragment(fragment);
 
-                //currentItem->moveBy(5000,0);
-
                 currentItem->setDeleteFlag();
-
-
                 unsigned int countBefore = originalItem->getAvailableCount();
-
                 makeNewItem(pos,originalItem->get2DModelNoText(),originalItem,originalItem,false);
 
                 if (app->getRestrictedInventoryMode())
@@ -7210,17 +6458,12 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     originalItem->get2DModel()->changeCountPath(countBefore);
                 }
 
-
-                ///fragment->removeEndPoint(currentItem->getEndPoint(j%2));
-
-
                 app->getWindow()->getWorkspaceWidget()->setActiveFragment(previouslyActiveFragment);
 
                 if (makeFirst)
                     makeFirst=false;
 
                 ModelItem * newN = fragment->getFragmentItems()->last();
-                //newN->get2DModelNoText();
 
                 if (currentItem->getSlotTrackInfo()!=NULL)
                 {
@@ -7233,7 +6476,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                             currentBorders->at(n)->setNeighbour(newN,currentItem->getSlotTrackInfo()->getBorderEndPoints()->at(n));
                         }
                     }
-
                 }
 
                 {
@@ -7245,15 +6487,12 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     }
                 }
 
-
-
                 if (currentItem->get2DModelNoText()->isSelected())
                 {
                     app->getWindow()->getWorkspaceWidget()->selectItem(newN);
                     app->getWindow()->getWorkspaceWidget()->deselectItem(currentItem);
 
                 }
-
 
                 if (!isThere && wasChecked)
                 {
@@ -7276,13 +6515,10 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                             }
                         }
 
-
                         int indexOld = -1;
-                        //QRectF r(newN->getEndPoint(k)->x()-TOLERANCE_HALF,newN->getEndPoint(k)->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,TOLERANCE_HALF*2);
                         for (int m = 0; m < currentItemOriginalPoints.count(); m++)
                         {
                             if (pointsAreCloseEnough(&currentItemOriginalPoints[m],newN->getEndPoint(k),newN->getProdLine()->getScaleEnum()/4.0))
-                            //if (r.contains(currentItemOriginalPoints.at(m)))
                             {
                                 indexOld=m;
                                 break;
@@ -7348,8 +6584,66 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         }
                         else
                         {
-                            logFile << "    4131: indexOld == -1" << endl;
-                            return;
+                            /*
+                             * Self repairing code
+                             * -when this error occurs, it means that the item is flipped by 180 deg.
+                             * -in this situation the "newN" and previousItem neighbourhood is set in the wrong way
+                             */
+                            logFile << "    ERROR 4131: indexOld == -1" << endl;
+                            newN->rotate(180,forFragment);
+                            fragment->updateEndPointsGraphics();
+                            int iN = 0;
+                            int iP = 0;
+                            while (newN->getEndPoint(iN)!=NULL)
+                            {
+                                iP=0;
+                                while (previousItem->getEndPoint(iP)!=NULL)
+                                {
+                                    if (pointsAreCloseEnough(previousItem->getEndPoint(iP),newN->getEndPoint(iN),newN->getProdLine()->getScaleEnum()/4))
+                                    {
+                                        if (previousItem->getNeighbour(iP)==NULL)
+                                        {
+                                            if (previousItem->getSlotTrackInfo()!=NULL)
+                                            {
+                                                int index1 = 0;
+                                                int index2 = 0;
+                                                if (iP%2==0 && !((previousItem->getType()==J1 || previousItem->getType()==J2) && previousItem->getEndPoint(iP+1)==NULL))
+                                                {
+                                                    index1 = iP;
+                                                    index2 = iP+1;
+                                                }
+                                                else if (!((previousItem->getType()==J1 || previousItem->getType()==J2) && previousItem->getEndPoint(iP+1)==NULL))
+                                                {
+                                                    index1 = iP-1;
+                                                    index2 = iP;
+                                                }
+
+                                                if (!previousItem->leftRightDifference180(index1,index2))
+                                                    previousItem->setEndPointAngle(iP,previousItem->getTurnAngle(iP)+180);
+                                            }
+                                            previousItem->setNeighbour(newN,previousItem->getEndPoint(iP));
+                                        }
+                                        if (newN->getNeighbour(iN)==NULL)
+                                        {
+                                            newN->setNeighbour(previousItem,newN->getEndPoint(iN));
+                                        }
+                                        QPointF * pt = NULL;
+                                        while (fragment->findEndPointItem(newN->getEndPoint(iN))!=NULL)
+                                        {
+                                            pt = newN->getEndPoint(iN);
+                                            if (fragment->removeEndPoint(pt)==2)
+                                            {
+                                                pt=previousItem->getEndPoint(iP);
+                                                fragment->removeEndPoint(pt);
+                                            }
+                                        }
+                                    }
+                                    iP++;
+                                }
+                                iN++;
+                            }
+                            k=0;
+                            continue;
                         }
                         k++;
                     }
@@ -7366,7 +6660,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
 
                     if (newN->getNeighbour(x)!=NULL)
                     {
-
                         int nIndex = 0;
                         ModelItem * n = newN->getNeighbour(x);
                         while (n->getEndPoint(nIndex)!=NULL)
@@ -7380,12 +6673,9 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         itemsToVisit.push_front(newN->getNeighbour(x));
                     x++;
                 }
-
                 itemsToVisit.removeAll(currentItem);
                 currentItem = newN;
-
             }
-
             //now the "i" variable contains the index of the first point of connection
             else if (currentItem->getSlotTrackInfo()!=NULL && currentItem->getType()!=J1 && currentItem->getType()!=J2
                     && ((currentItem->getRadius()>0 && previousItem->getRadius()<0  && i%2==1)
@@ -7396,8 +6686,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                     )
             {
                 //get appropriate lane for connection - it is lane at point i if there is just one point of connection, otherwise search for the last lane of connection
-
-
                 int l = i;
                 bool incremented = false;
                 while (previousItem->getEndPoint(l)!=NULL)
@@ -7415,21 +6703,16 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                 //if this condition is satisfied it means that previousItem is connected with its last lane too, so it needs to be decreased
                 if (previousItem->getEndPoint(l)==NULL)
                     l-=2;
-
                 *currentPoint = *previousItem->getEndPoint(l);
                 //when there is 4-lane straight and double 2 lane curve you get error,
                 //because bottom straight part will be connected by its [0] point instead of [4]
-                //QRectF r(currentPoint->x()-TOLERANCE_HALF,currentPoint->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF);
-                //if (!r.contains(*currentItem->getEndPoint(0)))
                 if (pointsAreCloseEnough(currentItem->getEndPoint(0),currentPoint,currentItem->getProdLine()->getScaleEnum()/4.0))
                 {
                     itemsToVisit.push_front(currentItem);
                     makeFirst =true;
                     continue;
                 }
-
                 fragment->addFragmentItem(currentItem,currentPoint);
-
             }
             else
             {
@@ -7440,8 +6723,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                 if (previousItem->getType()==X1 && previousItem->getSlotTrackInfo()!=NULL)
                     *currentPoint=*currentItem->getEndPoint(j%2);
 
-                //QRectF r(currentPoint->x()-TOLERANCE_HALF,currentPoint->y()-TOLERANCE_HALF,2*TOLERANCE_HALF,2*TOLERANCE_HALF);
-                //if (!r.contains(*currentItem->getEndPoint(0)))
                 if (pointsAreCloseEnough(currentItem->getEndPoint(0),currentPoint,currentItem->getProdLine()->getScaleEnum()/4.0))
                 {
                     itemsToVisit.push_front(currentItem);
@@ -7451,7 +6732,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                 fragment->addFragmentItem(currentItem,currentPoint);
             }
         }
-
         //check the next item:
             //for each neighbour N:
                 //if N is at odd point && N is connected to currentItem by odd point
@@ -7469,8 +6749,6 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
             if (currentItem->getNeighbour(i)!=NULL)
             {
                 ModelItem * n = currentItem->getNeighbour(i);
-
-
                 int j = 0;
                 while (n->getEndPoint(j)!=NULL)
                 {
@@ -7478,25 +6756,16 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
                         break;
                     j++;
                 }
-
-
-                //else
-                {
-                    if (!visitedItems.contains(n) && !itemsToVisit.contains(n))
+                if (!visitedItems.contains(n) && !itemsToVisit.contains(n))
                     itemsToVisit.push_front(n);
-                }
             }
             i++;
         }
 
-
         if (!visitedItems.contains(currentItem))
             visitedItems.push_back(currentItem);
         previousItem = currentItem;
-
-    }
-
-
+    }    
     logFile << "    Printing all angles after rebuildFragment():" << endl;
     ModelItem * m = fragment->getFragmentItems()->first();
     for (int j = 0; j < fragment->getFragmentItems()->count();j++)
@@ -7509,8 +6778,5 @@ void rebuildFragment(ModelItem * startItem, ModelFragment * fragment)
             logFile << "            [" << i << "]: " << m->getTurnAngle(i) << " neighbour is " << m->getNeighbour(i) << endl;
             i++;
         }
-
-
     }
-
 }
