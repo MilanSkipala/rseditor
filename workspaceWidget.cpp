@@ -5827,7 +5827,6 @@ bool WorkspaceWidget::canInsert(BorderItem *item) const
     {
         if (fstSelected->leftRightDifference180(0,1))
         {
-            //cout << fstSelected->getTurnAngle(1)-fstSelected->getTurnAngle(0) << endl;
             if (abs(modf((fstSelected->getTurnAngle(1)-fstSelected->getTurnAngle(0)+180)/item->getAngle(),&useless))>=0.01)
                 enabled=false;
         }

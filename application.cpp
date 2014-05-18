@@ -591,18 +591,15 @@ void Application::saveModelInfo()
 
     outputFile << QString("</table>\n</body>\n</html>\n");
 
-
+    output.close();
 }
 
 void Application::savePreferences()
 {
-
-
     QList<void*> ptrs;
     for (int i = 0; i < 8;i++)
     {
         ptrs.push_back(((QFormLayout*)this->preferencesDialog->layout())->itemAt(i)->widget());
-        //cout << ((QFormLayout*)this->preferencesDialog->layout())->itemAt(i)->widget()->metaObject()->className() << endl;
     }
     QString langStr = ((QComboBox*)this->preferencesDialog->layout()->itemAt(1)->widget())->currentText();
 

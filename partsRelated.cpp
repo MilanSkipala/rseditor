@@ -4958,7 +4958,6 @@ int ModelFragment::initInfoDialog()
     {
         poly = poly.united(this->fragmentItems->at(i)->get2DModelNoText()->sceneBoundingRect());
     }
-    cout << poly.width() << endl;
 
     QString sizeStr;
     if (this->lines->first()->getType())
@@ -4972,6 +4971,8 @@ int ModelFragment::initInfoDialog()
         sizeStr.append(QString::number((int)poly.height()));
     sizeStr.append("mm");
     QLabel * label2 = new QLabel(sizeStr);
+    QPushButton * close = new QPushButton("Close");
+    QObject::connect(close,SIGNAL(clicked()),this->infoDialog,SLOT(reject()));
 
     if (english)
     {
@@ -4979,13 +4980,16 @@ int ModelFragment::initInfoDialog()
         layout->insertRow(1,"Parts used:",listWidgetI);
         layout->insertRow(2,"Parts' manufacturer(s)",listWidgetM);
         layout->insertRow(3,"Total size (approx.): ", label2);
+        layout->insertRow(4,"",close);
     }
     else
     {
+        close->setText("Zavřít");
         layout->insertRow(0,"Počet dílů:",label);
         layout->insertRow(1,"Použité díly:",listWidgetI);
         layout->insertRow(2,"Výrobci dílů",listWidgetM);
         layout->insertRow(3,"Celková velikost (přibližná): ", label2);
+        layout->insertRow(4,"",close);
     }
 
     this->infoDialog->setLayout(layout);
